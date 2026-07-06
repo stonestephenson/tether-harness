@@ -23,7 +23,7 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
 ## Install
 
 ```
-/plugin marketplace add <git-url-of-this-repo>
+/plugin marketplace add stonestephenson/tether-harness
 /plugin install tether@tether
 ```
 

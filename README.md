@@ -6,7 +6,7 @@ context-managed agentic harness (deterministic hooks + judgment skills).
 ## Install
 
 ```
-/plugin marketplace add <git-url-of-this-repo>
+/plugin marketplace add stonestephenson/tether-harness
 /plugin install tether@tether
 ```
 
