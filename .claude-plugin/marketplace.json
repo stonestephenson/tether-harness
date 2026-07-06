@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "tether",
+  "description": "Marketplace hosting the tether plugin — a verification-first, context-managed Claude Code harness.",
+  "owner": {
+    "name": "Stone Stephenson"
+  },
+  "plugins": [
+    {
+      "name": "tether",
+      "source": "./plugins/tether",
+      "description": "Verification-first, context-managed agentic harness (deterministic hooks + judgment skills)."
+    }
+  ]
+}
