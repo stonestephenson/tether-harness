@@ -25,11 +25,14 @@ Restart opencode afterward. If your opencode build doesn't read a global
 
 ## What you get + honest coverage
 
+Verified live on **opencode 1.17.14** (2026-07). opencode delivers bus events through a single
+`event` hook you switch on by type, and edits through `tool.execute.after` — the plugin uses both.
+
 | Piece | Status on opencode |
 |---|---|
 | **Skills** (`/catchup`, `/plan-change`, `/test-first`, `/council`, `/experiment-log`, `/handoff`, `/ship`, `/context-health`) | ✅ full — markdown commands |
-| **verify-on-edit** (plugin, `file.edited`) | ✅ runs the fast file-local checks on each edited file and prints diagnostics. Whether they're injected back into the model vs. surfaced to you depends on opencode's plugin-feedback API — either way the checks run. |
-| **done-gate** (plugin, `session.idle`) | ✅ runs your project check when the session goes idle and surfaces failures. `session.idle` is the closest event to "turn finished"; it reports rather than hard-blocks. |
+| **verify-on-edit** (plugin, `tool.execute.after` on `edit`/`write`) | ✅ **verified** — runs the fast file-local checks on each edited file and appends the diagnostics to the tool result, so the **agent sees and fixes them** (confirmed: the agent removed an unused import after an `F401`). |
+| **done-gate** (plugin, `session.idle`) | ✅ runs your project check when the session goes idle and surfaces failures. `session.idle` is the closest event to "turn finished"; it reports (does not hard-block). *Failing-path not yet exercised live — the pass path and wiring are verified.* |
 | **context-health** (context-pressure nudges) | ⚠️ **Claude-Code-only** — needs per-turn transcript token counts opencode plugins don't expose. Shipped but not wired. |
 
 ## Prerequisites (optional — checks skip a tool that's missing)
