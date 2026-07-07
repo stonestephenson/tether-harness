@@ -1,9 +1,3 @@
----
-name: catchup
-description: Reconstruct your context at the START of a session for whatever project you're in — what it is, its current state (branch, clean/dirty, tests green or red), what changed since last time, and what to do next. Reads the entry doc (CLAUDE.md / AGENTS.md) and follows ITS pointers to the other docs, then layers in the transient state (git, test status, WIP) that docs don't hold. Project-agnostic. Use when you open a project cold, return after time away, after /clear or compaction, or when the user says "where were we", "catch me up", "get oriented", or "what's the state".
-user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash
----
 
 # catchup — get oriented in this project, fast
 

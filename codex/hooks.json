@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|apply_patch",
+        "hooks": [
+          { "type": "command", "command": "python3 \"__HOOKS_DIR__/verify-on-edit.py\"", "timeout": 30 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 \"__HOOKS_DIR__/done-gate.py\"", "timeout": 200 }
+        ]
+      }
+    ]
+  }
+}

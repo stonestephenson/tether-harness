@@ -1,9 +1,3 @@
----
-name: test-first
-description: Drive a non-trivial code change from a failing test/repro first, then make it pass — the external-verifier loop that measurably lifts coding-agent success. Use when implementing a feature or fixing a bug that has a checkable outcome, when the user says "write a test", "TDD this", "reproduce the bug first", or before a change whose correctness isn't obvious by inspection. Skip for throwaway scripts, pure refactors with existing coverage, or trivial one-liners.
-user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash, Edit, Write
----
 
 # test-first — make the target checkable before you chase it
 
