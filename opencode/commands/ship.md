@@ -1,8 +1,5 @@
 ---
-name: ship
 description: Get the current change merge-ready and committed LOCALLY. Runs the project's own quality gates (tests, lint, doc/sanity checks, regenerate generated artifacts), self-reviews the diff, then stages the right files and makes a local commit with a message drafted from the diff. STOPS before push / PR — publishing is a separate explicit step. Discovers each project's gates and conventions; project-agnostic. Use when the user says "ship it", "ready to commit", "wrap this up", "commit this", or wants a change finalized and committed locally.
-user-invocable: true
-allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 
 # ship — make this change merge-ready, then commit locally

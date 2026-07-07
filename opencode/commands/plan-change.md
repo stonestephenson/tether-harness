@@ -1,8 +1,5 @@
 ---
-name: plan-change
 description: Approach a non-trivial code change with a localize → plan → implement → validate pipeline instead of diving in. Use for multi-file changes, unfamiliar areas of a codebase, or long-horizon tasks; when the user says "plan this out", "how should we approach", "scope this", or "map the change". Skip for small, localized edits where the fix is obvious — planning is overhead there.
-user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash, Edit, Write, Agent, Skill
 ---
 
 # plan-change — localize, plan, implement, validate
