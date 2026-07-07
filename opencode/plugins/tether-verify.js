@@ -1,38 +1,48 @@
 // tether — verification hooks for opencode.
-//   file.edited  -> per-edit checks (verify-on-edit.py): real-bug lint always;
-//                   formatting/style only if the project ships a style config.
-//   session.idle -> project verify gate (done-gate.py): runs .tether/.codex/.claude
-//                   verify.sh (or $VERIFY_CMD) and surfaces failures.
-// Reuses the shared Python hook scripts. A verification hook must never break the
-// session, so every failure path is swallowed except the diagnostics we surface.
-export const TetherPlugin = async ({ $ }) => {
-  const HOOKS = `${process.env.HOME}/.config/opencode/tether/hooks`;
+//   tool.execute.after (edit/write) -> verify-on-edit.py; the diagnostics are appended to
+//     the tool result so the AGENT sees and fixes them (this closes the verification loop).
+//   session.idle -> done-gate.py; runs the project's fast check (.tether/verify.sh or
+//     $VERIFY_CMD) and surfaces failures.
+// Reuses the shared Python hook scripts. Verified on opencode 1.17.14.
+// (opencode delivers bus events through a single `event` hook you switch on by type;
+//  the file path for an edit is in the edit tool's args.filePath.)
+import { dirname } from "node:path";
 
-  const run = async (script, payload) => {
+export const TetherPlugin = async (factory) => {
+  const $ = factory.$;
+  const HOOKS = `${process.env.HOME}/.config/opencode/tether/hooks`;
+  let projectDir = process.cwd();
+
+  const runHook = async (script, payload) => {
     try {
-      const r = await $`echo ${payload} | python3 ${HOOKS}/${script}`.quiet().nothrow();
-      if (r.exitCode !== 0 && r.stderr && r.stderr.length) {
-        console.error(r.stderr.toString()); // surface diagnostics / failures
-      }
+      return await $`echo ${payload} | python3 ${HOOKS}/${script}`.quiet().nothrow();
     } catch (_) {
-      /* never break the session because a hook errored */
+      return null; // a verification hook must never break the session
     }
   };
 
   return {
-    "file.edited": async (input) => {
-      const path = input.filePath || input.file || input.path;
+    "tool.execute.after": async (input, output) => {
+      if (input?.tool !== "edit" && input?.tool !== "write") return;
+      const path = input?.args?.filePath;
       if (!path) return;
-      await run(
+      projectDir = dirname(path);
+      const r = await runHook(
         "verify-on-edit.py",
         JSON.stringify({ tool_name: "Edit", tool_input: { file_path: path } }),
       );
+      if (r && r.exitCode !== 0 && r.stderr?.length && output) {
+        output.output = (output.output ?? "") + `\n\n${r.stderr.toString()}`; // feed the agent
+      }
     },
-    "session.idle": async () => {
-      await run(
+    event: async (arg) => {
+      const event = arg?.event ?? arg;
+      if (event?.type !== "session.idle") return;
+      const r = await runHook(
         "done-gate.py",
-        JSON.stringify({ hook_event_name: "Stop", cwd: process.cwd() }),
+        JSON.stringify({ hook_event_name: "Stop", cwd: projectDir }),
       );
+      if (r && r.exitCode !== 0 && r.stderr?.length) console.error(r.stderr.toString());
     },
   };
 };
