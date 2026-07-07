@@ -3,7 +3,22 @@
 A Claude Code marketplace hosting one plugin: **tether** — a verification-first,
 context-managed agentic harness (deterministic hooks + judgment skills).
 
-## Install
+## Which tool are you on?
+
+This branch (`main`) is the **Claude Code** plugin. Ports for other agentic tools live on
+their own branches — all share the same skills, operating defaults, and verification hooks:
+
+| Branch | Tool | Install |
+|---|---|---|
+| **`main`** | Claude Code | the two commands below |
+| **`codex`** | OpenAI Codex CLI | `git clone -b codex … && bash codex/install.sh` |
+| **`opencode`** | opencode | `git clone -b opencode … && bash opencode/install.sh` |
+| **`generic`** | any other agentic AI | wire the hooks per `WIRING.md` |
+
+`context-health` (context-pressure nudges) is Claude-Code-only — it needs transcript token
+data other tools don't expose; the other branches ship it unwired. See each branch's README.
+
+## Install (Claude Code)
 
 ```
 /plugin marketplace add stonestephenson/tether-harness
