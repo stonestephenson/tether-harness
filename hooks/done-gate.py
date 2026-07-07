@@ -30,12 +30,13 @@ REASON_CAP = 5000    # chars of failure output handed back
 
 
 def find_verify_command(cwd):
-    cmd = os.environ.get("CLAUDE_VERIFY_CMD")
+    cmd = os.environ.get("VERIFY_CMD") or os.environ.get("CLAUDE_VERIFY_CMD")
     if cmd:
         return cmd
-    script = os.path.join(cwd, ".claude", "verify.sh")
-    if os.path.isfile(script):
-        return f'bash "{script}"'
+    for rel in (".tether/verify.sh", ".codex/verify.sh", ".claude/verify.sh"):
+        script = os.path.join(cwd, rel)
+        if os.path.isfile(script):
+            return f'bash "{script}"'
     return None
 
 
@@ -56,11 +57,7 @@ def main():
             cmd, shell=True, cwd=cwd, capture_output=True, text=True, timeout=TIMEOUT
         )
     except subprocess.TimeoutExpired:
-        print(json.dumps({
-            "systemMessage": f"[done-gate] verify command timed out after {TIMEOUT}s "
-                             "— not blocking. Consider a faster check.",
-        }))
-        return
+        return  # timed out → fail open (don't block finishing on a slow check)
     except Exception:
         return  # can't run it → fail open
 
@@ -70,11 +67,11 @@ def main():
     out = ((r.stdout or "") + (r.stderr or "")).strip() or f"verify exited {r.returncode}"
     if len(out) > REASON_CAP:
         out = out[-REASON_CAP:]  # tail: the failing summary is usually at the end
-    print(json.dumps({
-        "decision": "block",
-        "reason": "Project verification is failing — resolve it before finishing "
-                  f"(command: {cmd}):\n\n{out}\n\nFix these, then stop.",
-    }))
+    sys.stderr.write(
+        "Project verification is failing — resolve it before finishing "
+        f"(command: {cmd}):\n\n{out}\n\nFix these, then finish.\n"
+    )
+    sys.exit(2)  # exit 2 = block-and-feed-back; portable across Codex & Claude Code
 
 
 if __name__ == "__main__":
