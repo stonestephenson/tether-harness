@@ -1,0 +1,23 @@
+// Example opencode config for local models via Ollama — copy to
+// ~/.config/opencode/opencode.jsonc (or your project's opencode.jsonc) and edit.
+// See opencode/LOCAL-MODELS.md for the full story. The two things that matter most:
+//   1. OLLAMA_CONTEXT_LENGTH=65536 on the Ollama SERVER (not here) — opencode's tool
+//      prompt is ~8.8k tokens and Ollama's 4096 default truncates it. This is the
+//      single most important setting; without it, tool calling silently fails.
+//   2. "tool_call": true on every model entry (below) — else opencode text-describes
+//      tools instead of sending native function calls.
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": { "baseURL": "http://localhost:11434/v1", "apiKey": "ollama" },
+      "models": {
+        "qwen3-coder:30b":  { "name": "Qwen3-Coder 30B (local)",             "tool_call": true },
+        "gpt-oss:20b":      { "name": "gpt-oss 20B (local, agentic)",         "tool_call": true, "reasoning": true },
+        "devstral:latest":  { "name": "Devstral 24B (local, agentic-coding)", "tool_call": true }
+      }
+    }
+  }
+}

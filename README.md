@@ -1,7 +1,7 @@
 # tether harness — opencode edition (`opencode` branch)
 
-A port of the [tether](https://github.com/stonestephenson/tether-harness) verification-first,
-context-managed agentic harness to **opencode**. opencode uses JavaScript/TypeScript plugins
+A port of the [tether](https://github.com/stonestephenson/tether-harness/tree/main) verification-first,
+context-managed agentic harness (the Claude Code original lives on `main`) to **opencode**. opencode uses JavaScript/TypeScript plugins
 for lifecycle hooks and markdown files for commands, so the skills port as commands and the
 verify hooks port as a small plugin that reuses the shared Python scripts.
 
@@ -25,14 +25,14 @@ Restart opencode afterward. If your opencode build doesn't read a global
 
 ## What you get + honest coverage
 
-Verified live on **opencode 1.17.14** (2026-07). opencode delivers bus events through a single
+Verified live on **opencode 1.17.15** (2026-07). opencode delivers bus events through a single
 `event` hook you switch on by type, and edits through `tool.execute.after` — the plugin uses both.
 
 | Piece | Status on opencode |
 |---|---|
 | **Skills** (`/catchup`, `/plan-change`, `/test-first`, `/council`, `/experiment-log`, `/handoff`, `/ship`, `/context-health`) | ✅ full — markdown commands |
 | **verify-on-edit** (plugin, `tool.execute.after` on `edit`/`write`) | ✅ **verified** — runs the fast file-local checks on each edited file and appends the diagnostics to the tool result, so the **agent sees and fixes them** (confirmed: the agent removed an unused import after an `F401`). |
-| **done-gate** (plugin, `session.idle`) | ✅ runs your project check when the session goes idle and surfaces failures. `session.idle` is the closest event to "turn finished"; it reports (does not hard-block). *Failing-path not yet exercised live — the pass path and wiring are verified.* |
+| **done-gate** (plugin, `session.idle`) | ✅ runs your project check when the session goes idle and surfaces failures; it reports (does not hard-block). **Both paths verified live:** a passing check stays silent, a failing `.tether/verify.sh` surfaces the *"Project verification is failing…"* block on `session.idle` (observed repeatedly in an interactive session). ⚠️ Timing caveat: reliable **interactively** (the normal "turn finished" signal); under headless `opencode run` the process can exit before the async hook finishes writing, so the gate may not fire there. |
 | **context-health** (context-pressure nudges) | ⚠️ **Claude-Code-only** — needs per-turn transcript token counts opencode plugins don't expose. Shipped but not wired. |
 
 ## Prerequisites (optional — checks skip a tool that's missing)
@@ -43,7 +43,9 @@ brew install clang-format         # C/C++ format (only runs with a .clang-format
 brew install shellcheck
 # rustfmt / clippy ship with the Rust toolchain
 ```
-The plugin shells out to `python3`, so Python 3 must be on PATH.
+The plugin shells out to `python3`, so Python 3 must be on PATH. (`pyright` is listed only
+because a typical `.tether/verify.sh` calls it — the per-edit hook itself uses ruff/shellcheck/
+clang-format/rustfmt/gersemi, never pyright.)
 
 ## Arm the done-gate (per project)
 
@@ -57,9 +59,42 @@ ruff check . && pyright          # example
 
 ## Config
 
-- `VERIFY_CMD` — command the done-gate runs (overrides the `.tether/verify.sh` file).
+- `VERIFY_CMD` (or `CLAUDE_VERIFY_CMD`) — command the done-gate runs (overrides the
+  `.tether/verify.sh` file; either env name is honored).
+- `OPENCODE_CONFIG` — install target for `install.sh` (defaults to `~/.config/opencode`).
 - Formatting/style checks are **opt-in**: they run only when the project ships a config
   (`.clang-format`, `ruff.toml`/`pyproject.toml`), so hand-formatted code isn't churned.
+
+## Testing & extending the port
+
+The port is thin: opencode's JS plugin translates opencode events into the Claude-Code-shaped
+JSON the **shared Python hooks** expect, then feeds their output back to the agent.
+
+**The wiring contract** (`opencode/plugins/tether-verify.js`):
+- `tool.execute.after` (edit/write) → `verify-on-edit.py` with `{tool_name:"Edit",
+  tool_input:{file_path}}`; the hook's stderr is appended to the tool result so the agent sees it.
+- `session.idle` → `done-gate.py` with `{hook_event_name:"Stop", cwd}`; failures surface via
+  `console.error`. (`session.idle` may not complete under headless `opencode run` — reliable
+  interactively.)
+- A hook signals "problem" with a **non-zero exit + text on stderr**; exit 2 is the block-and-
+  feed-back convention.
+
+**There's no bundled test suite on this branch** (the `*.test.sh` suites live on `main`). Test a
+hook by piping JSON to it directly:
+
+```bash
+# verify-on-edit: expect an F401 diagnostic + exit 2
+printf 'import os\n' > /tmp/t.py
+echo '{"tool_name":"Edit","tool_input":{"file_path":"/tmp/t.py"}}' | python3 opencode/hooks/verify-on-edit.py; echo "exit=$?"
+
+# done-gate: a failing .tether/verify.sh anywhere from cwd up to the repo root → exit 2
+echo '{"hook_event_name":"Stop","cwd":"'"$PWD"'"}' | python3 opencode/hooks/done-gate.py; echo "exit=$?"
+```
+
+**To extend the checks:** the per-edit check matrix and default ruff rule set (`E9,F`) live in
+`build_checks()` in `verify-on-edit.py`; the done-gate's opt-in file precedence
+(`.tether` → `.codex` → `.claude`, searched cwd-upward to the repo root) lives in
+`find_verify_command()` in `done-gate.py`. Both are code knobs, not config.
 
 ## Running on a local model (works — Ollama)
 

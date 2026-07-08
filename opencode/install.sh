@@ -19,5 +19,6 @@ cp "$SRC/../AGENTS.md" "$OC/AGENTS.md"
 echo
 echo "Done. Restart opencode to load the plugin + commands."
 echo "NOTE: context-health is Claude-Code-only (needs transcript token data) and is not"
-echo "      wired here. verify-on-edit runs on file.edited; done-gate on session.idle."
-echo "      Arm done-gate with a .tether/verify.sh (or .codex / .claude) or \$VERIFY_CMD."
+echo "      wired here. verify-on-edit runs on tool.execute.after (edit/write);"
+echo "      done-gate on session.idle. Arm done-gate with a .tether/verify.sh"
+echo "      (or .codex / .claude) or \$VERIFY_CMD."

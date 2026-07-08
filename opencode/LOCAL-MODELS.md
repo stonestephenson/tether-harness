@@ -42,6 +42,10 @@ sufficient"); **#1 is what actually closed the gap.** The `@ai-sdk/openai-compat
 
 ## Reference `opencode.jsonc` (verified working)
 
+> Shipped as a copyable file: [`opencode/opencode.jsonc.example`](opencode.jsonc.example) —
+> copy it to `~/.config/opencode/opencode.jsonc` and edit.
+
+
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",

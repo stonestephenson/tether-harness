@@ -1,5 +1,13 @@
 # The Harness — every tool, what it does, why, and when
 
+> **Reading this on the `opencode` branch?** This file describes the *general*
+> (Claude-Code-oriented) model. On opencode the mechanics differ: hooks are wired by
+> the JS plugin `opencode/plugins/tether-verify.js` (there is **no `settings.json`**),
+> the events are `tool.execute.after` and `session.idle` (not `PostToolUse`/`Stop`),
+> paths live under `~/.config/opencode/` (not `~/.claude/`), and the **done-gate
+> reports on failure — it does not hard-block**. See the branch `README.md` for the
+> opencode specifics; treat this file as the "why", not the opencode "how".
+
 A reference for the agentic-engineering setup used across my C/C++, Python, and
 Rust/CMake projects (coding + CS research). Two companion docs:
 - **This file (`HARNESS.md`)** — the encyclopedia: each tool explained, the concepts
@@ -104,7 +112,9 @@ context window*, not "specialization."
 
 ### `done-gate.py` — finish gate
 - **What:** when I try to end a turn, it runs the project's fast check command
-  (`.claude/verify.sh`) and, if it's red, **blocks me from finishing** until it's green.
+  (`.claude/verify.sh`; on opencode `.tether/verify.sh`) and, if it's red, **blocks me
+  from finishing** until it's green. (On opencode it *reports* the failure on
+  `session.idle` rather than hard-blocking — the plugin can't veto the stop.)
 - **Why:** closes the "I think I'm done" gap with an objective signal — the model
   claiming success is not the same as tests passing. This is where whole-project checks
   live (type-check, `clippy`, unit tests), because they need the full project to resolve.

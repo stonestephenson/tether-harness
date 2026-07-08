@@ -3,9 +3,18 @@
 //     the tool result so the AGENT sees and fixes them (this closes the verification loop).
 //   session.idle -> done-gate.py; runs the project's fast check (.tether/verify.sh or
 //     $VERIFY_CMD) and surfaces failures.
-// Reuses the shared Python hook scripts. Verified on opencode 1.17.14.
+// Reuses the shared Python hook scripts. Verified on opencode 1.17.15.
 // (opencode delivers bus events through a single `event` hook you switch on by type;
 //  the file path for an edit is in the edit tool's args.filePath.)
+//
+// The port's contract: opencode events are translated into the Claude-Code-shaped
+// JSON the shared Python expects — verify-on-edit gets {tool_name:"Edit",
+// tool_input:{file_path}}, done-gate gets {hook_event_name:"Stop", cwd}. A hook
+// signals "problem" with a non-zero exit + text on stderr; verify-on-edit's stderr
+// is appended to the tool result (the agent sees it), done-gate's is surfaced via
+// console.error. NOTE: done-gate fires on session.idle, which under headless
+// `opencode run` may not complete before the process exits — it is reliable in an
+// interactive session.
 import { dirname } from "node:path";
 
 export const TetherPlugin = async (factory) => {

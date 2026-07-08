@@ -1,5 +1,13 @@
 # Project workflow (context-managed + verification-driven)
 
+> **On the `opencode` branch:** the *loop* below applies as-is, but the plumbing it
+> names is Claude-Code-specific. On opencode there is **no `settings.json`** (hooks are
+> the JS plugin `opencode/plugins/tether-verify.js`), paths are `~/.config/opencode/`
+> (not `~/.claude/`), and the regression `*.test.sh` scripts referenced below live on
+> the **`main`** branch — on opencode, test a hook by piping JSON to it directly (see
+> the branch `README.md` → "Testing & extending the port"). `VERIFY_CMD` and
+> `CLAUDE_VERIFY_CMD` are both honored by the done-gate.
+
 A per-session loop for working on any project (C/C++, Python, Rust/CMake here),
 built on two evidence-backed pillars:
 
@@ -106,9 +114,10 @@ from SWE-agent. Its diagnostics complement the verify hooks.
 ## Config
 
 `settings.json` (`env`) or your shell:
-- `CLAUDE_CONTEXT_BUDGET` — window tokens (currently `1000000`).
+- `CLAUDE_CONTEXT_BUDGET` — window tokens (default `200000`; raise for a 1M-token model).
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — bands (`.70` / `.85` / `.95`).
-- `CLAUDE_VERIFY_CMD` — command the done-gate runs on Stop (overrides the file below).
+- `VERIFY_CMD` / `CLAUDE_VERIFY_CMD` — command the done-gate runs (either is honored;
+  overrides the file below).
 
 Per project, opt into the done-gate by creating **`.claude/verify.sh`** — a FAST
 check (seconds), e.g.:
@@ -128,6 +137,9 @@ pip install gersemi                # cmake format   (optional)
 brew install shellcheck            # shell lint     (optional)
 ```
 
-Regression tests: `bash ~/.claude/hooks/context-health.test.sh` and
-`bash ~/.claude/hooks/verify-hooks.test.sh`.
-Disable any hook: remove its block from `settings.json` (skills still work).
+Regression tests (Claude Code / `main` branch): `bash plugins/tether/tests/context-health.test.sh`
+and `bash plugins/tether/tests/verify-hooks.test.sh`. **On opencode** there is no bundled
+suite — test a hook by piping JSON to it (see the branch `README.md` → "Testing & extending
+the port").
+Disable any hook: on Claude Code remove its block from `settings.json`; on opencode delete
+`~/.config/opencode/plugins/tether-verify.js` (skills/commands still work).
