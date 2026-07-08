@@ -3,16 +3,19 @@
 done-gate hook (Stop) — Tier-1 verification, at task completion.
 
 When the agent tries to finish, run the project's fast check command. If it fails,
-BLOCK the stop and hand the failures back so the agent fixes them before claiming
-done — closing the "I think I'm done" gap with an objective signal (Self-Debug,
-AlphaCodium, Reflexion: iterate against a real verifier).
+exit 2 and hand the failures back so the agent fixes them before claiming done —
+closing the "I think I'm done" gap with an objective signal (Self-Debug,
+AlphaCodium, Reflexion: iterate against a real verifier). On Claude Code / Codex
+exit-2 blocks the stop; on opencode the plugin surfaces the failure on
+`session.idle` but cannot hard-block (it reports).
 
 This is where the PROJECT-WIDE checks live (type-check, clippy, unit tests) —
 things that need the whole project to resolve, unlike the per-file verify-on-edit.
 
 Opt-in per project (so it never runs a heavy suite by surprise). It runs iff:
-  * env CLAUDE_VERIFY_CMD is set, OR
-  * a `.claude/verify.sh` exists in the project (cwd).
+  * env VERIFY_CMD or CLAUDE_VERIFY_CMD is set, OR
+  * a `.tether/`, `.codex/`, or `.claude/verify.sh` exists — searched from the
+    given cwd UP to the repo root, so it still fires after a subdirectory edit.
 Keep that command FAST (seconds, not minutes) — it runs every time the agent stops.
 
 Safety:
@@ -33,10 +36,22 @@ def find_verify_command(cwd):
     cmd = os.environ.get("VERIFY_CMD") or os.environ.get("CLAUDE_VERIFY_CMD")
     if cmd:
         return cmd
-    for rel in (".tether/verify.sh", ".codex/verify.sh", ".claude/verify.sh"):
-        script = os.path.join(cwd, rel)
-        if os.path.isfile(script):
-            return f'bash "{script}"'
+    # Walk up from cwd toward the project root so a root-level verify.sh still fires
+    # after an edit in a subdirectory (opencode passes the edited file's dir as cwd).
+    # Bounded to the git repo — stop at the dir containing .git — so we never escape
+    # into $HOME and pick up an unrelated verify.sh.
+    d = os.path.abspath(cwd)
+    while True:
+        for rel in (".tether/verify.sh", ".codex/verify.sh", ".claude/verify.sh"):
+            script = os.path.join(d, rel)
+            if os.path.isfile(script):
+                return f'bash "{script}"'
+        if os.path.isdir(os.path.join(d, ".git")):
+            break  # reached the repo root; don't search past it
+        parent = os.path.dirname(d)
+        if parent == d:
+            break  # filesystem root
+        d = parent
     return None
 
 
