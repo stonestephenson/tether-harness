@@ -61,14 +61,22 @@ ruff check . && pyright          # example
 - Formatting/style checks are **opt-in**: they run only when the project ships a config
   (`.clang-format`, `ruff.toml`/`pyproject.toml`), so hand-formatted code isn't churned.
 
-## Running on a local model (experimental — not yet reliable)
+## Running on a local model (works — Ollama)
 
-You can point opencode at a local model via Ollama, but as of Ollama 0.31.1 + opencode 1.17.x,
-local models did **not** reliably drive the full agentic loop on a 32 GB M1 Max — the harness
-hooks are fine, the gap is the model↔Ollama↔opencode tool-calling integration. Two fixes are
-necessary (but were not sufficient): **Ollama ≥ 0.31** and **`tool_call: true`** on each model
-entry in `opencode.jsonc`. See [`opencode/LOCAL-MODELS.md`](opencode/LOCAL-MODELS.md) for the full
-findings, the reference config, the per-model failure log, and the ranked next steps to resume.
+The tether harness drives opencode on a **local** model: `qwen3-coder:30b` completes the full
+agentic loop *and* self-corrects from `verify-on-edit` feedback (verified on a 32 GB M1 Max,
+Ollama 0.31.1, opencode 1.17.15). Three things are needed, in priority order:
+
+1. **`OLLAMA_CONTEXT_LENGTH=65536`** on the Ollama server — the one that actually mattered.
+   Ollama defaults every model to a **4096-token** context, which truncates opencode's ~8.8k-token
+   tool prompt so the model never sees the tools. opencode needs ≥64k.
+2. **Ollama ≥ 0.31** (older ships broken per-model tool templates).
+3. **`tool_call: true`** on each model entry in `opencode.jsonc`.
+
+The `@ai-sdk/openai-compatible` `/v1` shim is fine — no native-provider swap needed.
+`gpt-oss:20b` also works (fallback); `devstral` isn't reliable in opencode yet. See
+[`opencode/LOCAL-MODELS.md`](opencode/LOCAL-MODELS.md) for the reference config, the headless
+repro harness, per-model results, and how to make the context setting survive a reboot.
 
 ## Background
 

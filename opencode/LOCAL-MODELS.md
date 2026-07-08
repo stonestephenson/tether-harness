@@ -1,38 +1,46 @@
 # Running the tether harness on a local model (opencode) — findings
 
-> **Status: PARKED / UNRESOLVED (2026-07).** Two integration fixes were found and are
-> *necessary but not sufficient*: local models still would not reliably drive opencode's
-> full agentic loop on the test machine. This documents what was tried, the root causes
-> found, and the ranked next steps so a future session can resume without re-deriving it.
+> **Status: SOLVED (2026-07-08).** Local models now drive opencode's full agentic loop *and*
+> the tether verification loop. The blocker was **Ollama's default 4096-token context window
+> truncating opencode's tool prompt** — not the provider, not the harness. Raise it to ≥64k and
+> `qwen3-coder:30b` and `gpt-oss:20b` both complete the loop. History and diagnostics kept below.
 
 **Goal:** run opencode + the tether harness against a *local* model (privacy/offline/cost),
 picking the best coding model for the hardware.
 
-**Test machine:** Apple **M1 Max, 32 GB** unified memory, macOS. Serving via **Ollama**.
+**Test machine:** Apple **M1 Max, 32 GB** unified memory, macOS. Ollama **0.31.1**, opencode **1.17.15**.
 
 ---
 
-## TL;DR — the two things that actually matter (but weren't enough)
+## TL;DR — the fix (three things, in priority order)
 
-1. **Ollama ≥ 0.31.** The machine started on **0.23.0** (8 minor versions behind). Upgrading to
-   **0.31.1** fixed gpt-oss harmony-token leakage and made Devstral emit structured tool calls
-   via the raw API. Older Ollama ships broken/incomplete per-model tool templates.
-   `brew upgrade ollama && brew services restart ollama` — **models are preserved** (stored in
-   `~/.ollama`, independent of the binary), so no multi-GB re-download.
+1. **Raise Ollama's context window to ≥64k. THIS was the real blocker.** Ollama defaults *every*
+   model to a **4096-token** context, even when the weights support 128k+. opencode's tool +
+   system prompt is **~8.8k tokens** (measured), so at 4096 it was silently truncated and the
+   model **never saw the tool definitions** — which is why models narrated, recited tool syntax as
+   text, or said "I can't edit files." Set it on the server:
 
-2. **`tool_call: true` on every custom model entry in `opencode.jsonc`.** Without it, opencode
-   assumes the model has **no function-calling** and falls back to *describing tools as text* in
-   the prompt. That is what made every local model misbehave (see failure log). See the reference
-   config below.
+   ```bash
+   OLLAMA_CONTEXT_LENGTH=65536   # opencode's own Ollama docs say "64k or higher"
+   ```
+   Apply it to the running server, e.g. `launchctl setenv OLLAMA_CONTEXT_LENGTH 65536 && brew services restart ollama`
+   (see **Making it durable** below — brew regenerates the plist, so the naive edits don't stick).
 
-Even with **both** applied, the models still failed in the real opencode loop. The problem is the
-**local-model ↔ Ollama ↔ opencode tool-calling integration**, not the models (all three write
-correct code in isolation) and not the harness (the hooks never got a fair run — no model
-completed an edit).
+2. **Ollama ≥ 0.31.** Older Ollama (the machine started on 0.23.0) ships broken/incomplete per-model
+   tool templates — gpt-oss leaked harmony tokens, Devstral wouldn't emit structured tool calls.
+   `brew upgrade ollama && brew services restart ollama` — **models are preserved** (`~/.ollama`).
+
+3. **`tool_call: true` on every custom model entry in `opencode.jsonc`.** Without it opencode assumes
+   the model has no function-calling and text-describes tools. Necessary, but on its own it does
+   nothing while the prompt is being truncated at 4096 — which is why #1 had to come first.
+
+All three are necessary. #2 and #3 were found first (and documented here as "necessary but not
+sufficient"); **#1 is what actually closed the gap.** The `@ai-sdk/openai-compatible` `/v1` shim is
+**fine** — no native-provider swap is needed (an earlier version of this doc wrongly suspected it).
 
 ---
 
-## Reference `opencode.jsonc` (the correct starting point)
+## Reference `opencode.jsonc` (verified working)
 
 ```jsonc
 {
@@ -43,8 +51,8 @@ completed an edit).
       "name": "Ollama (local)",
       "options": { "baseURL": "http://localhost:11434/v1", "apiKey": "ollama" },
       "models": {
-        // tool_call:true is REQUIRED — without it opencode text-describes tools and
-        // local models hallucinate/recite tools instead of calling them.
+        // tool_call:true is REQUIRED — without it opencode text-describes tools.
+        // The other half of the fix is server-side: OLLAMA_CONTEXT_LENGTH=65536.
         "qwen3-coder:30b":  { "name": "Qwen3-Coder 30B (local)",            "tool_call": true },
         "gpt-oss:20b":      { "name": "gpt-oss 20B (local, agentic)",        "tool_call": true, "reasoning": true },
         "devstral:latest":  { "name": "Devstral 24B (local, agentic-coding)","tool_call": true }
@@ -56,61 +64,55 @@ completed an edit).
 
 ---
 
-## Models evaluated (all fit 32 GB; all write correct code standalone)
+## Reproducible test harness (no TUI eyeballing)
 
-| Model | Ollama tag | Size (4-bit) | Why picked |
-|---|---|---|---|
-| **Qwen3-Coder-30B-A3B** | `qwen3-coder:30b` | 18 GB | MoE, ~3B active → fast on Apple Silicon; strong coding + long context. **52 tok/s decode measured** on this M1 Max. |
-| **gpt-oss-20b** | `gpt-oss:20b` | 13 GB | OpenAI open weights, heavy tool-use training, MoE (fast), most memory headroom. |
-| **Devstral-Small-24B** | `devstral:latest` | 14 GB | Mistral; purpose-built for *agentic* coding (OpenHands scaffold), tops open SWE-bench in an agent loop. |
+The key to debugging this was driving opencode **headlessly** and checking the file actually changed:
 
-## Failure log (each model failed differently — the diagnostic value)
+```bash
+opencode run --auto --format json --dir "$PROJ" -m ollama/qwen3-coder:30b \
+  "Add a factorial(n) function to fib.py that computes n! iteratively."
+grep -q "def factorial" "$PROJ/fib.py" && echo PASS || echo FAIL   # objective signal
+# inspect tool calls in the JSON stream:  grep -oE '"tool":"[a-z_]+"' log.json | sort | uniq -c
+```
 
-Same prompt every time: *"Add a `factorial(n)` function to fib.py that computes n! iteratively."*
+`--auto` auto-approves permissions; `--format json` streams `tool_use` events so you can see
+whether opencode sent a real tool call or the model emitted text.
 
-| Model | Failure mode in opencode | What it told us |
-|---|---|---|
-| qwen3-coder:30b | Drifts (reads file, then asks *you* what to do), then emits `<function=todowrite>` / `</tool_call>` **as text**; spirals inventing todos. | Mangles meta-tools under the full tool load. |
-| gpt-oss:20b | Tries to call `container.exec` — an **OpenAI-native** tool that doesn't exist in opencode. Pre-upgrade also leaked `<\|channel\|>analysis` harmony tokens into the tool name. | Harmony-format handling; reaches for trained-in tools. |
-| devstral:latest | **Emits no tool calls at all** — "I don't have the capability to modify files." Yet returns a clean `read` tool call against the **raw Ollama `/v1` API**. | Tools weren't reaching the model *through opencode*. |
+## Results (Ollama 0.31.1, opencode 1.17.15, 64k context)
 
-**The pivotal observation:** Devstral tool-calls correctly against `curl …/v1/chat/completions`
-with a `tools` param, but does nothing in opencode → opencode wasn't sending native tools →
-root cause was the missing `tool_call: true`. After adding it (and restarting opencode), the
-models still failed — so at least one more layer remains broken.
+| Model | Ollama tag | Size | Verdict at **4096** (old) | Verdict at **64k** (fixed) |
+|---|---|---|---|---|
+| **Qwen3-Coder-30B-A3B** | `qwen3-coder:30b` | 18 GB | ❌ drifted, recited tools as text | ✅ **clean** — `glob→read→edit`, and **self-corrected** an F401 from verify-on-edit. **Recommended driver.** |
+| **gpt-oss-20b** | `gpt-oss:20b` | 13 GB | ❌ reached for OpenAI-native tools | ✅ works — but first tries a trained-in `apply_patch` (errors `invalid`), then recovers with `edit`. Usable, slightly wasteful. |
+| **Devstral-Small-24B** | `devstral:latest` | 14 GB | ❌ "I can't modify files" | ❌ still narrates ("let me check if fib.py exists") but emits **no tool call**. Model-specific — same transport qwen/gpt-oss succeed on. Avoid for now. |
 
----
+**End-to-end harness proof (qwen3-coder):** asked for factorial *plus* an unused `import json`.
+qwen added both → `verify-on-edit` caught `F401 json imported but unused` and fed it back → qwen
+made a second edit **removing the import**. That is the full tether loop — external-feedback
+verification driving self-correction — running on a local model.
 
-## Next steps to resume (ranked)
+## Making the context setting durable
 
-1. **Swap the provider off the `/v1` OpenAI-compat shim.** Try opencode's native Ollama provider
-   (e.g. `ollama-ai-provider-v2`, or the models.dev `ollama` provider) which speaks Ollama's
-   native `/api/chat` with first-class tool support. **Top suspect now** — the `@ai-sdk/openai-compatible`
-   `/v1` shim round-tripped single tool calls in isolation but not opencode's multi-tool loop.
-2. **Trim opencode's tool surface** with a restricted primary agent (schema verified):
-   ```jsonc
-   { "agent": { "local": { "mode": "primary", "model": "ollama/devstral:latest",
-     "permission": { "task": "deny", "todowrite": "deny", "skill": "deny",
-                     "webfetch": "deny", "websearch": "deny" } } } }
-   ```
-   Both prior failures got tangled in the meta-tools (`task`/`todowrite`). Denying `question` too
-   would stop a model bailing out to ask instead of acting (the 30B's drift).
-3. **Raise Ollama's context window.** Default `num_ctx` may truncate the tool/system prompt.
-   Set `options.num_ctx` (e.g. 32768) in the provider config or a custom Modelfile.
-4. **Different serving stack.** LM Studio (MLX + its own tool-call parser, native gpt-oss harmony
-   support) or `mlx-lm` — MLX is also ~20–40% faster on Apple Silicon.
-5. **Accept the split (fallback).** Use local models for single-file edits / generation / offline
-   work, and **Claude for the full agentic loop** — sustained multi-step tool orchestration is the
-   hardest thing to run locally, harder than raw code generation.
+`brew services` **regenerates** the launchd plist from the stock homebrew formula on every
+`brew services …` command (the stock formula ships `OLLAMA_FLASH_ATTENTION`/`OLLAMA_KV_CACHE_TYPE`
+but not `OLLAMA_CONTEXT_LENGTH`). So editing the plist **or** `.brew/ollama.rb` is **inert** — the
+next restart wipes it. Two durable options:
+
+- **Login agent (used on the test machine).** `~/Library/LaunchAgents/com.tether.ollama-ctx.plist`
+  with `RunAtLoad` running `launchctl setenv OLLAMA_CONTEXT_LENGTH 65536; brew services restart ollama`.
+  Survives reboot; remove with `launchctl bootout gui/$(id -u)/com.tether.ollama-ctx && rm` the plist.
+- **Bake it per model.** `ollama run qwen3-coder:30b` → `/set parameter num_ctx 65536` → `/save qwen3-coder:30b-64k`,
+  then point the config at the new tag. Survives everything (incl. brew upgrades) but is per-model.
 
 ## Performance data point
 
-`qwen3-coder:30b` (4-bit, Ollama, M1 Max): **~52 tok/s decode, ~45 tok/s prompt eval**, ~8.6 s
-first-load. The MoE (~3B active) speed advantage is real and makes 30B-class models usable locally
-— *when* the tool-calling integration works.
+`qwen3-coder:30b` (4-bit MoE, ~3B active, Ollama, M1 Max): **~52 tok/s decode, ~45 tok/s prompt
+eval**, ~8.6 s first-load. A full 3–4 step edit task completes in ~25–90 s. The MoE speed advantage
+makes 30B-class models genuinely usable locally.
 
 ## Bottom line
 
-On a 32 GB M1 Max via Ollama, local models are **not yet a reliable driver for opencode's full
-agentic loop** — as of Ollama 0.31.1 + opencode 1.17.x with `tool_call: true`. They are capable
-coders in isolation; the gap is the agentic tool-calling integration. Resume at step 1.
+On a 32 GB M1 Max via Ollama, the tether harness runs on a local model today: use
+**`qwen3-coder:30b`** with **`OLLAMA_CONTEXT_LENGTH=65536`**, Ollama ≥ 0.31, and `tool_call: true`.
+`gpt-oss:20b` is a working fallback; `devstral` is not yet reliable in opencode. The one setting that
+mattered most was the context window — at Ollama's 4096 default, *nothing* works.
