@@ -114,6 +114,21 @@ next restart wipes it. Two durable options:
 eval**, ~8.6 s first-load. A full 3–4 step edit task completes in ~25–90 s. The MoE speed advantage
 makes 30B-class models genuinely usable locally.
 
+## Hardware floor (how much RAM do you actually need?)
+
+The harness and opencode themselves are negligible (a few hundred MB) — the RAM wall is
+entirely the **local model + its 64k KV cache** (opencode needs ≥64k context, and that cache
+costs memory on top of the weights). Rough guide:
+
+| RAM | Local-model verdict |
+|---|---|
+| **8 GB** | ❌ Not realistic. After OS/browser/opencode you have ~3–4 GB; a 7B 4-bit model (~4.7 GB) plus a 64k KV cache won't fit, and a 3B model that *does* fit is exactly where tool-calling gets flaky (the "narrates instead of calling the tool" failure). Point opencode at a **cloud/API model or a remote Ollama** instead — the harness is model-agnostic and works identically. |
+| **16 GB** | ⚠️ Minimum for a usable local coding model — think a 7B–14B class model at 64k context. |
+| **32 GB** | ✅ The sweet spot verified here — 30B-MoE (`qwen3-coder:30b`) at 64k, fast. |
+
+Below ~7B, tool-calling reliability drops sharply, so shrinking the model to fit a small machine
+trades away the very capability the agentic loop depends on.
+
 ## Bottom line
 
 On a 32 GB M1 Max via Ollama, the tether harness runs on a local model today: use
