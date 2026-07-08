@@ -61,6 +61,15 @@ ruff check . && pyright          # example
 - Formatting/style checks are **opt-in**: they run only when the project ships a config
   (`.clang-format`, `ruff.toml`/`pyproject.toml`), so hand-formatted code isn't churned.
 
+## Running on a local model (experimental — not yet reliable)
+
+You can point opencode at a local model via Ollama, but as of Ollama 0.31.1 + opencode 1.17.x,
+local models did **not** reliably drive the full agentic loop on a 32 GB M1 Max — the harness
+hooks are fine, the gap is the model↔Ollama↔opencode tool-calling integration. Two fixes are
+necessary (but were not sufficient): **Ollama ≥ 0.31** and **`tool_call: true`** on each model
+entry in `opencode.jsonc`. See [`opencode/LOCAL-MODELS.md`](opencode/LOCAL-MODELS.md) for the full
+findings, the reference config, the per-model failure log, and the ranked next steps to resume.
+
 ## Background
 
 `references/HARNESS.md` (what/why/when + the research) and `references/WORKFLOW.md` (the loop).
