@@ -58,6 +58,14 @@ data other tools don't expose; the other branches ship it unwired. See each bran
 | **`codex`** | ✅ verified live on **0.143.0** (2026-07) | Codex's hooks are a near-clone of Claude Code's (same events + JSON stdin/stdout), so both fire in an authenticated turn: verify-on-edit parses `apply_patch` (V4A) payloads and blocks the edit with lint feedback; done-gate blocks a failing finish via `{"decision":"block"}`. Skills ship as **native Codex skills** (`~/.codex/skills/`); the installer merges a tether block into `AGENTS.md` without clobbering an existing one. `context-health` stays unwired (needs transcript tokens Codex doesn't expose). |
 | **`generic`** | 📄 wiring documented (`WIRING.md`) | verify per-tool when adopting |
 
+## Roadmap (what's next)
+
+The vetted backlog lives in [`ROADMAP.md`](ROADMAP.md) — five needle-mover tasks from the
+2026-07 SOTA audit (verifier anti-tamper, corrections→enforcement compiler, PreCompact
+externalize-guard, `/ship` cold reviewer, hygiene), each with evidence, design sketch, and
+acceptance criteria, plus the list of ideas **rejected on evidence**. Agents picking up
+work: read it first; confirm scope with the user before implementing.
+
 ## Install (Claude Code)
 
 This branch (`main`) is the Claude Code edition, distributed as a one-plugin marketplace:

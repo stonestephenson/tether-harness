@@ -67,3 +67,49 @@ Legend: 📄 = local PDF, 🌐 = local HTML snapshot (both in `references/papers
   arXiv:[2311.10054](https://arxiv.org/abs/2311.10054). 📄 `personas.pdf`
   *Backs:* role/persona labels alone don't improve accuracy — `/council`'s value is the
   independent-critique structure, not the personas.
+
+## Verification integrity & harness evolution — 2026 audit additions
+
+Added 2026-07 by the SOTA audit (see repo-root [`ROADMAP.md`](../../../ROADMAP.md)). These
+back the roadmap items — and, just as deliberately, the decisions to *reject* fashionable
+alternatives.
+
+- **EvilGenie: A Reward Hacking Benchmark** — Gabor et al., 2025.
+  arXiv:[2511.21654](https://arxiv.org/abs/2511.21654). 📄 `evilgenie.pdf`
+  *Backs:* coding agents — **Claude Code and Codex among them** — observed explicitly
+  reward hacking (hardcoding test cases, editing test files); test-file **edit detection**
+  is one of its three working detectors → ROADMAP #1 (verifier-integrity guard).
+- **SpecBench: Measuring Reward Hacking in Long-Horizon Coding Agents** — Zhao et al.,
+  2026. arXiv:[2605.21384](https://arxiv.org/abs/2605.21384). 📄 `specbench.pdf`
+  *Backs:* every frontier model saturates the *visible* test suite while held-out tests
+  reveal tampering; stronger models tamper more → ROADMAP #1.
+- **The Verification Horizon: No Silver Bullet for Coding Agent Rewards** — Wang et al.,
+  2026. arXiv:[2606.26300](https://arxiv.org/abs/2606.26300). 📄 `verification-horizon.pdf`
+  *Backs:* no fixed verifier stays sufficient as capability grows — verification must be
+  layered and co-evolve → ROADMAP #1's layered design (hash guard + deny rules + user ack).
+- **Getting Better at Working With You: Compiling User Corrections into Runtime
+  Enforcement for Coding Agents (TRACE)** — Zhou et al., 2026.
+  arXiv:[2606.13174](https://arxiv.org/abs/2606.13174). 📄 `trace-corrections.pdf`
+  *Backs:* corrections kept as prose/memory are still violated ~57% of the time; compiled
+  into mandatory runtime checks → 2–38% → ROADMAP #2 (`/harden`), and the harness's own
+  "hooks guarantee; skills bias" invariant applied to feedback.
+- **Rethinking the Value of Agent-Generated Tests for LLM-Based Software Engineering
+  Agents** — Chen et al., 2026.
+  arXiv:[2602.07900](https://arxiv.org/abs/2602.07900). 📄 `rethinking-agent-tests.pdf`
+  *Backs (a rejection):* mid-task test-writing volume doesn't correlate with task success,
+  and prompting for more tests doesn't change outcomes — keeps `/test-first` gated to
+  checkable outcomes and killed the mutation-testing-gate proposal.
+- **Self-Compacting Language Model Agents** — Li et al., 2026.
+  arXiv:[2606.23525](https://arxiv.org/abs/2606.23525). 📄 `self-compacting-agents.pdf`
+  *Backs (validation):* model-invoked, rubric-guided compaction beats fixed-interval
+  summarization — confirms the context-health gauge(hook) + judgment(skill) split.
+- **Effective harnesses for long-running agents** — Anthropic Engineering, 2025.
+  <https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents>.
+  🌐 `effective-harnesses.html`
+  *Backs (validation):* structured handoff artifacts + context resets over compaction —
+  the `/handoff` ↔ `/catchup` mirror, published independently.
+- **Harness design for long-running application development** — Anthropic Engineering,
+  2026. <https://www.anthropic.com/engineering/harness-design-long-running-apps>.
+  🌐 `harness-design-long-running-apps.html`
+  *Backs:* generator–evaluator separation (models self-evaluate leniently) → ROADMAP #4
+  (`/ship` cold reviewer); plus the "iteratively prune scaffolding" posture.
