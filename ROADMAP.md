@@ -235,8 +235,9 @@ reviewer advisory (findings feed the shipper, not an auto-gate).
   `/test-first`'s "watch it fail first" already delivers the core guarantee.
 - **More skills / skill sprawl.** Minimal scaffolds are SOTA (mini-swe-agent ~74%
   SWE-bench Verified, ~100 lines, swebench.com). Twenty marginal skills mean nothing.
-  *Field check 2026-07:* the EveryDev bake-off had vanilla Claude Code beating all five
-  big frameworks (20 min/200k tokens vs 60–110+ min) — see `references/LANDSCAPE.md`.
+  *Field check 2026-07 (anecdote-tier — single-run YouTuber bake-off, via EveryDev):*
+  vanilla Claude Code beat all five big frameworks (20 min/200k tokens vs 60–110+ min);
+  directional corroboration only — see `references/LANDSCAPE.md`.
 - **Personas / multi-agent implementation.** Base evidence unchanged (Cognition; Zheng
   et al.; Du et al.) — one writer, many readers; structure over persona. *Field check
   2026-07:* BMAD's QA persona observed reporting success without running code, and

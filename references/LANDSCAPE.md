@@ -21,10 +21,12 @@ users. Citations are short-form; full entries live in
 
 **Verdict in one line:** the field convergently rediscovered tether's skills layer but
 enforces all of it in prose — nobody has a deterministic tier, nobody measures context
-occupancy, and nobody cites evidence. The one head-to-head bake-off that exists (EveryDev,
-2026) had **vanilla Claude Code beating all five big frameworks** — 20 min / 200k tokens
-vs. 60–110+ min — which is the minimal-scaffold result (mini-swe-agent) showing up in the
-wild.
+occupancy, and nobody cites evidence. The one head-to-head that exists — a **single-run
+YouTube bake-off** by Chase AI, secondhand via EveryDev (2026): no published prompt, one
+run per framework, subjective quality judging — is **anecdote-tier, directional only**,
+but it points the same way as the research: vanilla Claude Code beat all five frameworks
+(20 min / 200k tokens vs. 60–110+ min), consistent with the minimal-scaffold result
+(mini-swe-agent).
 
 ### obra/superpowers — 250.7k★ — the serious one
 **What:** 14 skills + subagent-driven development: brainstorm → plan → implement with
@@ -35,8 +37,8 @@ almost 1:1 onto tether's (writing-plans ≈ `/plan-change`, test-driven-developm
 "verification-before-completion" is a skill the model may skip — and reviewers observe the
 "mandatory" TDD getting ignored under pressure. That's the TRACE result exactly (prose
 rules violated ~57% of the time; compiled runtime checks 2–38%), plus Huang et al. (no
-reliable self-policing without an external signal). Also heavyweight: 48–60 min builds,
-over-engineers simple tasks.
+reliable self-policing without an external signal). Also heavyweight: 48–60 min builds
+and over-engineering of simple tasks (single-run bake-off, directional).
 **Why tether is better:** same instincts, one enforcement tier up — the done-gate and
 verify-on-edit are hooks the model *cannot* skip, and the skills stay opt-in so simple
 tasks pay zero ceremony.
@@ -66,9 +68,9 @@ model grades itself on.
 **What:** meta-prompting + per-step subcontexts to fight context rot (sound instinct — same
 motive as tether's isolation invariant, per Chroma's context-rot result). Archived 2026-06
 after the maintainer vanished; community fork at `open-gsd/gsd-core`.
-**Why it falls short:** verification by checklist; assumes linear waterfall; measured
-burning ~1.2M tokens per project in the bake-off. And the abandonment is the bus-factor
-argument for tether's thin, self-documented scaffold.
+**Why it falls short:** verification by checklist; assumes linear waterfall; reported
+burning ~1.2M tokens per project in the single-run bake-off (directional). And the
+abandonment is the bus-factor argument for tether's thin, self-documented scaffold.
 **Why tether is better:** context hygiene is *measured* (the gauge hook reads real token
 counts) rather than structurally assumed, and the whole harness is small enough to maintain.
 
@@ -135,7 +137,8 @@ evidence for every choice, and a rejected-ideas list to keep it minimal — is w
 
 GitHub API star counts + repo READMEs/trees (the eight graded above) ·
 [EveryDev five-framework comparison](https://www.everydev.ai/p/blog-five-claude-code-frameworks-compared-when-to-use-each-when-to-use-none)
-(bake-off + per-framework criticisms) ·
+(secondary source — reports Chase AI's single-run video bake-off, no published prompt or
+repetitions; anecdote tier, cite as directional only) ·
 [roman-rr Ruflo audit](https://gist.github.com/roman-rr/ed603b676af019b8740423d2bb8e4bf6) ·
 papers cited short-form above: TRACE (2606.13174), Zheng et al. 2024, Huang et al. 2023,
 Cognition "Don't Build Multi-Agents", Chroma context rot, mini-swe-agent, EvilGenie

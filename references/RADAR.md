@@ -26,13 +26,15 @@ a session-start loader; "verification-before-completion" ships as a *skill*. No 
 has a deterministic tier, measures context occupancy, or cites research.
 **Corroboration:** #4 cold reviewer — superpowers two-stage fresh-context review + gstack
 cross-model review (noted under #4). Rejected-list reinforcement: personas (BMAD QA
-persona self-certifies) and skill sprawl (EveryDev bake-off: vanilla Claude Code beat all
-five frameworks) — both noted in ROADMAP §Rejected.
+persona self-certifies) and skill sprawl (Chase AI single-run bake-off via EveryDev —
+anecdote-tier, directional: vanilla Claude Code beat all five frameworks) — both noted in
+ROADMAP §Rejected.
 **Rejected this sweep:** real-browser QA loop (gstack `/qa`) — sound external signal,
 already covered by built-in `/verify` + `/run`; persistent KB memory (gstack GBrain) —
 vector-RAG already rejected, and Ruflo's version audited as ~99% duplicate entries.
 **Sources swept:** GitHub API (13 repos) · 8 README/tree fetches · roman-rr Ruflo audit
-gist · EveryDev five-framework comparison. Links in `LANDSCAPE.md`.
+gist · EveryDev five-framework comparison (secondary — reports Chase AI's single-run
+bake-off; anecdote tier). Links in `LANDSCAPE.md`.
 
 ## RADAR 2026-07-09 · cloud smoke run (window: 2026-07-09 → 2026-07-09)
 
