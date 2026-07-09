@@ -24,9 +24,8 @@ produced `ROADMAP.md` is the template run — match its rigor and its honesty (i
 
 ## Step 0 — load the immune system (in this order)
 
-All five paths are relative to the **repository root** — the RADAR and
-PLATFORM-ASSUMPTIONS files live in repo-root `references/`, NOT under this skill's
-directory.
+All six paths are relative to the **repository root** — the RADAR, PLATFORM-ASSUMPTIONS,
+and LANDSCAPE files live in repo-root `references/`, NOT under this skill's directory.
 
 1. `plugins/tether/references/HARNESS.md` §9–§10 — the invariants and the evidence table.
 2. `plugins/tether/references/PAPERS.md` — what's already incorporated.
@@ -36,6 +35,11 @@ directory.
 4. `references/RADAR.md` — the log. **Watermark = the date of the newest entry**; your
    sweep covers watermark → today. Re-check every open watchlist item.
 5. `references/PLATFORM-ASSUMPTIONS.md` — the platform facts the hooks depend on.
+6. `references/LANDSCAPE.md` — competitor frameworks already surveyed and graded. Don't
+   re-sweep a repo listed there unless it shipped a *mechanism-level* change (new
+   enforcement tier, published eval, architecture shift) — star growth alone is noise. A
+   popular framework NOT listed there is worth a look; grade it against the same bar and
+   propose a LANDSCAPE entry in your report.
 
 ## Step 1 — platform drift check (deterministic half)
 

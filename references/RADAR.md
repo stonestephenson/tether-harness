@@ -11,6 +11,29 @@ cloud-run entries arrive as session reports and get appended here in a confirmed
 
 ---
 
+## RADAR 2026-07-09 · harness landscape survey (manual, user-directed)
+
+**Verdict: NULL (no new roadmap items) + corroboration for #4** — surveyed the 8
+most-starred harness/scaffolding frameworks (superpowers 250.7k★, gstack 120.8k★, spec-kit
+119.1k★, GSD 64.7k★ [archived], ruflo 63.7k★, BMAD 50.3k★, SuperClaude 23.5k★ + 5 noted).
+Nothing found that the roadmap or built-ins don't already cover. New doc:
+`references/LANDSCAPE.md` — per-framework verdicts + the don't-re-sweep list; wired into
+the sota-radar skill's Step 0.
+
+**Key finding:** the field convergently rediscovered tether's skills layer (superpowers'
+14 skills ≈ tether's 8 + #4) but enforces everything in prose — superpowers' only hook is
+a session-start loader; "verification-before-completion" ships as a *skill*. No framework
+has a deterministic tier, measures context occupancy, or cites research.
+**Corroboration:** #4 cold reviewer — superpowers two-stage fresh-context review + gstack
+cross-model review (noted under #4). Rejected-list reinforcement: personas (BMAD QA
+persona self-certifies) and skill sprawl (EveryDev bake-off: vanilla Claude Code beat all
+five frameworks) — both noted in ROADMAP §Rejected.
+**Rejected this sweep:** real-browser QA loop (gstack `/qa`) — sound external signal,
+already covered by built-in `/verify` + `/run`; persistent KB memory (gstack GBrain) —
+vector-RAG already rejected, and Ruflo's version audited as ~99% duplicate entries.
+**Sources swept:** GitHub API (13 repos) · 8 README/tree fetches · roman-rr Ruflo audit
+gist · EveryDev five-framework comparison. Links in `LANDSCAPE.md`.
+
 ## RADAR 2026-07-09 · cloud smoke run (window: 2026-07-09 → 2026-07-09)
 
 **Verdict: NULL** — first scheduled-cloud sweep, fired the same day as the inaugural baseline,

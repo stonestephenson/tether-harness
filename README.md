@@ -70,7 +70,10 @@ Staying SOTA is itself automated: a monthly **`sota-radar`** sweep (maintainer s
 [`.claude/skills/sota-radar/`](.claude/skills/sota-radar/SKILL.md); cloud routine on the
 1st) checks new research + platform drift and logs to
 [`references/RADAR.md`](references/RADAR.md); the platform facts the hooks depend on are
-pinned in [`references/PLATFORM-ASSUMPTIONS.md`](references/PLATFORM-ASSUMPTIONS.md).
+pinned in [`references/PLATFORM-ASSUMPTIONS.md`](references/PLATFORM-ASSUMPTIONS.md); and
+[`references/LANDSCAPE.md`](references/LANDSCAPE.md) grades the popular harness frameworks
+against tether — read it before surveying competitors so already-graded repos aren't
+re-swept.
 
 ## Install (Claude Code)
 

@@ -185,6 +185,9 @@ mediocre output.
 
 **Evidence.** Anthropic "Harness design for long-running application development" (2026,
 local snapshot `harness-design-long-running-apps.html`); Huang et al. (already in base).
+**Corroboration (2026-07-09 landscape survey):** the field converged here independently —
+superpowers (250k★) ships two-stage fresh-context subagent review, gstack (121k★) ships
+cross-model review. See `references/LANDSCAPE.md`.
 
 **Design sketch.** Edit `plugins/tether/skills/ship/SKILL.md` only: replace the
 self-review step with fresh-context review — prefer the built-in `/code-review` skill when
@@ -232,8 +235,12 @@ reviewer advisory (findings feed the shipper, not an auto-gate).
   `/test-first`'s "watch it fail first" already delivers the core guarantee.
 - **More skills / skill sprawl.** Minimal scaffolds are SOTA (mini-swe-agent ~74%
   SWE-bench Verified, ~100 lines, swebench.com). Twenty marginal skills mean nothing.
+  *Field check 2026-07:* the EveryDev bake-off had vanilla Claude Code beating all five
+  big frameworks (20 min/200k tokens vs 60–110+ min) — see `references/LANDSCAPE.md`.
 - **Personas / multi-agent implementation.** Base evidence unchanged (Cognition; Zheng
-  et al.; Du et al.) — one writer, many readers; structure over persona.
+  et al.; Du et al.) — one writer, many readers; structure over persona. *Field check
+  2026-07:* BMAD's QA persona observed reporting success without running code, and
+  Ruflo's swarm audited as ~97% non-functional (`references/LANDSCAPE.md`).
 - **Auto-acting compaction (hook compacts/clears by itself).** 2026 result: model-invoked,
   rubric-guided compaction beats fixed-interval (Self-Compacting Agents, 2606.23525) —
   which is exactly the current gauge(hook) + judgment(skill) split. Lossy steps keep
