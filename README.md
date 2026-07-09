@@ -1,16 +1,47 @@
-# tether marketplace
+# tether
 
-A Claude Code marketplace hosting one plugin: **tether** — a verification-first,
-context-managed agentic harness (deterministic hooks + judgment skills).
+**tether** is a verification-first, context-managed harness for agentic coding tools —
+a layer of deterministic **hooks** plus judgment **skills** that wraps an AI coding agent
+(Claude Code, OpenAI Codex, opencode, …) to make it markedly more reliable and efficient.
 
-## Which tool are you on?
+## Why an agent is better with tether
 
-This branch (`main`) is the **Claude Code** plugin. Ports for other agentic tools live on
-their own branches — all share the same skills, operating defaults, and verification hooks:
+An LLM coding agent has two structural weaknesses. It works inside a **finite context
+window** that quietly degrades as it fills, and it **cannot reliably tell when it's wrong
+on its own**. Unaided, agents confidently "finish" code that doesn't compile, get sloppier
+as the conversation grows, and lose the thread between sessions.
 
-| Branch | Tool | Install |
+tether is the scaffolding that compensates for exactly those two limits:
+
+- **Verification, looped.** Deterministic hooks feed the agent real external signals: after
+  every edit a linter hands the errors straight back, and the agent *can't finish* a task
+  until the project's own checks pass. It corrects against ground truth instead of
+  self-certifying.
+- **Context, curated.** A hook measures how full the window is and nudges *before* the model
+  degrades; skills push durable state into commits, docs, and logs so the conversation stays
+  disposable and a fresh session resumes cleanly.
+- **Judgment, on tap.** Skills for the high-leverage moments — plan before diving in, drive
+  from a failing test, pressure-test an irreversible decision, hand off so the next agent
+  can pick up cold.
+
+The net effect: the agent stays **correct** (because it verifies), stays **sharp** (because
+the context stays curated), and stays **resumable** (because state lives in durable
+artifacts) — instead of drifting, self-certifying, and forgetting.
+
+**Grounded in research, not anecdote.** Every design choice traces to a published finding —
+that LLMs can't self-correct without an external signal, that performance "rots" as context
+fills, that iterating against tests beats one-shot generation, and more. The evidence base
+is in [`HARNESS.md`](plugins/tether/references/HARNESS.md) §10, with full citations and links
+in [`PAPERS.md`](plugins/tether/references/PAPERS.md).
+
+## Which branch do I use?
+
+tether ships one branch per tool — all sharing the same skills, operating defaults, and
+verification hooks. Pick the branch for your agent:
+
+| Branch | Your tool | Install |
 |---|---|---|
-| **`main`** | Claude Code | the two commands below |
+| **`main`** | Claude Code | the two commands under *Install* below |
 | **`codex`** | OpenAI Codex CLI | `git clone -b codex … && bash codex/install.sh` |
 | **`opencode`** | opencode | `git clone -b opencode … && bash opencode/install.sh` |
 | **`generic`** | any other agentic AI | wire the hooks per `WIRING.md` |
@@ -29,15 +60,18 @@ data other tools don't expose; the other branches ship it unwired. See each bran
 
 ## Install (Claude Code)
 
+This branch (`main`) is the Claude Code edition, distributed as a one-plugin marketplace:
+
 ```
 /plugin marketplace add stonestephenson/tether-harness
 /plugin install tether@tether
 ```
 
-The plugin lives in [`plugins/tether/`](plugins/tether/) — see its
-README for what it does, prerequisites, per-project setup, configuration, and tests.
+The plugin lives in [`plugins/tether/`](plugins/tether/) — see its README for what it does,
+prerequisites, per-project setup, configuration, and tests. (Using a different tool? See the
+branch table above.)
 
-## Layout
+## Layout (main branch)
 
 ```
 .claude-plugin/marketplace.json     # this marketplace
@@ -46,6 +80,7 @@ plugins/tether/            # the plugin
   hooks/        context-health.py, verify-on-edit.py, done-gate.py, hooks.json
   skills/       catchup, context-health, handoff, ship, plan-change,
                 test-first, council, experiment-log
-  references/   HARNESS.md (what/why/when + evidence), WORKFLOW.md (the loop)
+  references/   HARNESS.md (what/why/when + evidence), PAPERS.md (bibliography),
+                WORKFLOW.md (the loop)
   tests/        hook regression suites
 ```
