@@ -5,9 +5,10 @@ audited against 2025–26 research and industry practice. Verdict: it behaves as
 (all regression suites green; hook contracts match the July-2026 Claude Code hooks API;
 a live-transcript parse confirmed context-health still reads the real format) and its
 shape — thin deterministic verification hooks + judgment skills, no multi-agent theater —
-is where the field converged. Roughly fifteen candidate additions were evaluated; the five
-below are the only ones that cleared the "genuinely moves the needle" bar. Everything else
-was **rejected on evidence** (see the last section — don't re-propose those without new
+is where the field converged. Roughly fifteen candidate additions were evaluated; five
+cleared the "genuinely moves the needle" bar (items 1–5; item 6, the self-benchmark, was
+commissioned separately from the 2026-07-09 landscape survey). Everything else was
+**rejected on evidence** (see the last section — don't re-propose those without new
 evidence).
 
 Full citations with local PDFs: [`PAPERS.md`](plugins/tether/references/PAPERS.md)
@@ -45,6 +46,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 3 | PreCompact externalize-guard | medium | not started |
 | 4 | `/ship` cold reviewer | medium | not started |
 | 5 | Hygiene batch | low | not started |
+| 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | not started |
 
 ---
 
@@ -223,6 +225,69 @@ reviewer advisory (findings feed the shipper, not an auto-gate).
   default.
 - **5d — optional cruft sweep:** untracked ignored `opencode/__pycache__/` left on main by
   branch switching; safe to delete locally.
+
+---
+
+## 6. Harness self-benchmark (`bench/`) — reproducible A/B vs vanilla
+
+**Provenance.** Not from the audit five: commissioned by the user 2026-07-09 as the
+follow-up to the landscape survey (`references/LANDSCAPE.md`; RADAR entry same date).
+**Budget constraint (user-set): no API spend.** Tier 0 below is designed to complete at
+zero marginal cost on the user's existing subscription; the paid tiers are optional
+extensions and are NOT required to close this item.
+
+**Problem.** tether's design is research-backed but has never been self-measured, and the
+only public framework bake-off is anecdote-tier (single-run YouTube video, no published
+prompt — LANDSCAPE.md). The meta-posture at the bottom of this file — "periodically
+re-test whether each hook/skill still earns its place" — has no instrument. Nobody in the
+field publishes a reproducible harness bake-off; shipping one is itself a frontier
+position.
+
+**Evidence.** SpecBench (2605.21384) — held-out verifiers the agent never sees are what
+make agent evals trustworthy; EvilGenie (2511.21654) — tamper-bait task design;
+Terminal-Bench (ICLR 2026) — harness choice moves scores more than model choice (same
+model, 5.2-pt spread across harnesses), i.e. this measurement is worth making;
+mini-swe-agent — predicts ≈parity on easy tasks (an overhead check, not a win condition).
+
+**Design sketch.**
+- New top-level `bench/`: task templates + a runner + `RESULTS.md`. Each task = a
+  self-contained temp-repo template with a pre-registered prompt, visible checks, and a
+  **hidden verifier** the runner executes only after the session ends — it never enters
+  the agent's context (SpecBench pattern; this is what keeps a "showcase" honest).
+- Arms = per-arm `CLAUDE_CONFIG_DIR` sandboxes provisioned by the runner. The live
+  `~/.claude` is never touched (standing ground rule).
+- v1 task set, one per mechanism: **finish-red trap** (done-gate: the obvious fix breaks a
+  neighboring test; metric = hidden-suite pass at session end) · **lint-landmine
+  refactor** (verify-on-edit: metric = residual F-class lint + fix-loop turns) ·
+  **greenfield parity check** (overhead tax: metric = token/time delta vs vanilla;
+  expected result ≈parity, and that parity is the point). Deferred: long-horizon context
+  task (hard to score cheaply); tamper-bait (run after #1 lands — today it would measure
+  #1's known gap, which is informative but must be labeled as such).
+- Metrics per run: hidden-verifier pass rate, tokens, wall time, turn count. **All runs
+  reported** — no cherry-picking. Parity or a loss is the prune signal working, not a
+  failed benchmark.
+- **Tier 0 (zero marginal cost — the acceptance target):** 2 arms (vanilla, tether) ×
+  3 tasks × 3 reps = 18 serial headless runs on the user's subscription, spread over days
+  to respect limits. The agent prepares tasks/runner/sandboxes; the user fires the runs
+  under their own auth.
+- **Tier 1 (optional, small API spend):** framework arms from LANDSCAPE.md — superpowers,
+  SuperClaude, BMAD, gstack as installed-config arms; spec-kit scripted or excluded with
+  rationale; ruflo included specifically to measure its token overhead. Documented caveat:
+  headless runs measure automatic behavior + passive overhead — fair to tether/superpowers
+  (auto-trigger), generous to pipeline-driven frameworks.
+- **Tier 2 (optional, real spend):** Terminal-Bench 2.1 subset via Harbor's Claude Code
+  adapter for external validation. Note TB task repos ship no `.claude/verify.sh`, so the
+  done-gate idles — TB answers "never worse?", not "catches what vanilla misses?".
+
+**Acceptance.** `bench/` exists with ≥3 tasks (each: pre-registered prompt + visible
+checks + hidden verifier) and a runner that provisions sandboxed arms without touching the
+live install; the Tier-0 matrix has been run to completion with every run logged in
+`bench/RESULTS.md` (experiment-log format: command, config, model id, metrics); results
+summarized in LANDSCAPE.md regardless of direction. Tiers 1–2 explicitly out of scope for
+closing the item.
+
+**Files.** `bench/` (new — tasks, runner, RESULTS.md); LANDSCAPE.md results section;
+README one-liner. No hook or skill changes.
 
 ---
 

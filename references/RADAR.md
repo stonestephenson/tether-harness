@@ -35,6 +35,10 @@ vector-RAG already rejected, and Ruflo's version audited as ~99% duplicate entri
 **Sources swept:** GitHub API (13 repos) · 8 README/tree fetches · roman-rr Ruflo audit
 gist · EveryDev five-framework comparison (secondary — reports Chase AI's single-run
 bake-off; anecdote tier). Links in `LANDSCAPE.md`.
+**Addendum (same day):** the user commissioned one follow-up from this survey into
+`ROADMAP.md` as item #6 — harness self-benchmark (`bench/`; zero-budget Tier 0 is the
+acceptance target, paid framework/Terminal-Bench arms optional). The NULL verdict above
+covers swept external findings; #6 is a user-initiated instrument, not a promoted finding.
 
 ## RADAR 2026-07-09 · cloud smoke run (window: 2026-07-09 → 2026-07-09)
 

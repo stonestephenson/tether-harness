@@ -60,10 +60,11 @@ data other tools don't expose; the other branches ship it unwired. See each bran
 
 ## Roadmap (what's next)
 
-The vetted backlog lives in [`ROADMAP.md`](ROADMAP.md) — five needle-mover tasks from the
-2026-07 SOTA audit (verifier anti-tamper, corrections→enforcement compiler, PreCompact
-externalize-guard, `/ship` cold reviewer, hygiene), each with evidence, design sketch, and
-acceptance criteria, plus the list of ideas **rejected on evidence**. Agents picking up
+The vetted backlog lives in [`ROADMAP.md`](ROADMAP.md) — the five needle-mover tasks from
+the 2026-07 SOTA audit (verifier anti-tamper, corrections→enforcement compiler, PreCompact
+externalize-guard, `/ship` cold reviewer, hygiene) and a zero-budget harness
+self-benchmark (#6) commissioned from the landscape survey — each with evidence, design
+sketch, and acceptance criteria, plus the list of ideas **rejected on evidence**. Agents picking up
 work: read it first; confirm scope with the user before implementing.
 
 Staying SOTA is itself automated: a monthly **`sota-radar`** sweep (maintainer skill,
