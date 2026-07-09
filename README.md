@@ -24,7 +24,7 @@ data other tools don't expose; the other branches ship it unwired. See each bran
 |---|---|---|
 | **`main`** (Claude Code) | ✅ verified end-to-end | hooks fire, skills load, regression suites pass |
 | **`opencode`** | ✅ verified live on **1.17.15** (2026-07) | edit → lint → agent-fix loop closes (agent removed an unused import after an `F401`); done-gate **failing path verified live** (`session.idle` → failing `.tether/verify.sh` surfaces the block, repeatedly). Also drives a **local model** now (qwen3-coder via Ollama @ 64k ctx — see `opencode/LOCAL-MODELS.md`). Caveat: done-gate is reliable **interactively**; under headless `opencode run` the process can exit before the async hook writes. |
-| **`codex`** | ⏳ ported, **not yet live-smoke-tested** — next step | hook model mirrors Claude Code's (PostToolUse/Stop, JSON stdin, exit-2); needs a real Codex session to confirm `apply_patch` path extraction and `Stop`-block behavior on the installed version. |
+| **`codex`** | ✅ verified live on **0.143.0** (2026-07) | Codex's hooks are a near-clone of Claude Code's (same events + JSON stdin/stdout), so both fire in an authenticated turn: verify-on-edit parses `apply_patch` (V4A) payloads and blocks the edit with lint feedback; done-gate blocks a failing finish via `{"decision":"block"}`. Skills ship as **native Codex skills** (`~/.codex/skills/`); the installer merges a tether block into `AGENTS.md` without clobbering an existing one. `context-health` stays unwired (needs transcript tokens Codex doesn't expose). |
 | **`generic`** | 📄 wiring documented (`WIRING.md`) | verify per-tool when adopting |
 
 ## Install (Claude Code)
