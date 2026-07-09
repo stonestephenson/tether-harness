@@ -237,6 +237,8 @@ and slot into the same loop — e.g. `/code-review` after `/ship`'s gates are gr
 
 ## 10. The evidence base (for the "why", and for interviews)
 
+Full citations, links, and locally-downloadable PDFs: [`PAPERS.md`](PAPERS.md).
+
 | Finding | Source |
 |---|---|
 | Performance degrades as context fills ("context rot") | Chroma, 2025 |
