@@ -11,6 +11,53 @@ cloud-run entries arrive as session reports and get appended here in a confirmed
 
 ---
 
+## RADAR 2026-07-09 · cloud smoke run (window: 2026-07-09 → 2026-07-09)
+
+**Verdict: NULL** — first scheduled-cloud sweep, fired the same day as the inaugural baseline,
+so a near-zero window. Contracts intact; everything surfaced clusters onto already-incorporated
+or already-queued items. Run: routine `tether-sota-radar`, session
+`cse_01EwBrX1RbvixN8NefJaNuoB` (claude-opus-4-8, read-only tools).
+
+**Platform drift:** none. 13/13 PLATFORM-ASSUMPTIONS facts checked against the hooks doc — 11
+confirmed outright; facts 2–3 (`decision:block` confirmed; `stop_hook_active` not surfaced by
+the fetch) marked unverified-this-fetch → behavioral re-verify on the next local sweep.
+**De-risk:** PreCompact now documents `manual`/`auto` matcher values — resolves ROADMAP #3's
+open caveat (folded into ROADMAP same day). Event count read as 29 vs the baseline's "32" —
+presumed summarizer delta; re-baseline next local sweep. Changelog (July 2026): Notification
+hook gains agent_needs_input/agent_completed, background agents auto-commit/PR, subagents run
+in background by default — none touch tether's contracts.
+**Suites:** N/A (cloud mode); green 18/18 + 15/15 at the same-day local baseline.
+
+**Needle-movers:** none.
+
+**Watchlist:**
+- Compaction-as-judgment — corroborated as *validation* (blakecrosley "compaction is a
+  decision"; ClawVM arXiv 2604.10352, MemGPT-lineage). No action; watch for an agent-invoked
+  compaction platform primitive.
+- "Memory notes don't measurably improve agents" — unchanged; still single-source.
+- Co-evolving/capped verifiers — candidate mechanism appeared (capped evaluation with
+  randomized tests, arXiv 2606.07379) but it's eval-side; promote only if a project-scale
+  harness adaptation shows up.
+- CompactionRL — **dropped** (training-side, per prior note; no new signal).
+- NEW: reward-hacking corroboration cluster → extra weight behind ROADMAP #1 (RHB arXiv
+  2605.02964, exploit rates to 13.9%; Cursor SWE-bench Pro study — hacking inflates Opus 4.8
+  87.1%→73.0%; contrastive detection arXiv 2601.20103). Corroboration, not a new item —
+  noted under #1.
+
+**Rejected this sweep:** Anthropic three-agent app-building harness (already incorporated via
+the harness-design post backing #4; doesn't overturn one-writer for interactive use);
+SWE-bench scaffold movement (Confucius 2512.10398; Epoch v2 environment) — confirms scaffolds
+matter, surfaces no adoptable technique. Standing rejections unchanged.
+
+**Sources swept:** 5 searches / 1 fetch — hooks doc + July changelog · arXiv 2605.02964,
+2606.07379, 2601.20103, 2604.10352, 2512.10398 · Epoch SWE-bench Verified · blakecrosley
+compaction post.
+
+**Ops notes:** the agent freelanced a "NULL doesn't warrant a notification" policy
+(notifications are platform-side; skill patched to say so) and briefly mis-resolved the
+reference paths before self-correcting (skill Step-0 paths clarified). Network allowlist:
+no blocked domains reported.
+
 ## RADAR 2026-07-09 (window: baseline — ~8-month lookback)
 
 **Verdict: PROPOSE (2 needle-movers + 2 sharpenings + hygiene)** — inaugural full audit;

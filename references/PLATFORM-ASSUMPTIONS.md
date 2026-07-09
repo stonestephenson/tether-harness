@@ -6,7 +6,9 @@ of these changed, that's a **break** (fix the harness) or an **opportunity** (ex
 — either way it goes in the RADAR entry.
 
 All facts verified **2026-07-09** against <https://code.claude.com/docs/en/hooks>, the
-regression suites, and a live transcript parse.
+regression suites, and a live transcript parse. Re-confirmed doc-side by the 2026-07-09
+cloud sweep (facts 2–3 pending behavioral re-verify on the next local sweep; also
+re-baseline the doc's event count, read as 29 vs 32 across the two fetches).
 
 ## Contracts the hooks rely on (breaks if changed)
 
@@ -29,8 +31,8 @@ regression suites, and a live transcript parse.
 ## Opportunities watch (new capabilities → harness upgrades)
 
 - `PreCompact` is blockable (exit 2 / `continue:false`), no instruction injection —
-  **already claimed by ROADMAP #3.** Watch: does it grow manual/auto discrimination or
-  instruction injection?
+  **already claimed by ROADMAP #3.** `manual`/`auto` matcher values are now documented
+  (confirmed by the 2026-07-09 cloud sweep). Remaining watch: instruction injection.
 - `PostCompact` is logging-only today. Watch: if it ever accepts `additionalContext`,
   re-injecting branch/verify-status/file:line after compaction becomes possible.
 - Watch for a **context-window/occupancy field** in hook input or a supported API —

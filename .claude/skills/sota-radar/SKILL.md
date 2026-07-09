@@ -18,8 +18,15 @@ produced `ROADMAP.md` is the template run — match its rigor and its honesty (i
   except delivery — put the COMPLETE entry in your final message, starting with a
   one-line TLDR (`verdict: NULL` or `verdict: PROPOSE (n items)`). Do not try to write
   to the repo, commit, or open PRs. A later human-confirmed session appends your entry.
+  The claude.ai completion notification is platform-automatic and fires regardless of
+  verdict — never reason about whether a result "warrants notifying" the user; the full
+  entry is the deliverable every time, NULL included.
 
 ## Step 0 — load the immune system (in this order)
+
+All five paths are relative to the **repository root** — the RADAR and
+PLATFORM-ASSUMPTIONS files live in repo-root `references/`, NOT under this skill's
+directory.
 
 1. `plugins/tether/references/HARNESS.md` §9–§10 — the invariants and the evidence table.
 2. `plugins/tether/references/PAPERS.md` — what's already incorporated.

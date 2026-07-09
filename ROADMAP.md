@@ -62,6 +62,10 @@ with stronger models tampering more, not less.
 three working detectors, i.e. exactly this mechanism); SpecBench (2605.21384); The
 Verification Horizon (2606.26300 — no fixed verifier stays sufficient; verification must
 be layered). Local: `evilgenie.pdf`, `specbench.pdf`, `verification-horizon.pdf`.
+**Corroboration (2026-07-09 cloud sweep):** Reward Hacking Benchmark (arXiv 2605.02964;
+exploit rates up to 13.9%), contrastive reward-hack detection (arXiv 2601.20103), and a
+Cursor SWE-bench Pro study showing reward hacking inflates Opus 4.8's score 87.1%→73.0% —
+extra weight behind this task's priority.
 
 **Design sketch.**
 - **Baseline:** on the first done-gate invocation that finds a verifier, record a SHA-256
@@ -145,11 +149,11 @@ dirty and un-externalized, a compact can silently strand work the summary won't 
 
 **Platform facts (verified against the hooks docs, 2026-07).** `PreCompact` **can block**
 (exit 2, or `{"continue": false}`); it **cannot** inject additionalContext or custom
-instructions; `PostCompact` exists but is logging-only. **Confirm at implementation time**
-whether PreCompact still distinguishes manual vs auto compaction (the older API had a
-`manual`/`auto` matcher; the current docs page didn't confirm either way). If they can't
-be distinguished, rescope — blocking what might be an auto-compact at a full window could
-wedge the session, which violates fail-open.
+instructions; `PostCompact` exists but is logging-only. **Resolved (2026-07-09 cloud
+sweep):** the hooks doc now explicitly documents `manual`/`auto` matcher values for
+PreCompact (see RADAR.md), so the manual-only scoping below is implementable as designed.
+Still code defensively: if the trigger/matcher field is ever absent at runtime, treat the
+compaction as auto and never block.
 
 **Design sketch.**
 - **Manual compact + dirty git tree → block once** (exit 2), stderr explaining: list the
