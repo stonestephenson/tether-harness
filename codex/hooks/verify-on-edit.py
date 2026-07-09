@@ -4,9 +4,15 @@ verify-on-edit hook (PostToolUse) — Tier-1 verification, per edit.
 
 After the agent edits a file, run the FAST, file-local checks that are installed
 for that file's language and feed any diagnostics straight back to the agent
-(exit 2 -> stderr is shown to Claude), so it fixes them before moving on. This is
-the external-feedback loop the research says dominates coding-agent quality
-(SWE-agent's linter-on-edit; "LLMs can't self-correct without external feedback").
+(JSON {"decision":"block","reason":...} on stdout — Codex's documented PostToolUse
+feedback channel), so it fixes them before moving on. This is the external-feedback
+loop the research says dominates coding-agent quality (SWE-agent's linter-on-edit;
+"LLMs can't self-correct without external feedback").
+
+Codex edits files with `apply_patch`: its tool_input is {"command": "<V4A patch>"},
+so the edited paths live INSIDE the patch text ("*** Add/Update/Delete File: <path>",
+relative to cwd) rather than a structured field. We parse those out, and still honor
+the structured file_path/path keys that other edit tools use.
 
 Scope on purpose:
   * Only FAST, file-local, low-false-positive checks live here: formatters in
@@ -21,9 +27,15 @@ Scope on purpose:
 """
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
+
+# V4A apply_patch headers that name a file, e.g. "*** Update File: src/a.py".
+# Add/Update/Delete + the "Move to:" rename target all name a path.
+_PATCH_FILE_RE = re.compile(r"^\*\*\*\s+(?:Add|Update|Delete)\s+File:\s*(.+?)\s*$", re.M)
+_PATCH_MOVE_RE = re.compile(r"^\*\*\*\s+Move\s+to:\s*(.+?)\s*$", re.M)
 
 TIMEOUT = 20          # seconds per tool
 PER_TOOL_CAP = 1500   # chars of output kept per tool
@@ -106,20 +118,50 @@ def run_check(label, argv):
     return out
 
 
+def extract_paths(data):
+    """Every file this edit touched, as existing absolute paths.
+
+    Handles both Codex's apply_patch (paths embedded in the V4A patch text under
+    tool_input.command, relative to cwd) and the structured edit tools that pass
+    file_path/notebook_path/path. Deleted files and paths that don't resolve to a
+    real file are dropped (nothing to lint)."""
+    ti = data.get("tool_input") or {}
+    cwd = data.get("cwd") or os.getcwd()
+    candidates = []
+
+    # structured edit tools (Edit/Write/NotebookEdit, or a future Codex that
+    # keys a path directly)
+    for key in ("file_path", "notebook_path", "path"):
+        v = ti.get(key)
+        if isinstance(v, str) and v:
+            candidates.append(v)
+
+    # apply_patch: pull paths out of the V4A patch text
+    cmd = ti.get("command")
+    if isinstance(cmd, str):
+        candidates += _PATCH_FILE_RE.findall(cmd)
+        candidates += _PATCH_MOVE_RE.findall(cmd)
+
+    out, seen = [], set()
+    for p in candidates:
+        ap = os.path.normpath(p if os.path.isabs(p) else os.path.join(cwd, p))
+        if ap not in seen and os.path.isfile(ap):
+            seen.add(ap)
+            out.append(ap)
+    return out
+
+
 def main():
     data = json.loads(sys.stdin.read() or "{}")
     if data.get("tool_name") not in EDIT_TOOLS:
         return
-    ti = data.get("tool_input") or {}
-    path = ti.get("file_path") or ti.get("notebook_path") or ti.get("path")
-    if not path or not os.path.isfile(path):
-        return
 
     findings = []
-    for label, argv in build_checks(path):
-        diag = run_check(label, argv)
-        if diag:
-            findings.append(f"── {label} ──\n{diag}")
+    for path in extract_paths(data):
+        for label, argv in build_checks(path):
+            diag = run_check(label, argv)
+            if diag:
+                findings.append(f"── {os.path.basename(path)}: {label} ──\n{diag}")
 
     if not findings:
         return
@@ -127,13 +169,13 @@ def main():
     report = "\n".join(findings)
     if len(report) > TOTAL_CAP:
         report = report[:TOTAL_CAP] + "\n… (truncated)"
-    sys.stderr.write(
-        "Verification found issues in the file you just edited "
-        f"({os.path.basename(path)}). Fix these before continuing:\n\n"
-        + report
-        + "\n"
-    )
-    sys.exit(2)  # PostToolUse: exit 2 feeds stderr back to the agent
+    # Codex PostToolUse: decision=block surfaces `reason` to the model and makes it
+    # address the issue before continuing (schema-guaranteed; more robust than exit-2).
+    print(json.dumps({
+        "decision": "block",
+        "reason": "Verification found issues in the file(s) you just edited. "
+                  "Fix these before continuing:\n\n" + report,
+    }))
 
 
 if __name__ == "__main__":

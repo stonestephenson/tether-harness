@@ -1,3 +1,7 @@
+---
+name: catchup
+description: Reconstruct your context at the START of a session for whatever project you're in — what it is, its current state (branch, clean/dirty, tests green or red), what changed since last time, and what to do next. Reads the entry doc (CLAUDE.md / AGENTS.md) and follows ITS pointers to the other docs, then layers in the transient state (git, test status, WIP) that docs don't hold. Project-agnostic. Use when you open a project cold, return after time away, after /clear or compaction, or when the user says "where were we", "catch me up", "get oriented", or "what's the state".
+---
 
 # catchup — get oriented in this project, fast
 
@@ -43,9 +47,9 @@ This is catchup's real value — the live state, not the prose.
   **fast, side-effect-free** ones (unit tests, lint, a doc/sanity check) to report
   green/red. Do **not** kick off heavy/expensive steps (full builds, long renders,
   deploys) unprovoked — name them instead and offer to run them.
-- **Done-gate check**: see whether `.claude/verify.sh` (or `CLAUDE_VERIFY_CMD`)
+- **Done-gate check**: see whether `.codex/verify.sh` (or `VERIFY_CMD`)
   exists. If not, the Stop done-gate is dormant — from the fast checks you just
-  identified, **offer to create a `.claude/verify.sh`** (seconds-fast: e.g.
+  identified, **offer to create a `.codex/verify.sh`** (seconds-fast: e.g.
   `ruff check . && pyright`, `cargo clippy`, or a quick `ctest` subset) so
   green-on-finish is enforced from now on. Propose it; don't write it unprompted.
 - **Loose ends**: scan for `TODO`/`FIXME` near recently-changed files, a failing
@@ -62,7 +66,7 @@ Give a tight orientation, not a dump:
   tests green/red.
 - **Recently:** the last meaningful change(s).
 - **Next:** the queued task(s) and anything unfinished or broken.
-- **Verification:** whether the done-gate is armed (`.claude/verify.sh` present); if
+- **Verification:** whether the done-gate is armed (`.codex/verify.sh` present); if
   not, offer to add it (see Step 2).
 Then **ask the user what they want to work on** (offer the recommended next task as
 the default). Don't start changing things — catchup orients; it doesn't act.

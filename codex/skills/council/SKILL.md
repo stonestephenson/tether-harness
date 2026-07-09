@@ -1,3 +1,7 @@
+---
+name: council
+description: Convene a technical advisory council — 3–4 independent, distinct-lens reviewers — to pressure-test a DIVERGENT decision (architecture choice, experiment design, approach selection, risk/red-team review), then report where they agree, where they genuinely disagree, and which claims need external verification. A deliberation aid, not an oracle. Use at decision points before implementation, or when the user says "run this by the council/board", "what are we missing", "pressure-test / red-team this", or "get advice on this approach". NOT for convergent execution (implementing, debugging with a clear signal) — use the verification loop there.
+---
 
 # council — pressure-test a decision from independent angles
 

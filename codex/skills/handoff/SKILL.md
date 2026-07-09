@@ -1,3 +1,7 @@
+---
+name: handoff
+description: Verify a project's documentation is sufficient for a fresh agent with zero/cleared context to understand, build, run, test, and EXTEND it — then fix the gaps. Spawns cold subagents to audit handoff-readiness from a build/onboarding angle and a domain/architecture angle, synthesizes their findings, repairs the docs, and re-verifies. Project-agnostic — works on any repo. Use at milestones, before /clear or context compaction, before handing a repo to someone else, or whenever the user asks to "check the docs", "verify a cold start works", "audit documentation", "is this ready to hand off", or "make sure the next agent can pick this up".
+---
 
 # handoff — is this repo ready for a cold pickup?
 

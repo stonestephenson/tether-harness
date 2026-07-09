@@ -1,3 +1,7 @@
+---
+name: context-health
+description: Decide whether the current conversation should continue, compact, or hand off + clear — then execute that choice safely. The judgment layer paired with the context-health hook: it reads the occupancy signal and the task boundary, picks the right branch, and (for compact/clear) externalizes state FIRST via /handoff or /ship so nothing important is lost. Project-agnostic. Use when the context-health hook flags heavy context, at a task/milestone boundary, before /clear or /compact, or when the user asks "should we compact/clear", "is the context getting too big", "wrap up and hand off", or "manage the context".
+---
 
 # context-health — continue, compact, or hand off?
 

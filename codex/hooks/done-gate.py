@@ -57,7 +57,12 @@ def main():
             cmd, shell=True, cwd=cwd, capture_output=True, text=True, timeout=TIMEOUT
         )
     except subprocess.TimeoutExpired:
-        return  # timed out → fail open (don't block finishing on a slow check)
+        # fail open (don't trap the agent on a slow check), but say why.
+        print(json.dumps({
+            "systemMessage": f"[done-gate] verify command timed out after {TIMEOUT}s "
+                             "— not blocking. Consider a faster check.",
+        }))
+        return
     except Exception:
         return  # can't run it → fail open
 
@@ -67,11 +72,14 @@ def main():
     out = ((r.stdout or "") + (r.stderr or "")).strip() or f"verify exited {r.returncode}"
     if len(out) > REASON_CAP:
         out = out[-REASON_CAP:]  # tail: the failing summary is usually at the end
-    sys.stderr.write(
-        "Project verification is failing — resolve it before finishing "
-        f"(command: {cmd}):\n\n{out}\n\nFix these, then finish.\n"
-    )
-    sys.exit(2)  # exit 2 = block-and-feed-back; portable across Codex & Claude Code
+    # Codex Stop: decision=block tells Codex to continue with a new prompt carrying
+    # `reason`, so the agent fixes the failures instead of finishing. Schema-backed
+    # (same output shape as the Claude Code edition), more robust than exit-2/stderr.
+    print(json.dumps({
+        "decision": "block",
+        "reason": "Project verification is failing — resolve it before finishing "
+                  f"(command: {cmd}):\n\n{out}\n\nFix these, then stop.",
+    }))
 
 
 if __name__ == "__main__":

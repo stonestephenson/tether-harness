@@ -1,3 +1,7 @@
+---
+name: plan-change
+description: Approach a non-trivial code change with a localize → plan → implement → validate pipeline instead of diving in. Use for multi-file changes, unfamiliar areas of a codebase, or long-horizon tasks; when the user says "plan this out", "how should we approach", "scope this", or "map the change". Skip for small, localized edits where the fix is obvious — planning is overhead there.
+---
 
 # plan-change — localize, plan, implement, validate
 
@@ -35,7 +39,7 @@ edit, the **verify-on-edit** hook feeds back lint/format issues — fix inline. 
 batch six steps then hope; land and verify each.
 
 ## 4. Validate (green, not vibes)
-Run the project's checks (the **done-gate** / `.claude/verify.sh`, then the full
+Run the project's checks (the **done-gate** / `.codex/verify.sh`, then the full
 suite via `/ship`). The task is done when the verifier says so, not when it looks
 done. If validation reveals the plan was wrong, revise the plan explicitly.
 

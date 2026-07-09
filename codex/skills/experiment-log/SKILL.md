@@ -1,3 +1,7 @@
+---
+name: experiment-log
+description: Record a research/experiment run so it's reproducible and comparable — config, seed, code version, command, environment, metrics, and observations — appended to the project's experiment log. Use after running a training/eval/benchmark script, when the user says "log this run", "record the result", "track this experiment", or when comparing runs. The research analog of verification: an experiment you can't reproduce is an unverified claim.
+---
 
 # experiment-log — make runs reproducible and comparable
 
