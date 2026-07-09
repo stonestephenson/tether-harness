@@ -1,0 +1,49 @@
+# PLATFORM-ASSUMPTIONS — the Claude Code facts the harness depends on
+
+The drift-tripwire checklist for the `sota-radar` skill (Step 1): every externally-owned
+fact the hooks rely on, with where it's used and how to re-verify. If a sweep finds any
+of these changed, that's a **break** (fix the harness) or an **opportunity** (exploit it)
+— either way it goes in the RADAR entry.
+
+All facts verified **2026-07-09** against <https://code.claude.com/docs/en/hooks>, the
+regression suites, and a live transcript parse.
+
+## Contracts the hooks rely on (breaks if changed)
+
+| # | Fact | Relied on by |
+|---|------|--------------|
+| 1 | `PostToolUse` exit 2 = non-blocking error; stderr is shown to Claude | `verify-on-edit.py` (its entire feedback path) |
+| 2 | `Stop` accepts `{"decision":"block","reason":…}` on stdout; blocks the stop and feeds `reason` back | `done-gate.py` |
+| 3 | `Stop` input includes `stop_hook_active: true` inside a stop-hook continuation | `done-gate.py` loop guard |
+| 4 | `UserPromptSubmit` accepts `hookSpecificOutput.additionalContext` (injected into model context) | `context-health.py` model-facing nudge |
+| 5 | `systemMessage` on stdout is shown to the user (any event) | `context-health.py`, `done-gate.py` timeout note |
+| 6 | Hook stdin always carries `session_id`, `cwd`, `transcript_path`, `hook_event_name`, `tool_name`/`tool_input` (tool events) | all three hooks |
+| 7 | Edit tools are named `Edit`, `Write`, `NotebookEdit`; input field `file_path` (or `notebook_path`) | `hooks.json` matcher + `verify-on-edit.py` (`MultiEdit` is defunct — removal queued as ROADMAP 5a) |
+| 8 | `${CLAUDE_PLUGIN_ROOT}` expands in plugin `hooks.json` commands | `hooks.json` |
+| 9 | Transcript is JSONL; main-thread assistant lines have `type:"assistant"`, `message.usage.{input_tokens,cache_read_input_tokens,cache_creation_input_tokens}`, and sidechains are marked `isSidechain:true` | `context-health.py` occupancy measurement (live-fire verified 2026-07-09) |
+| 10 | `settings.json` `env` vars reach hook subprocesses (`CLAUDE_CONTEXT_BUDGET` flow) | `context-health.py` |
+| 11 | Project opt-in convention: `.claude/verify.sh` + `CLAUDE_VERIFY_CMD` override | `done-gate.py` |
+| 12 | Hook inputs carry **no** context-window size and no model id (except an optional `model` on `SessionStart`) | why `CLAUDE_CONTEXT_BUDGET` must stay a knob (constrains ROADMAP 5b) |
+| 13 | Hooks docs live at `code.claude.com/docs/en/hooks` (`docs.claude.com` 301s there) | the radar itself |
+
+## Opportunities watch (new capabilities → harness upgrades)
+
+- `PreCompact` is blockable (exit 2 / `continue:false`), no instruction injection —
+  **already claimed by ROADMAP #3.** Watch: does it grow manual/auto discrimination or
+  instruction injection?
+- `PostCompact` is logging-only today. Watch: if it ever accepts `additionalContext`,
+  re-injecting branch/verify-status/file:line after compaction becomes possible.
+- Watch for a **context-window/occupancy field** in hook input or a supported API —
+  would upgrade context-health from static-budget to auto-calibrating (supersedes 5b).
+- `SessionStart` can inject `additionalContext` + register `watchPaths`; `FileChanged`
+  fires on watched paths — candidate strengthening for ROADMAP #1 (verifier watch).
+- Unexploited events as of 2026-07: `PostToolUseFailure`, `PostToolBatch`,
+  `SubagentStart/Stop`, `ConfigChange` (blockable), `InstructionsLoaded`. No harness use
+  identified yet — re-evaluate only with a concrete need.
+
+## How to re-verify (the radar's Step 1 recipe)
+
+1. Fetch the hooks doc; check facts 1–8, 12, 13 against its event/output tables.
+2. `bash .claude/verify.sh` — both suites green re-verifies 1–3, 5–7, 11 behaviorally.
+3. Live-fire fact 9: pipe `{"hook_event_name":"UserPromptSubmit","session_id":"radar-test","transcript_path":"<a real current transcript>"}` into `plugins/tether/hooks/context-health.py` with `CTX_WARN=0.01` — expect a JSON nudge; clean up the tmp state file.
+4. Changelog scan for hook/skill/context/memory changes since the last RADAR entry.

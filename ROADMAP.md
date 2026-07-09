@@ -32,6 +32,9 @@ goal.** The list is approved as a backlog; items are green-lit individually.
   suites and temp dirs. Touching the live install requires their explicit OK (item 5c).
 - When behavior changes, update `HARNESS.md` / `WORKFLOW.md` / the plugin README, and keep
   `PAPERS.md` in sync with any new evidence.
+- New items enter this file through the monthly **`sota-radar`** sweep
+  (`.claude/skills/sota-radar/SKILL.md` → log in `references/RADAR.md`) and only after the
+  user confirms them. Platform-drift facts: `references/PLATFORM-ASSUMPTIONS.md`.
 
 ## Status
 

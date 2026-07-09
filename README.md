@@ -66,6 +66,12 @@ externalize-guard, `/ship` cold reviewer, hygiene), each with evidence, design s
 acceptance criteria, plus the list of ideas **rejected on evidence**. Agents picking up
 work: read it first; confirm scope with the user before implementing.
 
+Staying SOTA is itself automated: a monthly **`sota-radar`** sweep (maintainer skill,
+[`.claude/skills/sota-radar/`](.claude/skills/sota-radar/SKILL.md); cloud routine on the
+1st) checks new research + platform drift and logs to
+[`references/RADAR.md`](references/RADAR.md); the platform facts the hooks depend on are
+pinned in [`references/PLATFORM-ASSUMPTIONS.md`](references/PLATFORM-ASSUMPTIONS.md).
+
 ## Install (Claude Code)
 
 This branch (`main`) is the Claude Code edition, distributed as a one-plugin marketplace:
