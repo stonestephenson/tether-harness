@@ -6,8 +6,8 @@ audited against 2025–26 research and industry practice. Verdict: it behaves as
 a live-transcript parse confirmed context-health still reads the real format) and its
 shape — thin deterministic verification hooks + judgment skills, no multi-agent theater —
 is where the field converged. Roughly fifteen candidate additions were evaluated; five
-cleared the "genuinely moves the needle" bar (items 1–5; item 6, the self-benchmark, was
-commissioned separately from the 2026-07-09 landscape survey). Everything else was
+cleared the "genuinely moves the needle" bar (items 1–5; items 6–7 were user-commissioned
+separately — see each item's **Provenance**). Everything else was
 **rejected on evidence** (see the last section — don't re-propose those without new
 evidence).
 
@@ -47,6 +47,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 4 | `/ship` cold reviewer | medium | not started |
 | 5 | Hygiene batch | low | not started |
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | not started |
+| 7 | handoff × catchup — audit the real onboarding path | low | not started |
 
 ---
 
@@ -288,6 +289,70 @@ closing the item.
 
 **Files.** `bench/` (new — tasks, runner, RESULTS.md); LANDSCAPE.md results section;
 README one-liner. No hook or skill changes.
+
+---
+
+## 7. handoff × catchup — audit the real onboarding path
+
+**Provenance.** User-commissioned 2026-07-10 from a design review of the handoff/catchup
+mirror pair. No radar sweep behind it and no paper needed — this is an
+internal-consistency fix (design-reasoning tier), not an evidence-tier claim.
+
+**Problem.** handoff's cold Agent A audits a path no real agent takes. Its prompt names
+the doc set ("Read the entry docs (README, CLAUDE.md/AGENTS.md, ROADMAP/CHANGELOG,
+docs/)"), so it finds e.g. an unlinked ROADMAP by listing files. But every future cold
+agent in this ecosystem starts with `/catchup`, which reads the entry doc and follows
+only **its pointers** — catchup itself flags an unmapped entry doc as a handoff smell.
+So a failure class the audit structurally cannot catch today: **docs that exist but are
+unreachable from the entry doc's pointer graph**, and catchup orientations that come out
+wrong (wrong test command, missed backlog). The audit should test the composed system
+(docs × catchup), because that's what cold agents actually experience.
+
+**Design sketch.**
+- **Agent A's first act = literally run `/catchup`** (Skill invocation, not an inlined
+  paraphrase — a copy would drift from the real catchup and defeat the realism purpose;
+  when catchup evolves, the audit should test the evolved version). Agent A's existing
+  build/run/test probing (its steps 2–4) stays unchanged: catchup is orientation, not
+  audit — it never tries every documented run mode, probes extension questions, or hunts
+  stale claims.
+- **New gap class in A's step 4:** docs unreachable from the entry-doc pointer graph;
+  anything wrong or missing in the catchup orientation (commands, backlog, conventions).
+- **Provenance rule (anti-masking):** when A answers the comprehension questions, it
+  notes whether each answer came from the docs or from git/code spelunking;
+  spelunking-only answers count as doc gaps. This guard is catchup-version-independent —
+  catchup getting "better" at git archaeology can't silently mask doc gaps.
+- **Contract-with-fallback (anti-quiet-regression):** handoff's prompt states what the
+  catchup orientation must deliver — build/run/test commands, the backlog, the
+  conventions. If any are missing, A falls back to the current verbatim step 1 **and
+  reports the fallback in its findings** — a catchup regression becomes a loud line in
+  the audit report instead of a silent weakening.
+- **Agent B unchanged** — it is READ-ONLY (catchup runs checks; would collide with A) and
+  stays the catchup-free control in every run, so the verdict never rests solely on the
+  catchup path.
+- **Coupling note in catchup's SKILL.md** (change-site guard): handoff's cold audit
+  invokes this skill; if you change Step 1's pointer-following or the orientation report
+  shape, re-check handoff Step 2.
+- The existing "harness can't spawn subagents" fallback gains a sibling: `/catchup` not
+  invocable inside the subagent → use the verbatim step 1.
+
+**Rejected during design — standing third agent** (a copy of A without catchup) as a
+catchup-regression detector: permanent per-run cost to detect a rare event with a noisy
+instrument (two stochastic cold agents differ run-to-run anyway, so attribution needs
+repetition), and it mixes auditing-this-repo with regression-testing-catchup. Catchup
+breakage is already the loudest failure in the workflow (it runs at every session start),
+and the masking direction is covered by the provenance rule + Agent B. If "does
+catchup-first change audit quality?" ever needs a measured answer, run it once as a
+`bench/` (#6) differential experiment when catchup materially changes — not as a fixture.
+
+**Acceptance.** `plugins/tether/skills/handoff/SKILL.md`: Agent A's prompt opens with the
+`/catchup` invocation + contract-with-fallback + provenance rule + the new gap class;
+Agent B and the fix/re-verify steps untouched. `plugins/tether/skills/catchup/SKILL.md`:
+coupling note added. `HARNESS.md` skills section: one line on the handoff↔catchup
+coupling. No hook changes; regression suites unaffected.
+
+**Port notes.** Apply to the `codex` / `opencode` skill copies only after main is
+verified; confirm each tool's skill-invocation mechanism supports a subagent calling
+catchup, else ship the verbatim-step-1 form there.
 
 ---
 
