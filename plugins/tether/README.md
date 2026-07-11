@@ -15,7 +15,11 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
   (clang-format, `ruff format`, rustfmt) and runs only when the project ships a style
   config (`.clang-format`, `ruff.toml`/`pyproject.toml`), so hand-formatted code isn't churned.
 - **done-gate** (`Stop`) — runs a project's `.claude/verify.sh` when the agent finishes and
-  blocks on failure. Opt-in per project; loop-guarded; fails open.
+  blocks on failure. Opt-in per project; loop-guarded; fails open. Anti-tamper: baselines
+  the verifier's SHA-256 per session and flags + blocks once if it changes mid-session.
+- **pre-compact-guard** (`PreCompact`) — blocks a **manual** `/compact` once while the git
+  tree has un-externalized changes (run `/ship` / `/handoff` first, or re-run `/compact`
+  to override). Auto-compaction never blocks; fails open.
 
 **Skills:** `/catchup`, `/context-health`, `/handoff`, `/ship` (session lifecycle);
 `/plan-change`, `/test-first`, `/council`, `/harden` (execution quality);

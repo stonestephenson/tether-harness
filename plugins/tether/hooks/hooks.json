@@ -1,5 +1,5 @@
 {
-  "description": "Agentic harness: context-health (context-pressure nudges), verify-on-edit (per-edit real-bug lint + opt-in formatting), done-gate (project verify on finish).",
+  "description": "Agentic harness: context-health (context-pressure nudges), verify-on-edit (per-edit real-bug lint + opt-in formatting), done-gate (project verify on finish), pre-compact-guard (block manual compact once while the git tree is dirty).",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -36,6 +36,16 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/done-gate.py\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact-guard.py\""
           }
         ]
       }

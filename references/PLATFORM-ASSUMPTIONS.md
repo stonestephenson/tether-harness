@@ -31,8 +31,10 @@ re-baseline the doc's event count, read as 29 vs 32 across the two fetches).
 ## Opportunities watch (new capabilities → harness upgrades)
 
 - `PreCompact` is blockable (exit 2 / `continue:false`), no instruction injection —
-  **already claimed by ROADMAP #3.** `manual`/`auto` matcher values are now documented
-  (confirmed by the 2026-07-09 cloud sweep). Remaining watch: instruction injection.
+  **landed as `pre-compact-guard.py` (ROADMAP #3, 2026-07-11).** `manual`/`auto` matcher
+  values are documented (confirmed by the 2026-07-09 cloud sweep); the hook branches on
+  the `trigger` field in code and treats an absent value as auto (never blocks).
+  Remaining watch: instruction injection.
 - `PostCompact` is logging-only today. Watch: if it ever accepts `additionalContext`,
   re-injecting branch/verify-status/file:line after compaction becomes possible.
 - Watch for a **context-window/occupancy field** in hook input or a supported API —

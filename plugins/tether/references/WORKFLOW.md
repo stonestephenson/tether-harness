@@ -67,6 +67,7 @@ built on two evidence-backed pillars:
 | `verify-on-edit.py` | `PostToolUse` (Edit/Write/…) | after every file edit | Reports diagnostics (exit 2 → agent sees them). Never rewrites the file. |
 | `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red. Anti-tamper: baselines the verifier's SHA-256 per session; if it changed, flags the user and blocks once with the diff. Opt-in; loop-guarded; time-boxed. |
 | `context-health.py` | `Stop` + `UserPromptSubmit` | task boundaries | Nudges only; never acts. |
+| `pre-compact-guard.py` | `PreCompact` | before a compaction | Blocks a **manual** compact once while the git tree is dirty; re-run `/compact` to override. Auto-compact never blocks. |
 
 All hooks: measure real state, degrade gracefully on missing tools, and **fail open**
 — a broken hook never blocks your edits or traps the agent.
@@ -90,7 +91,8 @@ from SWE-agent. Its diagnostics complement the verify hooks.
 ## Invariants
 
 1. **Externalize → verify → discard.** Never `/clear` or compact-away un-externalized
-   state (doc, commit, experiment log).
+   state (doc, commit, experiment log). *Mechanized for manual compaction:* the
+   pre-compact-guard hook blocks a manual `/compact` once while the tree is dirty.
 2. **Effort scales with irreversibility.** Compact keeps the thread → light notes;
    clear destroys it → full `/handoff`.
 3. **Confirm the lossy/destructive steps.** Both COMPACT and CLEAR propose and wait.

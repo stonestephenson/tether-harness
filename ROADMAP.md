@@ -43,7 +43,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 |---|------|----------|--------|
 | 1 | Verifier-integrity guard (done-gate anti-tamper) | high | ✅ done on main (2026-07-11) — SessionStart baseline not taken (optional); ports pending |
 | 2 | Corrections→enforcement compiler (`/harden`) | high | ✅ done on main (2026-07-11) — standalone skill; not wired into `/ship` (kept lean; revisit with #4); ports pending |
-| 3 | PreCompact externalize-guard | medium | not started |
+| 3 | PreCompact externalize-guard | medium | ✅ done on main (2026-07-11) — auto+dirty emits the optional systemMessage; ports pending |
 | 4 | `/ship` cold reviewer | medium | not started |
 | 5 | Hygiene batch | low | not started |
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | not started |

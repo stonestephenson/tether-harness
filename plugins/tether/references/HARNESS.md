@@ -117,6 +117,18 @@ context window*, not "specialization."
   stop; on a change it tells the user and blocks **once** with the diff so the change is
   surfaced or reverted. Never auto-reverts; fails open on any internal error.
 
+### `pre-compact-guard.py` — externalize before you compact
+- **What:** when a **manual** `/compact` is about to run and the git working tree is
+  dirty (staged, unstaged, or untracked), it blocks the compaction **once**, lists the
+  un-externalized files, and points at `/ship` / `/handoff` / `/context-health` —
+  re-running `/compact` overrides. Auto-compaction is never blocked (at most a
+  user-visible note).
+- **Why:** compaction is lossy; the summary won't preserve uncommitted work. This
+  mechanizes invariant #1 (externalize → verify → discard) for the one moment it can be
+  checked deterministically.
+- **When:** automatic on `PreCompact`. One block, never a wall (per-session override
+  flag, re-armed after each override). Fails open: no git, not a repo, any error → allow.
+
 ---
 
 ## 5. Skills — context lifecycle
@@ -305,7 +317,7 @@ Full citations, links, and locally-downloadable PDFs: [`PAPERS.md`](PAPERS.md).
                                                                      │
                                                        next session ─┘► /catchup
 
-   AUTOMATIC (hooks):  context-health · verify-on-edit · done-gate
+   AUTOMATIC (hooks):  context-health · verify-on-edit · done-gate · pre-compact-guard
    YOU / MODEL (skills): catchup · plan-change · test-first · council · harden ·
                          experiment-log · context-health · ship · handoff
    ISOLATED (agents):  Explore (read) · council reviewers · handoff auditors

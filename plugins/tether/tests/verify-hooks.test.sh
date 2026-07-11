@@ -160,5 +160,55 @@ out=$(printf '{"hook_event_name":"Stop","session_id":"dgt_t4","cwd":"%s"}' "$T2"
 out=$(printf '{"hook_event_name":"Stop","session_id":"dgt_t4","cwd":"%s"}' "$T2" | TMPDIR="$FIX" CLAUDE_VERIFY_CMD="echo ok" python3 "$DG" 2>&1)
 check "tamper: changed CLAUDE_VERIFY_CMD blocks"      "$out" contains '"decision": "block"'
 
+# ---- pre-compact-guard ----
+PCG="$(cd "$(dirname "$0")/../hooks" && pwd)/pre-compact-guard.py"
+pcg() { # session  cwd  trigger-json-fragment — invoke guard; stdout+stderr merged
+  local sess="$1" cwd="$2" frag="$3"
+  printf '{"hook_event_name":"PreCompact","session_id":"%s","cwd":"%s"%s}' "$sess" "$cwd" "$frag" \
+    | TMPDIR="$FIX" python3 "$PCG" 2>&1
+}
+
+if command -v git >/dev/null 2>&1; then
+  GDIRTY="$FIX/pcg_dirty"; mkdir -p "$GDIRTY"
+  git -C "$GDIRTY" init -q
+  printf 'wip\n' > "$GDIRTY/uncommitted.txt"
+  GCLEAN="$FIX/pcg_clean"; mkdir -p "$GCLEAN"
+  git -C "$GCLEAN" init -q
+
+  out=$(pcg pcg_t1 "$GDIRTY" ',"trigger":"manual"'); rc=$?
+  check "pcg: manual+dirty blocks (exit 2)"          "$rc"  contains "2"
+  check "pcg: block lists the dirty file"            "$out" contains "uncommitted.txt"
+  check "pcg: block explains the override"           "$out" contains "override"
+
+  out=$(pcg pcg_t1 "$GDIRTY" ',"trigger":"manual"'); rc=$?
+  check "pcg: second consecutive attempt passes"     "$rc"  contains "0"
+  check "pcg: override pass is silent"               "$out" empty ""
+
+  out=$(pcg pcg_t1 "$GDIRTY" ',"trigger":"manual"'); rc=$?
+  check "pcg: guard re-arms after an override"       "$rc"  contains "2"
+
+  out=$(pcg pcg_t2 "$GCLEAN" ',"trigger":"manual"'); rc=$?
+  check "pcg: manual+clean is silent"                "$out" empty ""
+  check "pcg: manual+clean exits 0"                  "$rc"  contains "0"
+
+  out=$(pcg pcg_t3 "$GDIRTY" ',"trigger":"auto"'); rc=$?
+  check "pcg: auto+dirty never blocks (exit 0)"      "$rc"  contains "0"
+  check "pcg: auto+dirty at most a systemMessage"    "$out" absent '"continue"'
+
+  out=$(pcg pcg_t4 "$GDIRTY" ''); rc=$?
+  check "pcg: missing trigger treated as auto"       "$rc"  contains "0"
+
+  NOREPO="$FIX/pcg_norepo"; mkdir -p "$NOREPO"; printf 'x\n' > "$NOREPO/f.txt"
+  out=$(pcg pcg_t5 "$NOREPO" ',"trigger":"manual"'); rc=$?
+  check "pcg: non-repo is silent"                    "$out" empty ""
+  check "pcg: non-repo exits 0"                      "$rc"  contains "0"
+else
+  echo "SKIP  git not installed — skipping pre-compact-guard repo checks"
+fi
+
+out=$(printf 'garbage' | TMPDIR="$FIX" python3 "$PCG" 2>&1); rc=$?
+check "pcg: garbage stdin is silent"                 "$out" empty ""
+check "pcg: garbage stdin exits 0"                   "$rc"  contains "0"
+
 printf '\n%d passed, %d failed\n' "$pass" "$fail"
 [[ $fail -eq 0 ]]

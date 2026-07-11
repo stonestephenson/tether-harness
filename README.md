@@ -96,7 +96,8 @@ branch table above.)
 .claude-plugin/marketplace.json     # this marketplace
 plugins/tether/            # the plugin
   .claude-plugin/plugin.json
-  hooks/        context-health.py, verify-on-edit.py, done-gate.py, hooks.json
+  hooks/        context-health.py, verify-on-edit.py, done-gate.py,
+                pre-compact-guard.py, hooks.json
   skills/       catchup, context-health, handoff, ship, plan-change,
                 test-first, council, harden, experiment-log
   references/   HARNESS.md (what/why/when + evidence), PAPERS.md (bibliography),
