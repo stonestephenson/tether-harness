@@ -111,6 +111,11 @@ context window*, not "specialization."
 - **When:** automatic on `Stop`, but **opt-in per project** (only runs if a
   `.claude/verify.sh` exists) so it never surprises you with a slow suite. Loop-guarded
   and time-boxed; fails open if anything goes wrong.
+- **Integrity:** "green means green" only if the checker itself didn't quietly change —
+  agents have been observed weakening tests/verifiers to get green (EvilGenie, SpecBench).
+  The gate SHA-256-baselines the resolved verifier per session and re-hashes on every
+  stop; on a change it tells the user and blocks **once** with the diff so the change is
+  surfaced or reverted. Never auto-reverts; fails open on any internal error.
 
 ---
 

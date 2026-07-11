@@ -64,7 +64,7 @@ built on two evidence-backed pillars:
 | Hook | Event(s) | Fires | Acts? |
 |---|---|---|---|
 | `verify-on-edit.py` | `PostToolUse` (Edit/Write/…) | after every file edit | Reports diagnostics (exit 2 → agent sees them). Never rewrites the file. |
-| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red. Opt-in; loop-guarded; time-boxed. |
+| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red. Anti-tamper: baselines the verifier's SHA-256 per session; if it changed, flags the user and blocks once with the diff. Opt-in; loop-guarded; time-boxed. |
 | `context-health.py` | `Stop` + `UserPromptSubmit` | task boundaries | Nudges only; never acts. |
 
 All hooks: measure real state, degrade gracefully on missing tools, and **fail open**
@@ -118,6 +118,13 @@ set -e
 ruff check . && pyright        # python
 cargo clippy -q --all-targets  # rust
 ctest --output-on-failure      # c/c++ (or your fast unit subset)
+```
+
+Belt-and-suspenders (optional): deny tool-based edits to the verifier in the
+project's `.claude/settings.json` — the gate's hash check still catches
+shell-based writes:
+```json
+"permissions": { "deny": ["Edit(./.claude/verify.sh)", "Write(./.claude/verify.sh)"] }
 ```
 
 Activate the linters the verify hook uses (only rustfmt/clippy present by default):

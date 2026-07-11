@@ -41,7 +41,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 1 | Verifier-integrity guard (done-gate anti-tamper) | high | not started |
+| 1 | Verifier-integrity guard (done-gate anti-tamper) | high | ✅ done on main (2026-07-11) — SessionStart baseline not taken (optional); ports pending |
 | 2 | Corrections→enforcement compiler (`/harden`) | high | not started |
 | 3 | PreCompact externalize-guard | medium | not started |
 | 4 | `/ship` cold reviewer | medium | not started |
