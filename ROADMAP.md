@@ -46,9 +46,9 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 3 | PreCompact externalize-guard | medium | ✅ done on main (2026-07-11) — auto+dirty emits the optional systemMessage; ports pending |
 | 4 | `/ship` cold reviewer | medium | ✅ done on main (2026-07-11) — mechanical scan stays in-thread; judgment review goes cold (/code-review, else one cold subagent); ports pending |
 | 5 | Hygiene batch | low | ✅ done (2026-07-11) — 5a/5b on main (model map: current gen natively 1M, `[1m]` caveat narrowed to 200k-default models); 5c live install synced with user OK; 5d cruft deleted |
-| 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | not started |
-| 7 | handoff × catchup — audit the real onboarding path | low | not started |
-| 8 | Port the 2026-07 upgrades (#1–#5) to the other branches + close out | medium | in progress — codex ported (commit `0ff5b54`, unpushed); opencode + generic + close-out pending |
+| 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
+| 7 | handoff × catchup — audit the real onboarding path | low | on hold (user, 2026-07-11) |
+| 8 | Port the 2026-07 upgrades (#1–#5) to the other branches + close out | medium | in progress — **NEXT: 8c opencode port** (worktree at `../tether-harness-opencode`); 8a codex done (`0ff5b54`, unpushed); 8b live verify is user-run; no `/handoff` until opencode + generic are done (8e) |
 
 ---
 
