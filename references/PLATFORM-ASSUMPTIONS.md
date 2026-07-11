@@ -20,12 +20,12 @@ re-baseline the doc's event count, read as 29 vs 32 across the two fetches).
 | 4 | `UserPromptSubmit` accepts `hookSpecificOutput.additionalContext` (injected into model context) | `context-health.py` model-facing nudge |
 | 5 | `systemMessage` on stdout is shown to the user (any event) | `context-health.py`, `done-gate.py` timeout note |
 | 6 | Hook stdin always carries `session_id`, `cwd`, `transcript_path`, `hook_event_name`, `tool_name`/`tool_input` (tool events) | all three hooks |
-| 7 | Edit tools are named `Edit`, `Write`, `NotebookEdit`; input field `file_path` (or `notebook_path`) | `hooks.json` matcher + `verify-on-edit.py` (`MultiEdit` is defunct — removal queued as ROADMAP 5a) |
+| 7 | Edit tools are named `Edit`, `Write`, `NotebookEdit`; input field `file_path` (or `notebook_path`) | `hooks.json` matcher + `verify-on-edit.py` (`MultiEdit` removed — ROADMAP 5a, 2026-07-11) |
 | 8 | `${CLAUDE_PLUGIN_ROOT}` expands in plugin `hooks.json` commands | `hooks.json` |
 | 9 | Transcript is JSONL; main-thread assistant lines have `type:"assistant"`, `message.usage.{input_tokens,cache_read_input_tokens,cache_creation_input_tokens}`, and sidechains are marked `isSidechain:true` | `context-health.py` occupancy measurement (live-fire verified 2026-07-09) |
 | 10 | `settings.json` `env` vars reach hook subprocesses (`CLAUDE_CONTEXT_BUDGET` flow) | `context-health.py` |
 | 11 | Project opt-in convention: `.claude/verify.sh` + `CLAUDE_VERIFY_CMD` override | `done-gate.py` |
-| 12 | Hook inputs carry **no** context-window size and no model id (except an optional `model` on `SessionStart`) | why `CLAUDE_CONTEXT_BUDGET` must stay a knob (constrains ROADMAP 5b) |
+| 12 | Hook inputs carry **no** context-window size and no model id (except an optional `model` on `SessionStart`) | why context-health reads `message.model` from the transcript instead (5b, 2026-07-11) and `CLAUDE_CONTEXT_BUDGET` stays the always-wins knob |
 | 13 | Hooks docs live at `code.claude.com/docs/en/hooks` (`docs.claude.com` 301s there) | the radar itself |
 
 ## Opportunities watch (new capabilities → harness upgrades)
@@ -38,7 +38,8 @@ re-baseline the doc's event count, read as 29 vs 32 across the two fetches).
 - `PostCompact` is logging-only today. Watch: if it ever accepts `additionalContext`,
   re-injecting branch/verify-status/file:line after compaction becomes possible.
 - Watch for a **context-window/occupancy field** in hook input or a supported API —
-  would upgrade context-health from static-budget to auto-calibrating (supersedes 5b).
+  would supersede 5b's transcript-model→budget map (landed 2026-07-11) with true
+  auto-calibration, and remove the `[1m]`-beta env-var caveat.
 - `SessionStart` can inject `additionalContext` + register `watchPaths`; `FileChanged`
   fires on watched paths — candidate strengthening for ROADMAP #1 (verifier watch).
 - Unexploited events as of 2026-07: `PostToolUseFailure`, `PostToolBatch`,

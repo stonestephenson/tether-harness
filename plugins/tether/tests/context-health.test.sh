@@ -93,5 +93,18 @@ check "garbage stdin exits 0"                    "$rc" contains "0"
 # T11 budget override changes banding (150k of 100k -> critical)
 check "CLAUDE_CONTEXT_BUDGET override applies"    "$(run UserPromptSubmit "$FIX/warn" cht_f CLAUDE_CONTEXT_BUDGET=100000)" contains "critical"
 
+# --- model -> budget map (no env var: budget comes from the transcript model id) ---
+printf '%s\n' '{"type":"assistant","message":{"model":"claude-fable-5","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_1m"
+printf '%s\n' '{"type":"assistant","message":{"model":"claude-test-9","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_unknown"
+
+# T12 mapped id + NO env -> 1M budget, 150k is ~15% -> silent
+check "mapped model id sets budget (150k of 1M silent)" "$(run UserPromptSubmit "$FIX/model_1m" cht_m1 -u CLAUDE_CONTEXT_BUDGET)" empty ""
+
+# T13 env var always wins over the map (150k of 200k -> warn)
+check "env var beats the model map"               "$(run UserPromptSubmit "$FIX/model_1m" cht_m2)" contains "getting heavy"
+
+# T14 unknown id + NO env -> 200k fallback (150k -> warn)
+check "unknown model id falls back to 200k"       "$(run UserPromptSubmit "$FIX/model_unknown" cht_m3 -u CLAUDE_CONTEXT_BUDGET)" contains "getting heavy"
+
 printf '\n%d passed, %d failed\n' "$pass" "$fail"
 [[ $fail -eq 0 ]]

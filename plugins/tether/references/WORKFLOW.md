@@ -109,7 +109,10 @@ from SWE-agent. Its diagnostics complement the verify hooks.
 ## Config
 
 `settings.json` (`env`) or your shell:
-- `CLAUDE_CONTEXT_BUDGET` — window tokens (currently `1000000`).
+- `CLAUDE_CONTEXT_BUDGET` — window tokens; optional override that always wins. When
+  unset, context-health maps the transcript's model id to its window (current
+  Fable/Opus/Sonnet generation → 1M; unknown → 200k). Keep it set for 200k-default
+  models running the `[1m]` beta (the suffix never appears in the transcript).
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — bands (`.70` / `.85` / `.95`).
 - `CLAUDE_VERIFY_CMD` — command the done-gate runs on Stop (overrides the file below).
 

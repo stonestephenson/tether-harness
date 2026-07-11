@@ -9,7 +9,8 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
 
 **Hooks (automatic — you never invoke these):**
 - **context-health** (`Stop` + `UserPromptSubmit`) — measures how full the context window
-  is from real transcript token counts and nudges at 70 / 85 / 95%. Never acts.
+  is from real transcript token counts and nudges at 70 / 85 / 95%. Never acts. Window
+  size auto-detected from the model id; `CLAUDE_CONTEXT_BUDGET` overrides.
 - **verify-on-edit** (`PostToolUse`) — after each edit, runs **real-bug lint**
   (`ruff --select E9,F`, `shellcheck`) everywhere; **formatting/style is opt-in**
   (clang-format, `ruff format`, rustfmt) and runs only when the project ships a style

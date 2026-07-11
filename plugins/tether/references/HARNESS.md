@@ -85,6 +85,10 @@ context window*, not "specialization."
 - **Why:** context rot is real and invisible from the inside — the model won't notice
   it's degrading. A deterministic gauge catches it every time; the model wouldn't.
 - **When:** fully automatic. It only *nudges*; it never compacts or clears on its own.
+- **Calibration:** the window budget is auto-detected from the transcript's model id
+  (the current Fable/Opus/Sonnet generation → 1M; unknown ids → conservative 200k).
+  `CLAUDE_CONTEXT_BUDGET` always wins when set — keep it if you run a 200k-default
+  model with the 1M beta, whose `[1m]` settings suffix never reaches the transcript.
 
 ### `verify-on-edit.py` — per-edit checker
 - **What:** after I edit a file, it runs fast, file-local checks for that language and
