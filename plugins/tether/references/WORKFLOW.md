@@ -56,6 +56,7 @@ built on two evidence-backed pillars:
 | Monitor context | **context-health** | hook (auto) | Measures window occupancy; nudges at 70/85/95%. |
 | Decide context | `/context-health` | skill | continue / compact / handoff+clear. Confirms the lossy/destructive steps. |
 | Checkpoint | `/ship` | skill | Full gates + self-review + **local** commit. Stops before push/PR. |
+| Harden | `/harden` | skill | Compile repeated corrections into mechanical enforcement (linter rule / `verify.sh` check / deny rule). Proposes before writing; provenance-annotated. |
 | Research | `/experiment-log` | skill | Record a run so it's reproducible and comparable. |
 | Depart | `/handoff` | skill | Prove a zero-context agent could resume; fix doc gaps. |
 

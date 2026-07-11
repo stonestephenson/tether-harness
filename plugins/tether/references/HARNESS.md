@@ -186,6 +186,19 @@ context window*, not "specialization."
   for implementation (that's convergent — use the verify loop). It's token-heavy, so
   reserve it for decisions that justify the cost.
 
+### `/harden` — compile corrections into enforcement
+- **What:** gathers accumulated prose corrections (CLAUDE.md "never/always" lines,
+  feedback memories, nits the user has repeated) and compiles the mechanically-checkable
+  ones to the cheapest sufficient tier: existing linter config → a `.claude/verify.sh`
+  check → a permissions deny rule → (last resort) a PreToolUse guard. Always proposes
+  before writing; every compiled rule carries a provenance note (origin + date) so it
+  stays auditable and removable. Judgment-only preferences stay prose.
+- **Why:** prose doesn't bind — TRACE measured preferences kept as notes still violated
+  ~57% of the time vs 2–38% once compiled into mandatory checks. This is invariant #6
+  ("must-happen → hook; judgment → skill") applied to accumulated feedback.
+- **When:** a correction repeats, feedback has piled up, or a hardening milestone.
+  Never compiles style rules into a project without a style config.
+
 ---
 
 ## 7. Skills — research
@@ -259,6 +272,7 @@ Full citations, links, and locally-downloadable PDFs: [`PAPERS.md`](PAPERS.md).
 | Don't split coupled coding across agents | Cognition, "Don't Build Multi-Agents" |
 | Multi-agent debate improves divergent reasoning | Du et al., 2023 |
 | Persona/role labels alone don't improve accuracy | Zheng et al., 2024 |
+| Prose preferences violated ~57%; compiled into runtime checks → 2–38% | Zhou et al., 2026 (TRACE) |
 | OS-style memory tiers extend effective context | Packer et al., 2023 (MemGPT) |
 
 ---
@@ -292,7 +306,7 @@ Full citations, links, and locally-downloadable PDFs: [`PAPERS.md`](PAPERS.md).
                                                        next session ─┘► /catchup
 
    AUTOMATIC (hooks):  context-health · verify-on-edit · done-gate
-   YOU / MODEL (skills): catchup · plan-change · test-first · council ·
+   YOU / MODEL (skills): catchup · plan-change · test-first · council · harden ·
                          experiment-log · context-health · ship · handoff
    ISOLATED (agents):  Explore (read) · council reviewers · handoff auditors
 ```

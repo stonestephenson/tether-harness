@@ -18,7 +18,8 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
   blocks on failure. Opt-in per project; loop-guarded; fails open.
 
 **Skills:** `/catchup`, `/context-health`, `/handoff`, `/ship` (session lifecycle);
-`/plan-change`, `/test-first`, `/council` (execution quality); `/experiment-log` (research).
+`/plan-change`, `/test-first`, `/council`, `/harden` (execution quality);
+`/experiment-log` (research).
 
 ## Install
 
