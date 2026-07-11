@@ -48,6 +48,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 5 | Hygiene batch | low | ✅ done (2026-07-11) — 5a/5b on main (model map: current gen natively 1M, `[1m]` caveat narrowed to 200k-default models); 5c live install synced with user OK; 5d cruft deleted |
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | not started |
 | 7 | handoff × catchup — audit the real onboarding path | low | not started |
+| 8 | Port the 2026-07 upgrades (#1–#5) to the other branches + close out | medium | in progress — codex ported (commit `0ff5b54`, unpushed); opencode + generic + close-out pending |
 
 ---
 
@@ -353,6 +354,37 @@ coupling. No hook changes; regression suites unaffected.
 **Port notes.** Apply to the `codex` / `opencode` skill copies only after main is
 verified; confirm each tool's skill-invocation mechanism supports a subagent calling
 catchup, else ship the verbatim-step-1 form there.
+
+---
+
+## 8. Port the 2026-07 upgrades (#1–#5) to the other branches + close out
+
+**Provenance.** Standing ground rule ("implement on main first; port after main is
+verified") turned into a tracked item 2026-07-11, when #1–#5 landed and were pushed on
+main. Sub-items in execution order:
+
+- **8a — codex port.** ✅ Done (branch commit `0ff5b54`, 2026-07-11): all five items,
+  adapted to the Codex contract. Key platform fact (verified against the Codex hooks
+  docs): PreCompact exists with `manual`/`auto` trigger but blocks via
+  `{"continue": false, "stopReason": …}` JSON, **not** exit 2. Suite 40/40; installer
+  smoke-tested into a temp `CODEX_HOME`.
+- **8b — codex live verification + push (user-run).** In an authenticated Codex
+  session: trip verify-on-edit, finish red for the done-gate, weaken the verifier for
+  the one-time tamper block, `/compact` on a dirty tree for the guard. Then push the
+  branch.
+- **8c — opencode port.** Same five items against the opencode contract
+  (`.tether/verify.sh`, async `session.idle` done-gate with the known headless caveat,
+  JS plugin layer — re-read the branch docs first; the PreCompact-equivalent event is
+  an open platform-fact question there). Fresh session recommended; orient with
+  `/catchup` in the worktree.
+- **8d — generic branch.** WIRING.md prose: describe the anti-tamper baseline,
+  pre-compact-guard semantics, and the two new skills for tool-agnostic adopters.
+- **8e — close out.** Update main's README port-status table + the "ports pending"
+  notes in rows 1–5; then run `/handoff` on main as the final doc audit (deliberately
+  after #7 lands, so the audit exercises #7's rewritten catchup-first procedure).
+
+**Acceptance.** Each branch's suite green; branch READMEs document contract deltas;
+main's port-status table current; 8e's handoff audit passes cold.
 
 ---
 
