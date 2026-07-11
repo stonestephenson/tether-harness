@@ -2,7 +2,7 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit|apply_patch",
+        "matcher": "Edit|Write|apply_patch",
         "hooks": [
           { "type": "command", "command": "python3 \"__HOOKS_DIR__/verify-on-edit.py\"", "timeout": 30 }
         ]
@@ -12,6 +12,13 @@
       {
         "hooks": [
           { "type": "command", "command": "python3 \"__HOOKS_DIR__/done-gate.py\"", "timeout": 200 }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 \"__HOOKS_DIR__/pre-compact-guard.py\"", "timeout": 30 }
         ]
       }
     ]

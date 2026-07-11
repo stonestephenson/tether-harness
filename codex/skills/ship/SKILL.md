@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Get the current change merge-ready and committed LOCALLY. Runs the project's own quality gates (tests, lint, doc/sanity checks, regenerate generated artifacts), self-reviews the diff, then stages the right files and makes a local commit with a message drafted from the diff. STOPS before push / PR — publishing is a separate explicit step. Discovers each project's gates and conventions; project-agnostic. Use when the user says "ship it", "ready to commit", "wrap this up", "commit this", or wants a change finalized and committed locally.
+description: Get the current change merge-ready and committed LOCALLY. Runs the project's own quality gates (tests, lint, doc/sanity checks, regenerate generated artifacts), gets the diff reviewed in FRESH context (one cold read-only `codex exec` run), then stages the right files and makes a local commit with a message drafted from the diff. STOPS before push / PR — publishing is a separate explicit step. Discovers each project's gates and conventions; project-agnostic. Use when the user says "ship it", "ready to commit", "wrap this up", "commit this", or wants a change finalized and committed locally.
 ---
 
 # ship — make this change merge-ready, then commit locally
@@ -30,11 +30,30 @@ work. Offer to fix it or hand back to the user; don't paper over a red gate.
 Regenerate any generated/derived artifacts the project expects (lockfiles, golden
 baselines, generated docs) so they're in sync with the change.
 
-## Step 3 — Self-review the diff
-Read `git diff` (staged + unstaged). Check for: leftover debug prints / `console.log`
-/ commented-out code; secrets or credentials; large unintended or generated files
-sneaking in; **docs not updated** for a behavior/flag/API change; missing tests for
-new logic. Surface anything risky to the user rather than burying it.
+## Step 3 — Review the diff (cold reviewer, not self-review)
+The context that wrote the code must not be the only context that grades it —
+models self-evaluate leniently (Huang et al.), and generator–evaluator separation
+exists precisely because a writer "confidently praises" its own mediocre output.
+Two parts:
+
+1. **Mechanical scan, in-thread** (these are checks, not judgment): leftover debug
+   prints / `console.log` / commented-out code; secrets or credentials; large
+   unintended or generated files sneaking in; **docs not updated** for a
+   behavior/flag/API change; missing tests for new logic.
+2. **Fresh-context review of the judgment questions.** Spawn **one** cold
+   read-only Codex run given ONLY the diff and a one-line statement of intent:
+   `git diff HEAD | codex exec --sandbox read-only "Review this diff. It is
+   supposed to <intent>. Report correctness risks, simpler alternatives, and
+   anything that contradicts the stated intent."` One reviewer, no personas —
+   the value is the fresh context, not a role label. If `codex exec` isn't
+   available in the environment, fall back to careful in-thread review and say
+   so — the review happened, but it wasn't cold.
+
+The reviewer is **advisory** — findings feed the shipper; they don't auto-gate.
+Weigh them: fix what's real (re-run Step 2 on whatever you change), or proceed and
+tell the user why the finding doesn't apply. Surface anything risky to the user
+rather than burying it. A nit that has now come up in two ships is a harden
+gather-candidate — mention it.
 
 ## Step 4 — Stage deliberately
 `git add` the files that belong in this change. Respect `.gitignore`; do **not**

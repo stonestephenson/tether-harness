@@ -64,8 +64,9 @@ built on two evidence-backed pillars:
 | Hook | Event(s) | Fires | Acts? |
 |---|---|---|---|
 | `verify-on-edit.py` | `PostToolUse` (Edit/Write/…) | after every file edit | Reports diagnostics (exit 2 → agent sees them). Never rewrites the file. |
-| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red. Opt-in; loop-guarded; time-boxed. |
-| `context-health.py` | `Stop` + `UserPromptSubmit` | task boundaries | Nudges only; never acts. |
+| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red. Anti-tamper: baselines the verifier's SHA-256 per session; if it changed, flags the user and blocks once with the diff. Opt-in; loop-guarded; time-boxed. |
+| `context-health.py` | `Stop` + `UserPromptSubmit` | task boundaries | Nudges only; never acts. (Unwired on Codex.) |
+| `pre-compact-guard.py` | `PreCompact` | before a compaction | Blocks a **manual** compact once while the git tree is dirty (`continue:false` JSON); re-run compact to override. Auto-compact never blocks. |
 
 All hooks: measure real state, degrade gracefully on missing tools, and **fail open**
 — a broken hook never blocks your edits or traps the agent.

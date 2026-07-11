@@ -35,15 +35,15 @@ What it puts in `~/.codex/` (nothing outside it, and it never clobbers your own 
 | Item | Destination | Notes |
 |---|---|---|
 | hooks | `~/.codex/tether/hooks/*.py` | wired into `~/.codex/hooks.json`, **merged** with any hooks you already have |
-| skills | `~/.codex/skills/<name>/` | 8 native skills; other skills you have are left alone |
+| skills | `~/.codex/skills/<name>/` | 9 native skills; other skills you have are left alone |
 | operating defaults | `~/.codex/AGENTS.md` | inserted between managed markers; **your existing AGENTS.md content is preserved** |
 
 ## Using the skills
 
-The 8 skills **auto-trigger** when your task matches their description (same as Claude Code).
+The 9 skills **auto-trigger** when your task matches their description (same as Claude Code).
 You can also run **`/skills`** to browse, or type **`$catchup`** (etc.) to invoke one by name:
-`catchup`, `plan-change`, `test-first`, `council`, `experiment-log`, `handoff`, `ship`,
-`context-health`.
+`catchup`, `plan-change`, `test-first`, `council`, `harden`, `experiment-log`, `handoff`,
+`ship`, `context-health`.
 
 ## What you get + honest coverage
 
@@ -51,8 +51,9 @@ You can also run **`/skills`** to browse, or type **`$catchup`** (etc.) to invok
 |---|---|
 | **Skills** | ✅ full — installed as native Codex skills; auto-trigger by description |
 | **verify-on-edit** (PostToolUse) | ✅ parses Codex's `apply_patch` (V4A) payloads to find the edited file(s) and lints them, feeding diagnostics back via `{"decision":"block","reason":…}`. Also handles structured `file_path`. |
-| **done-gate** (Stop) | ✅ runs your project check on finish; on failure returns `decision:"block"` so Codex continues and hands the failures back. Loop-guarded via `stop_hook_active`. |
-| **context-health** (context-pressure nudges) | ⚠️ **Claude-Code-only** — it needs per-turn transcript token counts Codex hooks don't expose. The *skill* installs (useful for manual "should we compact?" calls); the **hook is intentionally not wired**. |
+| **done-gate** (Stop) | ✅ runs your project check on finish; on failure returns `decision:"block"` so Codex continues and hands the failures back. Loop-guarded via `stop_hook_active`. **Anti-tamper:** SHA-256-baselines the verifier per session; if it changes mid-session, flags the user and blocks once with the diff. |
+| **pre-compact-guard** (PreCompact) | ✅ blocks a **manual** `/compact` once while the git tree has un-externalized changes (Codex contract: `{"continue": false, "stopReason": …}` — exit 2 is not a documented blocker for this event). Re-run compact to override; auto-compaction never blocks; fails open. |
+| **context-health** (context-pressure nudges) | ⚠️ **Claude-Code-only** — it needs per-turn transcript token counts Codex hooks don't expose. The *skill* installs (useful for manual "should we compact?" calls); the **hook is intentionally not wired** (source kept in sync with main, incl. the model→budget map). |
 
 ## Arm the done-gate (per project)
 

@@ -68,8 +68,9 @@ PY
 echo
 echo "Done. Start a new Codex session (skills + hooks load on session start)."
 echo "  • Skills auto-trigger by task; or run /skills to browse, or \$catchup to mention one."
-echo "  • verify-on-edit + done-gate are active. Arm done-gate per project with a"
-echo "    .codex/verify.sh (kept seconds-fast) or the VERIFY_CMD env var."
+echo "  • verify-on-edit + done-gate (with verifier anti-tamper) + pre-compact-guard"
+echo "    are active. Arm done-gate per project with a .codex/verify.sh (kept"
+echo "    seconds-fast) or the VERIFY_CMD env var."
 echo "  • context-health is Claude-Code-only (needs transcript token data Codex does"
 echo "    not expose) — its skill installs, but the hook is intentionally NOT wired."
 echo "  • Upgrading from the old prompts-based install? You can delete the stale"
