@@ -158,10 +158,14 @@ context window*, not "specialization."
 - **When:** before `/clear`, at milestones, or before handing the repo to someone else.
 
 ### `/ship` — finalize a change
-- **What:** runs the project's full quality gates, self-reviews the diff, then makes a
+- **What:** runs the project's full quality gates, gets the diff reviewed in **fresh
+  context** (the built-in `/code-review` when available, else one cold read-only
+  subagent given only the diff + intent; advisory, no personas), then makes a
   **local** commit with a generated message. Stops before push/PR.
 - **Why:** a durable checkpoint. Externalizing work into a commit is what makes clearing
-  the conversation safe (the code is saved, so the chat is disposable).
+  the conversation safe (the code is saved, so the chat is disposable). The reviewer is
+  cold because the context that wrote the code grades it leniently (Huang et al.;
+  Anthropic's harness work found generator–evaluator separation necessary).
 - **When:** you run it when a change is done ("ship it", "commit this").
 
 ---

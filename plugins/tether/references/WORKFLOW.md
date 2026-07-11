@@ -31,7 +31,7 @@ built on two evidence-backed pillars:
   FINISH A CHANGE
      ├─ agent tries to stop ─► [done-gate HOOK] runs .claude/verify.sh (auto)
      │                          └─ red? blocked with failures until green
-     └─ /ship ............... full gates + self-review + local commit
+     └─ /ship ............... full gates + cold review + local commit
 
   RESEARCH RUNS
      └─ /experiment-log ..... record config/seed/version/metrics (reproducible)
@@ -55,7 +55,7 @@ built on two evidence-backed pillars:
 | Verify (on finish) | **done-gate** | hook (auto) | Runs the project's fast check on Stop; blocks finishing while it's red. Opt-in. |
 | Monitor context | **context-health** | hook (auto) | Measures window occupancy; nudges at 70/85/95%. |
 | Decide context | `/context-health` | skill | continue / compact / handoff+clear. Confirms the lossy/destructive steps. |
-| Checkpoint | `/ship` | skill | Full gates + self-review + **local** commit. Stops before push/PR. |
+| Checkpoint | `/ship` | skill | Full gates + **cold** diff review (fresh-context, advisory) + **local** commit. Stops before push/PR. |
 | Harden | `/harden` | skill | Compile repeated corrections into mechanical enforcement (linter rule / `verify.sh` check / deny rule). Proposes before writing; provenance-annotated. |
 | Research | `/experiment-log` | skill | Record a run so it's reproducible and comparable. |
 | Depart | `/handoff` | skill | Prove a zero-context agent could resume; fix doc gaps. |
