@@ -70,3 +70,10 @@ Give a tight orientation, not a dump:
   not, offer to add it (see Step 2).
 Then **ask the user what they want to work on** (offer the recommended next task as
 the default). Don't start changing things — catchup orients; it doesn't act.
+
+## Coupling — handoff's cold audit invokes this skill
+The handoff skill's Agent A opens its audit by running catchup for real (or reading
+this SKILL.md and following it), and holds its orientation to a contract: what/state,
+build/run/test commands, conventions, backlog (handoff Step 2). If you change Step 1's
+pointer-following behavior or the shape of Step 4's report, re-check handoff Step 2 —
+a silent mismatch there degrades the audit.

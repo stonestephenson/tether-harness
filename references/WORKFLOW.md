@@ -59,12 +59,12 @@ built on two evidence-backed pillars:
 | Research | `/experiment-log` | skill | Record a run so it's reproducible and comparable. |
 | Depart | `/handoff` | skill | Prove a zero-context agent could resume; fix doc gaps. |
 
-## The automatic hooks (Layer 1 — triggers, in `settings.json`)
+## The automatic hooks (Layer 1 — triggers, wired in `~/.codex/hooks.json` by the installer)
 
 | Hook | Event(s) | Fires | Acts? |
 |---|---|---|---|
 | `verify-on-edit.py` | `PostToolUse` (Edit/Write/…) | after every file edit | Reports diagnostics (exit 2 → agent sees them). Never rewrites the file. |
-| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red. Anti-tamper: baselines the verifier's SHA-256 per session; if it changed, flags the user and blocks once with the diff. Opt-in; loop-guarded; time-boxed. |
+| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red (once per stop cycle — an immediately repeated stop passes; it prods, never traps). Anti-tamper: baselines the verifier's SHA-256 per session; if it changed, flags the user and blocks once with the diff. Opt-in; time-boxed. |
 | `context-health.py` | `Stop` + `UserPromptSubmit` | task boundaries | Nudges only; never acts. (Unwired on Codex.) |
 | `pre-compact-guard.py` | `PreCompact` | before a compaction | Blocks a **manual** compact once while the git tree is dirty (`continue:false` JSON); re-run compact to override. Auto-compact never blocks. |
 
@@ -106,13 +106,19 @@ from SWE-agent. Its diagnostics complement the verify hooks.
 
 ## Config
 
-`settings.json` (`env`) or your shell:
-- `CLAUDE_CONTEXT_BUDGET` — window tokens (currently `1000000`).
-- `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — bands (`.70` / `.85` / `.95`).
-- `CLAUDE_VERIFY_CMD` — command the done-gate runs on Stop (overrides the file below).
+Set in your shell (however you export env to Codex):
+- `VERIFY_CMD` (or `CLAUDE_VERIFY_CMD`) — command the done-gate runs on Stop
+  (overrides the file below).
+- `CLAUDE_CONTEXT_BUDGET` / `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — context-health
+  knobs; that hook is **unwired on Codex** (no transcript token data), kept only for
+  source parity.
 
-Per project, opt into the done-gate by creating **`.claude/verify.sh`** — a FAST
-check (seconds), e.g.:
+Those are the only runtime knobs. Everything else — subprocess timeouts, output caps,
+the `MODEL_BUDGETS` map, the `C_FAMILY`/`EDIT_TOOLS` sets — is a constant at the top
+of the relevant hook; tune by editing source (and extend the suite).
+
+Per project, opt into the done-gate by creating **`.codex/verify.sh`** (also honors
+`.tether`/`.claude`) — a FAST check (seconds), e.g.:
 ```bash
 #!/usr/bin/env bash
 set -e
@@ -124,11 +130,11 @@ ctest --output-on-failure      # c/c++ (or your fast unit subset)
 Activate the linters the verify hook uses (only rustfmt/clippy present by default):
 ```bash
 pip install ruff pyright           # python lint/format + types
-brew install clang-format llvm     # c/c++ format (+ clang-tidy)
+brew install clang-format          # c/c++ format (opt-in via .clang-format)
 pip install gersemi                # cmake format   (optional)
 brew install shellcheck            # shell lint     (optional)
 ```
 
-Regression tests: `bash ~/.claude/hooks/context-health.test.sh` and
-`bash ~/.claude/hooks/verify-hooks.test.sh`.
-Disable any hook: remove its block from `settings.json` (skills still work).
+Regression tests: `bash codex/tests/verify-hooks.test.sh` from the repo root — or
+`bash .claude/verify.sh` (the repo's own done-gate).
+Disable any hook: remove its block from `~/.codex/hooks.json` (skills still work).
