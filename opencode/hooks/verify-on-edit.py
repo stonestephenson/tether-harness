@@ -29,7 +29,7 @@ TIMEOUT = 20          # seconds per tool
 PER_TOOL_CAP = 1500   # chars of output kept per tool
 TOTAL_CAP = 5000      # chars of combined output
 
-EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit", "apply_patch"}  # apply_patch = Codex's edit tool
+EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "apply_patch"}  # apply_patch = Codex's edit tool
 
 C_FAMILY = {".c", ".cc", ".cpp", ".cxx", ".c++", ".h", ".hpp", ".hh",
             ".hxx", ".ipp", ".cu", ".cuh", ".m", ".mm"}

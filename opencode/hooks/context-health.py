@@ -22,7 +22,9 @@ each other:
 Both re-arm when occupancy falls back down (after you compact/clear).
 
 Config via env vars (all optional):
-  CLAUDE_CONTEXT_BUDGET   total window tokens        (default 200000 — opus)
+  CLAUDE_CONTEXT_BUDGET   total window tokens — ALWAYS wins when set. When unset,
+                          the budget comes from the transcript's model id via
+                          MODEL_BUDGETS below (unknown ids -> 200k fallback).
   CTX_WARN / CTX_ACT / CTX_CRIT   band fractions     (default .70/.85/.95)
 """
 import json
@@ -36,19 +38,38 @@ import tempfile
 STATE_DIR = os.path.join(tempfile.gettempdir(), "claude-context-health-state")
 BAND_NAME = {1: "getting heavy", 2: "act soon", 3: "critical"}
 
+DEFAULT_BUDGET = 200000
+# Known model-id prefixes -> context window (verified against the models docs,
+# 2026-07: the current Fable/Opus/Sonnet generation is natively 1M; Haiku 4.5
+# and older models are 200k). Prefix match tolerates date-suffixed ids.
+# Unknown ids fall back to DEFAULT_BUDGET — the safe direction (over-warn).
+# Caveat: 200k-default models running the 1M beta (a settings suffix like
+# "[1m]" that never appears in the transcript model id) map low — those users
+# must keep CLAUDE_CONTEXT_BUDGET set; it always wins.
+MODEL_BUDGETS = (
+    ("claude-fable-5", 1_000_000),
+    ("claude-mythos-5", 1_000_000),
+    ("claude-opus-4-8", 1_000_000),
+    ("claude-opus-4-7", 1_000_000),
+    ("claude-opus-4-6", 1_000_000),
+    ("claude-sonnet-5", 1_000_000),
+    ("claude-sonnet-4-6", 1_000_000),
+)
+
 
 def latest_context_tokens(path):
-    """Prompt tokens of the most recent MAIN-thread assistant turn.
+    """(prompt tokens, model id) of the most recent MAIN-thread assistant turn.
 
-    That figure (new input + cached input) is what was actually fed to the model
-    on its last call, so it is the best available proxy for current window use.
+    The token figure (new input + cached input) is what was actually fed to the
+    model on its last call, so it is the best available proxy for current window
+    use; the model id from the same line feeds the MODEL_BUDGETS lookup.
     Sidechain (subagent) turns are skipped — they don't sit in the main window.
     """
     try:
         with open(path, "r") as f:
             lines = f.readlines()
     except OSError:
-        return None
+        return None, None
     for line in reversed(lines):
         line = line.strip()
         if not line:
@@ -61,15 +82,17 @@ def latest_context_tokens(path):
             continue
         if obj.get("type") != "assistant":
             continue
-        usage = (obj.get("message") or {}).get("usage")
+        message = obj.get("message") or {}
+        usage = message.get("usage")
         if not usage:
             continue
-        return (
+        tokens = (
             usage.get("input_tokens", 0)
             + usage.get("cache_read_input_tokens", 0)
             + usage.get("cache_creation_input_tokens", 0)
         )
-    return None
+        return tokens, message.get("model")
+    return None, None
 
 
 def _state_path(session_id):
@@ -132,17 +155,31 @@ def main():
         return
 
     try:
-        budget = int(os.environ.get("CLAUDE_CONTEXT_BUDGET", "200000"))
         warn = float(os.environ.get("CTX_WARN", "0.70"))
         act = float(os.environ.get("CTX_ACT", "0.85"))
         crit = float(os.environ.get("CTX_CRIT", "0.95"))
     except ValueError:
         return
-    if budget <= 0:
+
+    used, model = latest_context_tokens(transcript)
+    if used is None:
         return
 
-    used = latest_context_tokens(transcript)
-    if used is None:
+    # Budget: env var always wins; else map the transcript's model id;
+    # unknown/missing id -> conservative 200k default.
+    env_budget = os.environ.get("CLAUDE_CONTEXT_BUDGET")
+    if env_budget:
+        try:
+            budget = int(env_budget)
+        except ValueError:
+            return
+    else:
+        budget = DEFAULT_BUDGET
+        for prefix, window in MODEL_BUDGETS:
+            if model and model.startswith(prefix):
+                budget = window
+                break
+    if budget <= 0:
         return
 
     pct = used / budget

@@ -121,6 +121,27 @@ context window*, not "specialization."
 - **When:** automatic on `Stop`, but **opt-in per project** (only runs if a
   `.claude/verify.sh` exists) so it never surprises you with a slow suite. Loop-guarded
   and time-boxed; fails open if anything goes wrong.
+- **Integrity:** "green means green" only if the checker itself didn't quietly change —
+  agents have been observed weakening tests/verifiers to get green (EvilGenie, SpecBench).
+  The gate SHA-256-baselines the resolved verifier per session and re-hashes on every
+  idle; on a change it reports **once** with the diff (on opencode this surfaces to the
+  user — the plugin can't block) so the change is confirmed or reverted. Never
+  auto-reverts; fails open on any internal error.
+
+### `pre-compact-guard.py` — externalize before you compact
+- **What:** when a compaction is about to run and the git working tree is dirty
+  (staged, unstaged, or untracked), it injects the un-externalized state — the file
+  list plus a "preserve this work in the summary" instruction — **into the compaction
+  prompt itself**, and warns the user, pointing at ship / handoff / context-health.
+- **Why:** compaction is lossy; the summary won't preserve uncommitted work unless
+  it's told to. This mechanizes invariant #1 (externalize → verify → discard) for the
+  one moment it can be checked deterministically. The opencode contract is the
+  *inverse* of Claude Code's: `experimental.session.compacting` can inject context but
+  cannot block (Claude Code's PreCompact blocks but can't inject), so this edition
+  hardens the summary instead of stopping the compact.
+- **When:** automatic before every compaction (opencode exposes no manual/auto
+  distinction). Advisory only — nothing is ever blocked. Fails open: no git, not a
+  repo, any error → the compaction proceeds untouched.
 
 ---
 
@@ -151,10 +172,14 @@ context window*, not "specialization."
 - **When:** before `/clear`, at milestones, or before handing the repo to someone else.
 
 ### `/ship` — finalize a change
-- **What:** runs the project's full quality gates, self-reviews the diff, then makes a
-  **local** commit with a generated message. Stops before push/PR.
+- **What:** runs the project's full quality gates, gets the diff reviewed in **fresh
+  context** (one cold read-only `opencode run --agent plan` pass given only the diff +
+  intent; advisory, no personas), then makes a **local** commit with a generated
+  message. Stops before push/PR.
 - **Why:** a durable checkpoint. Externalizing work into a commit is what makes clearing
-  the conversation safe (the code is saved, so the chat is disposable).
+  the conversation safe (the code is saved, so the chat is disposable). The reviewer is
+  cold because the context that wrote the code grades it leniently (Huang et al.;
+  generator–evaluator separation).
 - **When:** you run it when a change is done ("ship it", "commit this").
 
 ---
@@ -190,6 +215,18 @@ context window*, not "specialization."
 - **When:** consequential, hard-to-reverse design/experiment/approach choices. **Not**
   for implementation (that's convergent — use the verify loop). It's token-heavy, so
   reserve it for decisions that justify the cost.
+
+### `/harden` — compile corrections into enforcement
+- **What:** gathers accumulated prose corrections (AGENTS.md "never/always" lines, nits
+  the user has repeated) and compiles the mechanically-checkable ones to the cheapest
+  sufficient tier: existing linter config → a `.tether/verify.sh` check → an opencode
+  `permission` rule → (last resort) a plugin guard. Always proposes before writing;
+  every compiled rule carries a provenance note (origin + date) so it stays auditable
+  and removable.
+- **Why:** prose doesn't bind — TRACE measured preferences kept as notes still violated
+  ~57% of the time vs 2–38% once compiled into mandatory checks.
+- **When:** a correction repeats, feedback has piled up, or a hardening milestone.
+  Never compiles style rules into a project without a style config.
 
 ---
 

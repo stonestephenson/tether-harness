@@ -30,10 +30,11 @@ Verified live on **opencode 1.17.15** (2026-07). opencode delivers bus events th
 
 | Piece | Status on opencode |
 |---|---|
-| **Skills** (`/catchup`, `/plan-change`, `/test-first`, `/council`, `/experiment-log`, `/handoff`, `/ship`, `/context-health`) | ✅ full — markdown commands |
+| **Skills** (`/catchup`, `/plan-change`, `/test-first`, `/council`, `/experiment-log`, `/handoff`, `/ship`, `/harden`, `/context-health`) | ✅ full — markdown commands. `/ship` reviews the diff in **fresh context** (one cold read-only `opencode run --agent plan` pass, advisory); `/harden` compiles repeated corrections into mechanical enforcement (linter config → `.tether/verify.sh` check → opencode `permission` rule → plugin guard). |
 | **verify-on-edit** (plugin, `tool.execute.after` on `edit`/`write`) | ✅ **verified** — runs the fast file-local checks on each edited file and appends the diagnostics to the tool result, so the **agent sees and fixes them** (confirmed: the agent removed an unused import after an `F401`). |
-| **done-gate** (plugin, `session.idle`) | ✅ runs your project check when the session goes idle and surfaces failures; it reports (does not hard-block). **Both paths verified live:** a passing check stays silent, a failing `.tether/verify.sh` surfaces the *"Project verification is failing…"* block on `session.idle` (observed repeatedly in an interactive session). ⚠️ Timing caveat: reliable **interactively** (the normal "turn finished" signal); under headless `opencode run` the process can exit before the async hook finishes writing, so the gate may not fire there. |
-| **context-health** (context-pressure nudges) | ⚠️ **Claude-Code-only** — needs per-turn transcript token counts opencode plugins don't expose. Shipped but not wired. |
+| **done-gate** (plugin, `session.idle`) | ✅ runs your project check when the session goes idle and surfaces failures; it reports (does not hard-block). **Both paths verified live:** a passing check stays silent, a failing `.tether/verify.sh` surfaces the *"Project verification is failing…"* block on `session.idle` (observed repeatedly in an interactive session). Includes the **verifier-integrity guard** (anti-tamper): the resolved verifier is SHA-256-baselined per session; a mid-session change is reported once **with the diff** — even when the run is green — so a weakened verifier can't silently buy a green. ⚠️ Timing caveat: reliable **interactively** (the normal "turn finished" signal); under headless `opencode run` the process can exit before the async hook finishes writing, so the gate may not fire there. |
+| **pre-compact-guard** (plugin, `experimental.session.compacting`) | ⚠️ **advisory — inverted contract.** opencode's compacting hook can INJECT context into the compaction prompt but cannot block (the inverse of Claude Code's PreCompact, which blocks but can't inject; verified against the 1.17.15 plugin typedefs — the hook is `experimental.`, so re-check on upgrades). On a dirty git tree it injects the file list + a "preserve this un-externalized state" instruction into the summary prompt and warns via console, pointing at `/ship` / `/handoff`. |
+| **context-health** (context-pressure nudges) | ⚠️ **Claude-Code-only** — needs per-turn transcript token counts opencode plugins don't expose. Shipped but not wired (source kept in sync with main, incl. the model→budget map). |
 
 ## Prerequisites (optional — checks skip a tool that's missing)
 
@@ -73,14 +74,25 @@ JSON the **shared Python hooks** expect, then feeds their output back to the age
 **The wiring contract** (`opencode/plugins/tether-verify.js`):
 - `tool.execute.after` (edit/write) → `verify-on-edit.py` with `{tool_name:"Edit",
   tool_input:{file_path}}`; the hook's stderr is appended to the tool result so the agent sees it.
-- `session.idle` → `done-gate.py` with `{hook_event_name:"Stop", cwd}`; failures surface via
-  `console.error`. (`session.idle` may not complete under headless `opencode run` — reliable
-  interactively.)
+- `session.idle` → `done-gate.py` with `{hook_event_name:"Stop", cwd, session_id}`; failures
+  surface via `console.error`. The `session_id` (from the event's `properties.sessionID`) keys
+  the anti-tamper baseline — without it a stale baseline from an earlier session would
+  false-flag a legitimate between-session verifier edit. (`session.idle` may not complete under
+  headless `opencode run` — reliable interactively.)
+- `experimental.session.compacting` → `pre-compact-guard.py` with `{cwd, session_id}`; the
+  hook's **stdout is appended to the compaction prompt** (`output.context`) and its stderr goes
+  to `console.error`. Exit 2 means "dirty tree, advisory emitted" — nothing can block.
 - A hook signals "problem" with a **non-zero exit + text on stderr**; exit 2 is the block-and-
   feed-back convention.
 
-**There's no bundled test suite on this branch** (the `*.test.sh` suites live on `main`). Test a
-hook by piping JSON to it directly:
+**The bundled regression suite** covers all three hooks (tamper guard and compact advisory
+included) against the exact payload shapes the plugin sends:
+
+```bash
+bash opencode/tests/verify-hooks.test.sh
+```
+
+You can also drive a hook directly by piping JSON to it:
 
 ```bash
 # verify-on-edit: expect an F401 diagnostic + exit 2
