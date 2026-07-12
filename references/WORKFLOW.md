@@ -29,7 +29,7 @@ built on two evidence-backed pillars:
      └─ [context-health HOOK] nudges at 70/85/95% of the window (auto)
 
   FINISH A CHANGE
-     ├─ agent tries to stop ─► [done-gate HOOK] runs .claude/verify.sh (auto)
+     ├─ agent tries to stop ─► [done-gate HOOK] runs .codex/verify.sh (auto)
      │                          └─ red? blocked with failures until green
      └─ /ship ............... full gates + self-review + local commit
 
@@ -83,9 +83,10 @@ All hooks: measure real state, degrade gracefully on missing tools, and **fail o
 
 ## Grounding (LSP)
 
-Enabled: `rust-analyzer`, `clangd`, `pyright` (Python). LSP gives the agent real
-go-to-def / find-refs / diagnostics instead of guessing symbols — the ACI insight
-from SWE-agent. Its diagnostics complement the verify hooks.
+Whatever language servers your tool has enabled (e.g. `rust-analyzer`, `clangd`,
+`pyright`) give the agent real go-to-def / find-refs / diagnostics instead of
+guessing symbols — the ACI insight from SWE-agent. Their diagnostics complement the
+verify hooks; the harness ships no LSP config of its own.
 
 ## Invariants
 
@@ -127,7 +128,8 @@ cargo clippy -q --all-targets  # rust
 ctest --output-on-failure      # c/c++ (or your fast unit subset)
 ```
 
-Activate the linters the verify hook uses (only rustfmt/clippy present by default):
+Activate the linters the verify hook uses (all optional — a missing tool is skipped;
+rustfmt/clippy come with a Rust toolchain if you have one):
 ```bash
 pip install ruff pyright           # python lint/format + types
 brew install clang-format          # c/c++ format (opt-in via .clang-format)
