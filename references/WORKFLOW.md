@@ -29,7 +29,7 @@ built on two evidence-backed pillars:
      └─ [context-health HOOK] nudges at 70/85/95% of the window (auto)
 
   FINISH A CHANGE
-     ├─ agent tries to stop ─► [done-gate HOOK] runs .claude/verify.sh (auto)
+     ├─ agent tries to stop ─► [done-gate HOOK] runs .tether/verify.sh (auto)
      │                          └─ red? blocked with failures until green
      └─ /ship ............... full gates + self-review + local commit
 
