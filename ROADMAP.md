@@ -54,6 +54,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 |---|------|----------|--------|
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
+| 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending** (handoff skill copies; the verify.sh link check is per-branch maintainer tooling, optional) |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
@@ -102,7 +103,12 @@ mini-swe-agent — predicts ≈parity on easy tasks (an overhead check, not a wi
   neighboring test; metric = hidden-suite pass at session end) · **lint-landmine
   refactor** (verify-on-edit: metric = residual F-class lint + fix-loop turns) ·
   **greenfield parity check** (overhead tax: metric = token/time delta vs vanilla;
-  expected result ≈parity, and that parity is the point). Deferred: long-horizon context
+  expected result ≈parity, and that parity is the point) · **doc-set differential**
+  (added 2026-07-12 from the docs discussion: same task on three copies of one repo —
+  docs as-shipped / pruned to HARNESS §9's documentation policy / no docs; metric =
+  hidden-verifier pass + tokens + turns; directly answers "same quality with less
+  context?" — the closest published work, the 2026 AGENTS.md studies, is new and
+  workshop-tier, so this is worth measuring ourselves). Deferred: long-horizon context
   task (hard to score cheaply); tamper-bait (#1 landed, so this now measures the guard —
   include the before/after framing when designed).
 - Metrics per run: hidden-verifier pass rate, tokens, wall time, turn count. **All runs
@@ -182,6 +188,42 @@ Items #1–#5 are ported everywhere (see Completed). What's left is user-run:
   materially changes the procedure). Both cold agents verdicted "Partially"; every
   blocking gap they found was fixed same-day (see the 8e status row). Remaining: fold
   the 8b live-verify results into the branch READMEs' coverage claims when they land.
+
+---
+
+## 9. Docs-diet batch — documentation as agent context
+
+**Provenance.** User-commissioned 2026-07-12 from a research discussion on context
+management and documentation (evidence: distraction/input-length/knowledge-conflict
+literature + the 2026 AGENTS.md studies — PAPERS.md §"Documentation as agent
+context"). **✅ Landed on main 2026-07-12:**
+
+- **Documentation policy** — HARNESS.md §9: one home per fact; docs carry only what
+  code/git can't; finished work leaves the working set for git history; entry doc =
+  map, load-bearing facts early; context files minimal + human-curated; clear
+  structured Markdown, no "AI shorthand".
+- **Docs-diet gap class** — handoff's Agent A (step 4) and Agent B (step 3) now hunt
+  *excess* (drifting duplicates, completed material in active docs, dead pointers),
+  and Step 4's fix rules make deletion a fix (user confirms deletions of hand-written
+  or unique content). Coverage checklist gains an **Economy** item.
+- **Dead-link check** — this repo's `.claude/verify.sh` fails on relative `.md` links
+  to missing files (maintainer tooling; test-first verified red→green).
+- **Bench doc-set differential** — added to #6's v1 task set (measures "same quality
+  with less context?" when #6 runs).
+
+**Live-tested 2026-07-12** (one cold Agent A run with the new prompt): the excess
+class fired and caught, among real drift, a header my own policy edit had swallowed —
+the mirror-image audit earns its keep. **Known residuals from that run** (accepted,
+not hidden): shellcheck's verify-on-edit path has no suite case (docs now say so);
+hook behavior is restated across ~4 docs (consistent today — collapse is a candidate
+follow-up); HARNESS §12's interview section is author-personal content in user-facing
+docs (user's call); the link check validates file targets, not `#section` anchors.
+
+**Ports pending:** the handoff-skill edits to `codex`/`opencode`/`generic` (same
+pattern as #7); the link check is optional per-branch. Rejected within this batch:
+rewriting docs in compressed "AI-native" style (out of distribution; breaks the human
+audit loop), auto-generated doc files (measured harm — ETH study), a standalone
+docs-diet skill (rides handoff), and any hook that edits docs automatically.
 
 ---
 

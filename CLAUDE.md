@@ -15,7 +15,8 @@ Where everything lives:
   hooks depend on, incl. port-branch tripwires), `RADAR.md` (monthly sweep log),
   `LANDSCAPE.md` (graded competitor survey).
 
-Definition of done: `bash .claude/verify.sh` green (both regression suites, 18 + 46
-checks with the full optional toolchain — missing tools skip their blocks), and docs
-kept in sync when behavior changes (HARNESS / WORKFLOW / plugin README / PAPERS). The ports live on branches `codex` / `opencode` / `generic` — same
+Definition of done: `bash .claude/verify.sh` green (both regression suites — 18 + 46
+checks with the full optional toolchain; missing tools skip their blocks — plus a
+doc-link check), and docs kept in sync when behavior changes (HARNESS / WORKFLOW /
+plugin README / PAPERS). The ports live on branches `codex` / `opencode` / `generic` — same
 skills, per-tool contracts; local worktrees may exist at `../tether-harness-<branch>`.

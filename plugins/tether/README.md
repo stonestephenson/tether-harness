@@ -85,11 +85,12 @@ bash tests/context-health.test.sh    # 18 checks
 bash tests/verify-hooks.test.sh      # 46 checks (verify-on-edit, done-gate + tamper, pre-compact-guard)
 ```
 
-Full counts assume the optional toolchain (ruff, rustfmt, git); a missing tool SKIPs
-its block — fewer passes on a lean machine is expected, failures are not.
+Full counts assume the optional toolchain (ruff, rustfmt, clang-format, git); a
+missing tool SKIPs its block — fewer passes on a lean machine is expected, failures
+are not. (Known coverage hole: shellcheck's path has no suite case yet.)
 
-Or one command from the repo root: `bash .claude/verify.sh` (runs both — it's this
-repo's own done-gate).
+Or one command from the repo root: `bash .claude/verify.sh` (both suites plus a
+doc-link check — it's this repo's own done-gate).
 
 ## Developing tether (maintainers)
 

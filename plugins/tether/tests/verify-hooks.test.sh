@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Regression test for verify-on-edit.py and done-gate.py.
+# Regression test for verify-on-edit.py, done-gate.py (incl. anti-tamper), and
+# pre-compact-guard.py.
 # Run:  bash tests/verify-hooks.test.sh   (from the plugin root)
-# Uses only rustfmt (assumed present); skips the Rust checks if it's missing.
+# Optional tools (ruff, rustfmt, clang-format, git) gate their blocks — a missing
+# tool SKIPs, so full counts need the full toolchain. No shellcheck case yet.
 
 VOE="$(cd "$(dirname "$0")/../hooks" && pwd)/verify-on-edit.py"
 DG="$(cd "$(dirname "$0")/../hooks" && pwd)/done-gate.py"

@@ -290,6 +290,36 @@ and slot into the same loop — e.g. `/code-review` after `/ship`'s gates are gr
 6. **Hooks guarantee; skills bias.** Anything that *must* happen is a hook; judgment
    stays a skill. Destructive steps (clear, compact) always ask.
 
+### Documentation policy (docs are agent working memory — curate them like it)
+
+The reader of these docs is usually a cold agent, and for a model, excess context is
+not neutral storage: irrelevant content measurably degrades reasoning (Shi et al.,
+ICML 2023), accuracy drops with input length far below the window limit (Levy et al.,
+ACL 2024), and facts stated twice that drift into disagreement actively corrupt
+answers (knowledge-conflict literature, EMNLP 2024). The 2026 AGENTS.md studies agree:
+minimal, human-curated context files help; bloated or auto-generated ones hurt. Hence:
+
+- **One home per fact.** Every fact lives in exactly one doc; everything else points
+  to it, never restates it. A restatement is a future contradiction.
+- **Docs carry only what the repo can't.** Code is ground truth for *what*; git
+  history for *when* and *what changed*. Docs carry the rest: intent and rationale
+  (why X and not Y), invariants and constraints, the map (entry doc + pointers),
+  fast-path commands, and the backlog. If a cold agent could recover a fact by
+  reading code or `git log`, the docs don't need it.
+- **Finished work leaves the working set.** Completed roadmap items, superseded
+  designs, resolved questions → a one-line pointer at most; the detail lives in git
+  history, retrievable on demand. Checked-off items that linger are distractor mass
+  and conflict bait.
+- **The entry doc is a map, and position matters.** Load-bearing facts early (models
+  under-use mid-context content — "lost in the middle"); every doc reachable from the
+  entry doc's pointer graph, because pointer-following is how real cold agents read.
+- **Human-readable, structured Markdown — no "AI shorthand".** Models are trained on
+  human text; ordinary clear structure IS the optimal format. Compression tricks move
+  the input out of distribution and break the human audit loop besides.
+
+`/handoff` audits both directions against this policy: missing/wrong docs *and*
+excess (duplicates, lingering finished work, dead pointers). Deleting is a fix.
+
 ---
 
 ## 10. The evidence base (for the "why", and for interviews)

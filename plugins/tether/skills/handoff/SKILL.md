@@ -69,7 +69,12 @@ range of handoff gaps:
 >    unreachable from the entry doc's pointer graph** (a pointer-following agent
 >    would never find them — check what `ls`/glob turns up against what the entry
 >    doc actually links or names), and anything the catchup orientation got wrong
->    or missed. Cite file/section. Most blocking first.
+>    or missed. Also hunt the OPPOSITE failure — **excess that dilutes**: the same
+>    fact stated in more than one doc (do the copies still agree?), completed or
+>    superseded material sitting in the active docs instead of git history, and
+>    links/pointers to files that no longer matter. Excess is a gap too: for a
+>    model, stale and duplicated context is distractor mass, not neutral storage.
+>    Cite file/section. Most blocking first.
 > Constraints: DO NOT modify any source or docs. You MAY build/test/run. DO NOT
 > delete generated outputs or assets (build dirs, render/output dirs, data, etc.).
 > End with a one-line verdict: could a cold agent continue from the docs alone —
@@ -89,7 +94,10 @@ range of handoff gaps:
 >    you'd have to discover by reading code.
 > 3. List SPECIFIC gaps with file citations: undocumented conventions / units /
 >    coordinate systems, unexplained magic numbers, architecture or data flow that's
->    only inferable from code, and any place the docs CLAIM something the code doesn't do.
+>    only inferable from code, and any place the docs CLAIM something the code doesn't
+>    do. Also flag **redundancy**: the same design fact documented in more than one
+>    place — and whether the copies have drifted apart (drifted duplicates actively
+>    corrupt a cold reader's model; one canonical home + pointers is the standard).
 > End with a one-line verdict (Yes / Partially / No to "could a cold agent extend
 > this from docs+comments alone") and the top thing to add.
 
@@ -119,6 +127,11 @@ Close the gaps. Rules:
   mismatch, FLAG IT to the user separately — don't paper over it.
 - For shipped features, write present-tense docs about what they do; delete
   future-tense/aspirational wording and dead/placeholder text.
+- **Deleting is a fix.** For excess findings, apply the documentation policy
+  (HARNESS.md §9 "Documentation policy"): collapse duplicates to one canonical home
+  plus pointers; move completed/superseded material to git history (a one-line
+  pointer at most); prune links to files that no longer matter. Confirm with the
+  user before deleting anything they wrote by hand or that carries unique content.
 - If "all done / no backlog" leaves a cold agent without targets, add an
   **open-tasks** section (the natural next pushes surfaced by the audit).
 
@@ -149,3 +162,5 @@ probe it yourself before reporting:
 - **Accuracy:** no doc names a file/flag/command that doesn't exist; no future-tense
   for shipped features; option/flag/control lists are complete; documented commands
   actually run; any deliberately-uncovered area is stated as a known gap.
+- **Economy:** no fact has two homes; no completed/superseded material lingering in
+  the active docs; no pointers to files that no longer matter.

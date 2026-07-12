@@ -63,5 +63,5 @@ fragile ones worth a tripwire here (verified 2026-07-11):
 
 1. Fetch the hooks doc; check facts 1–8, 12, 13 against its event/output tables.
 2. `bash .claude/verify.sh` — both suites green re-verifies 1–3, 5–7, 11 behaviorally.
-3. Live-fire fact 9: pipe `{"hook_event_name":"UserPromptSubmit","session_id":"radar-test","transcript_path":"<a real current transcript>"}` into `plugins/tether/hooks/context-health.py` with `CTX_WARN=0.01` — expect a JSON nudge; clean up the tmp state file.
+3. Live-fire fact 9: pipe `{"hook_event_name":"UserPromptSubmit","session_id":"radar-test","transcript_path":"<a real current transcript>"}` into `plugins/tether/hooks/context-health.py` with `CTX_WARN=0.01` — expect a JSON nudge; clean up the tmp state file (`$TMPDIR/claude-context-health-state/radar-test`).
 4. Changelog scan for hook/skill/context/memory changes since the last RADAR entry.

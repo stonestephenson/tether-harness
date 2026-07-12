@@ -77,7 +77,9 @@ All hooks: measure real state, degrade gracefully on missing tools, and **fail o
 - **Per edit (verify-on-edit):** real-bug lint (`ruff --select E9,F`, `shellcheck`)
   always; **formatting/style is opt-in** — clang-format / `ruff format` run only when the
   project ships a style config (`.clang-format`, `ruff.toml`/`pyproject.toml`), so
-  hand-formatted code isn't churned. *No* type-checkers here — a lone file would
+  hand-formatted code isn't churned. Exception: rustfmt and gersemi/cmake-format run
+  unconditionally on `.rs`/CMake edits (universal default styles — see HARNESS §4).
+  *No* type-checkers here — a lone file would
   spuriously fail to resolve project imports.
 - **On finish (done-gate) / `/ship`:** the project-wide checks — type-check
   (pyright/mypy), `clippy`, unit tests. These need the whole project to resolve.

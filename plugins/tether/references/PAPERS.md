@@ -113,3 +113,38 @@ alternatives.
   🌐 `harness-design-long-running-apps.html`
   *Backs:* generator–evaluator separation (models self-evaluate leniently) → ROADMAP #4
   (`/ship` cold reviewer); plus the "iteratively prune scaffolding" posture.
+
+## Documentation as agent context — 2026-07 policy additions
+
+Behind HARNESS.md §9's documentation policy and handoff's docs-diet gap class
+(user-commissioned 2026-07-12).
+
+- **Large Language Models Can Be Easily Distracted by Irrelevant Context** — Shi et
+  al., ICML 2023 (PMLR v202). <https://proceedings.mlr.press/v202/shi23a.html>.
+  *Backs:* irrelevant-but-plausible context craters reasoning across prompting
+  techniques → stale/duplicated docs are distractor mass, not neutral storage.
+- **Same Task, More Tokens: the Impact of Input Length on the Reasoning Performance
+  of Large Language Models** — Levy, Jacoby & Goldberg, ACL 2024.
+  <https://aclanthology.org/2024.acl-long.818/>.
+  *Backs:* accuracy drops (~0.92→0.68) with input length far below the window limit,
+  even with benign padding → doc length itself carries a reasoning cost.
+- **Lost in the Middle: How Language Models Use Long Contexts** — Liu et al.,
+  TACL 2024. <https://aclanthology.org/2024.tacl-1.9/>.
+  *Backs:* mid-context content is under-used (U-shaped attention) → load-bearing
+  facts go early in a doc; entry doc leads with the map.
+- **Knowledge Conflicts for LLMs: A Survey** — Xu et al., EMNLP 2024.
+  <https://aclanthology.org/2024.emnlp-main.486/>.
+  *Backs:* inter-context conflict degrades reliability and models arbitrate it
+  poorly → one home per fact; a restatement is a future contradiction.
+- **Does Prompt Formatting Have Any Impact on LLM Performance?** — Microsoft,
+  arXiv:2411.10541 (industry study). <https://arxiv.org/abs/2411.10541>.
+  *Backs:* format effects are real (up to 40% on small models) but the winning
+  formats are ordinary human-readable structure; robustness grows with model size →
+  no "AI shorthand"; clear structured Markdown is the optimum.
+- **On the Impact of AGENTS.md Files on the Efficiency of AI Coding Agents** —
+  JAWs @ ICSE 2026 (workshop). <https://arxiv.org/abs/2601.20404>. Plus the ETH
+  Zurich context-file study (via InfoQ, 2026-03:
+  <https://www.infoq.com/news/2026/03/agents-context-file-value-review/>).
+  *Backs (workshop/reported tier — weigh accordingly):* curated context files cut
+  runtime/tokens; LLM-generated or bloated ones reduce success and raise cost →
+  context files stay minimal and human-curated.

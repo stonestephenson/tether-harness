@@ -42,8 +42,8 @@ verification hooks. Pick the branch for your agent:
 | Branch | Your tool | Install |
 |---|---|---|
 | **`main`** | Claude Code | the two commands under *Install* below |
-| **`codex`** | OpenAI Codex CLI | `git clone -b codex … && bash codex/install.sh` |
-| **`opencode`** | opencode | `git clone -b opencode … && bash opencode/install.sh` |
+| **`codex`** | OpenAI Codex CLI | `git clone -b codex https://github.com/stonestephenson/tether-harness && bash tether-harness/codex/install.sh` |
+| **`opencode`** | opencode | `git clone -b opencode https://github.com/stonestephenson/tether-harness && bash tether-harness/opencode/install.sh` |
 | **`generic`** | any other agentic AI | wire the hooks per `WIRING.md` |
 
 `context-health` (context-pressure nudges) is Claude-Code-only — it needs transcript token
@@ -60,14 +60,14 @@ data other tools don't expose; the other branches ship it unwired. See each bran
 
 ## Roadmap (what's next)
 
-The vetted backlog lives in [`ROADMAP.md`](ROADMAP.md) — the five needle-mover tasks from
-the 2026-07 SOTA audit (verifier anti-tamper, corrections→enforcement compiler, PreCompact
-externalize-guard, `/ship` cold reviewer, hygiene — all landed on main and ported to every
-branch), a zero-budget harness self-benchmark (#6) commissioned from the landscape survey,
-a handoff×catchup audit-realism task (#7), and the cross-branch port/close-out task (#8,
-in progress) — each with evidence, design sketch, and acceptance criteria,
-plus the list of ideas **rejected on evidence**. Agents picking up
-work: read it first; confirm scope with the user before implementing.
+The vetted backlog lives in [`ROADMAP.md`](ROADMAP.md) — its Active table is the
+current truth (as of 2026-07-12: the zero-budget self-benchmark #6 on hold, the
+user-run live port verification 8b, and pending ports of the docs-diet batch #9);
+everything else from the 2026-07 audit — the five needle-mover tasks, the
+handoff×catchup audit-realism change #7 — is landed on every branch and archived in
+the ROADMAP's Completed table. It also carries the ground rules for implementing
+agents and the list of ideas **rejected on evidence**. Agents picking up work: read
+it first; confirm scope with the user before implementing.
 
 Staying SOTA is itself automated: a monthly **`sota-radar`** sweep (maintainer skill,
 [`.claude/skills/sota-radar/`](.claude/skills/sota-radar/SKILL.md); cloud routine on the
