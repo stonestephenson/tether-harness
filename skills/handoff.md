@@ -24,29 +24,50 @@ link checker, a docs test, etc.), run it and note failures. If none exists, skip
 the cold audit still covers it. (Consider suggesting one if drift is a recurring problem.)
 
 ## Step 2 — Cold audit (the core)
-Spawn **two `general-purpose` subagents IN PARALLEL** (two Agent calls in one
-message). They have zero context by design. Substitute the absolute repo path for
-`<REPO>`. Use these prompts close to verbatim — they are tuned to catch the full
-range of handoff gaps:
+Spawn **two cold agents IN PARALLEL**, using whatever your tool offers — subagents
+if it has them, else two fresh headless runs (e.g. `codex exec`, `opencode run`, a
+second CLI session): Agent A may build/test, Agent B read-only. They have zero
+context by design. Substitute the absolute repo path for `<REPO>`. Use these
+prompts close to verbatim — they are tuned to catch the full range of handoff gaps:
 
 **Agent A — build / onboarding readiness (may build & run):**
 > You are an engineer handed the repository at `<REPO>` with ZERO prior context.
 > Assess whether its documentation lets a fresh engineer understand, build, run,
 > test, and continue it. Be critical and specific — find gaps, don't praise.
-> 1. Read the entry docs (README, CLAUDE.md/AGENTS.md, ROADMAP/CHANGELOG, docs/).
->    Skim the source tree.
-> 2. Following ONLY the docs (don't guess commands), try to: install/build it, run
->    it (every documented run mode), and run every test/verification track. Record
->    which documented commands worked and which failed / were missing / ambiguous.
+> 1. **Orient the way a real cold agent does: run the `catchup` playbook** —
+>    invoke it if your tool exposes it as a command/skill; otherwise read the
+>    installed `catchup` playbook (it ships alongside this one, e.g.
+>    `skills/catchup.md`) and follow its steps as your orientation procedure.
+>    Take the orientation it produces — you are the "user" it reports to; don't
+>    wait for input, continue with this audit. The orientation must deliver:
+>    (i) what the project is and its current state, (ii) the build/run/test
+>    commands, (iii) the conventions / definition of done, (iv) the backlog /
+>    next tasks. **Fallback:** if the playbook isn't available here, or the
+>    orientation is missing any of those four, then read the entry docs directly
+>    (README, CLAUDE.md/AGENTS.md, ROADMAP/CHANGELOG, docs/), skim the source
+>    tree — and REPORT that you fell back and exactly which deliverables were
+>    missing: that is itself a finding, not a detour.
+> 2. Following ONLY the docs and the orientation (don't guess commands), try to:
+>    install/build it, run it (every documented run mode), and run every
+>    test/verification track. Record which documented commands worked and which
+>    failed / were missing / ambiguous.
 > 3. Answer: (a) in 2-3 sentences, what is this and its current state? (b) could you
 >    build/run/test from the docs alone — what worked, what didn't? (c) do you
 >    understand the high-level architecture? (d) if asked to "push it forward" (a
 >    backlog item, or tune a feature), would you know which files to touch, which
 >    knobs are build-time vs config/runtime, and the workflow (the edit→verify loop,
 >    the test tracks, how to update any golden/snapshot baselines)?
+>    **Provenance rule:** tag each answer `[docs]` (learned from the docs / the
+>    orientation's doc-derived content) or `[spelunked]` (recovered only by reading
+>    source or git history). An answer you could ONLY get by spelunking counts as a
+>    doc gap in step 4 — the docs should have carried it.
 > 4. Produce a CRITICAL, SPECIFIC, PRIORITIZED list of doc gaps: missing info,
 >    ambiguities, stale or factually-wrong statements, undocumented commands/flags,
->    things clearly only in the author's head. Cite file/section. Most blocking first.
+>    things clearly only in the author's head, **docs that exist in the tree but are
+>    unreachable from the entry doc's pointer graph** (a pointer-following agent
+>    would never find them — check what `ls`/glob turns up against what the entry
+>    doc actually links or names), and anything the catchup orientation got wrong
+>    or missed. Cite file/section. Most blocking first.
 > Constraints: DO NOT modify any source or docs. You MAY build/test/run. DO NOT
 > delete generated outputs or assets (build dirs, render/output dirs, data, etc.).
 > End with a one-line verdict: could a cold agent continue from the docs alone —
@@ -70,10 +91,13 @@ range of handoff gaps:
 > End with a one-line verdict (Yes / Partially / No to "could a cold agent extend
 > this from docs+comments alone") and the top thing to add.
 
-Run them in parallel; only Agent A builds (Agent B is read-only) so they don't
-collide. If the harness can't spawn subagents, fall back to doing both audits
-yourself under an explicit "pretend you have never seen this repo; trust only what
-the files say" framing — weaker, but better than nothing; tell the user you fell back.
+Run them in parallel; only Agent A builds (Agent B is read-only; it stays the
+catchup-free control, so the verdict never rests solely on the catchup path). If
+your tool can't spawn cold agents at all, fall back to doing both audits yourself
+under an explicit "pretend you have never seen this repo; trust only what the files
+say" framing — weaker, but better than nothing; tell the user you fell back. (The
+sibling degradation — the cold agent can't reach the catchup playbook — is already
+handled inside Agent A's prompt: it falls back to the entry-doc list and reports it.)
 
 ## Step 3 — Synthesize
 Merge the deterministic output and both agents' findings into one deduped, prioritized
@@ -107,7 +131,9 @@ Close the gaps. Rules:
 Give the user a concise summary: a table of gaps found → fixes made, any residual
 **known** gaps left deliberately (with why), any code/doc mismatches you flagged for
 them, and a one-line verdict on cold-start readiness (Yes / Partially / No). If the
-verdict isn't "Yes", say exactly what still blocks it.
+verdict isn't "Yes", say exactly what still blocks it. Include one line on the
+catchup path: did Agent A's catchup orientation deliver the contract, or did the
+fallback fire (a catchup regression is a finding for the USER, not just the repo)?
 
 ## What "caught everything necessary" means (coverage checklist)
 The audit must surface gaps across all of these — if the subagents didn't touch one,

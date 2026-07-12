@@ -90,21 +90,34 @@ context window*, not "specialization."
 - **What:** after I edit a file, it runs fast, file-local checks for that language and
   hands any problems straight back to me to fix. Check-only — it never rewrites your file.
   **Real-bug lint** (unused imports / undefined names via `ruff --select E9,F`, plus
-  `shellcheck`) runs everywhere; **formatting/style** (clang-format, `ruff format`) is
+  `shellcheck`) runs everywhere — though when the project has a ruff config, its
+  **own** `ruff check` runs instead of the E9,F floor (the project's `select` wins);
+  **formatting/style** (clang-format, `ruff format`) is
   **opt-in** — it runs only when the project ships a style config (`.clang-format`, or
-  `ruff.toml`/`pyproject.toml`). That keeps hand-formatted codebases from being churned.
+  any `ruff.toml`/`pyproject.toml` — note a `pyproject.toml` without a `[tool.ruff]`
+  section still counts). That keeps hand-formatted codebases from being churned. The
+  exceptions are `rustfmt` (every `.rs` edit; pinned `--edition 2021`) and
+  `gersemi`/`cmake-format` (every CMake edit): those run **unconditionally**, because
+  their toolchains define one universal default style — there is no "house style" to
+  churn.
 - **Why:** this is the verification loop at its tightest. Research is blunt here: models
   can't self-correct without an external signal, and a linter-on-edit was the core of
   the first state-of-the-art SWE agent. Catching issues per-edit beats a big cleanup.
-  Gating *formatting* on opt-in is the same lesson: no universal style exists, so
-  imposing one on hand-formatted code is noise, not signal.
+  Gating *formatting* on opt-in is the same lesson: where no universal style exists
+  (C/C++, Python), imposing one on hand-formatted code is noise, not signal — where one
+  does (Rust, CMake), checking it is signal.
 - **When:** automatic after every `Edit`/`Write`. Missing a tool → silently skips (so a
   partial toolchain is fine). Type-checkers/tests are deliberately *not* here (a lone
   file would false-positive) — those run at finish.
 
 ### `done-gate.py` — finish gate
 - **What:** when I try to end a turn, it runs the project's fast check command
-  (`.claude/verify.sh`) and, if it's red, **blocks me from finishing** until it's green.
+  (`.tether/verify.sh` — also honors `.codex`/`.claude` and `$VERIFY_CMD`) and, if
+  it's red, **blocks the finish** and hands the failures back (on tools that can't
+  block, the wiring surfaces the report instead). Loop-guarded: it blocks **once per
+  stop cycle** (`stop_hook_active`), so an immediately repeated stop passes even if
+  still red — the gate prods with the failure list; it is built never to trap the
+  agent in a block loop.
 - **Why:** closes the "I think I'm done" gap with an objective signal — the model
   claiming success is not the same as tests passing. This is where whole-project checks
   live (type-check, `clippy`, unit tests), because they need the full project to resolve.
@@ -117,6 +130,11 @@ context window*, not "specialization."
   finish; on a change it reports **once** with the diff (a block where the tool can
   block, a user-visible report where it can't) so the change is confirmed or reverted.
   Never auto-reverts; fails open on any internal error.
+  **Known limits (by design):** the baseline is taken at the session's *first* finish —
+  a verifier weakened before that is accepted as the session's baseline; and only the
+  verifier itself (the `verify.sh` bytes, or the `VERIFY_CMD`/`CLAUDE_VERIFY_CMD`
+  string) is hashed — scripts or tests that the verifier *calls* are outside the
+  guard.
 
 ### `pre-compact-guard.py` — externalize before you compact
 - **What:** when a compaction is about to run and the git working tree is dirty
@@ -153,8 +171,12 @@ context window*, not "specialization."
 - **When:** when the `context-health` hook nudges, or "should we compact/clear."
 
 ### `/handoff` — export context before you leave
-- **What:** spawns fresh cold subagents to prove a zero-context agent could build, run,
-  test, and extend the project from the docs alone — then fixes whatever they trip on.
+- **What:** spawns fresh cold agents (subagents, or headless runs of your tool) to
+  prove a zero-context agent could build, run, test, and extend the project from the
+  docs alone — then fixes whatever they trip on. Its onboarding auditor orients by
+  running the `catchup` playbook for real, so the audit tests the composed
+  docs×catchup path an actual cold agent takes (the two playbooks are coupled — each
+  carries the contract/change-site note).
 - **Why:** the real test of documentation is a cold pickup. This is the safety gate
   before `/clear`: if a fresh agent couldn't resume, you're not allowed to wipe the
   thread yet.

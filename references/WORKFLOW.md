@@ -59,7 +59,7 @@ built on two evidence-backed pillars:
 | Research | `/experiment-log` | skill | Record a run so it's reproducible and comparable. |
 | Depart | `/handoff` | skill | Prove a zero-context agent could resume; fix doc gaps. |
 
-## The automatic hooks (Layer 1 — triggers, in `settings.json`)
+## The automatic hooks (Layer 1 — triggers: wire the scripts to your tool's events per `WIRING.md`)
 
 | Hook | Event(s) | Fires | Acts? |
 |---|---|---|---|
@@ -83,9 +83,10 @@ All hooks: measure real state, degrade gracefully on missing tools, and **fail o
 
 ## Grounding (LSP)
 
-Enabled: `rust-analyzer`, `clangd`, `pyright` (Python). LSP gives the agent real
-go-to-def / find-refs / diagnostics instead of guessing symbols — the ACI insight
-from SWE-agent. Its diagnostics complement the verify hooks.
+Whatever language servers your tool has enabled (e.g. `rust-analyzer`, `clangd`,
+`pyright`) give the agent real go-to-def / find-refs / diagnostics instead of
+guessing symbols — the ACI insight from SWE-agent. Their diagnostics complement the
+verify hooks; the harness ships no LSP config of its own.
 
 ## Invariants
 
@@ -106,13 +107,18 @@ from SWE-agent. Its diagnostics complement the verify hooks.
 
 ## Config
 
-`settings.json` (`env`) or your shell:
-- `CLAUDE_CONTEXT_BUDGET` — window tokens (currently `1000000`).
-- `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — bands (`.70` / `.85` / `.95`).
-- `CLAUDE_VERIFY_CMD` — command the done-gate runs on Stop (overrides the file below).
+Set in your shell (env vars — see `WIRING.md` §Config):
+- `VERIFY_CMD` (or `CLAUDE_VERIFY_CMD`) — command the done-gate runs on finish
+  (overrides the file below).
+- `CLAUDE_CONTEXT_BUDGET` / `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — context-health
+  knobs (that hook is Claude-Code-only; it no-ops elsewhere).
 
-Per project, opt into the done-gate by creating **`.claude/verify.sh`** — a FAST
-check (seconds), e.g.:
+Those are the only runtime knobs. Everything else — subprocess timeouts, output caps,
+the `MODEL_BUDGETS` map, the `C_FAMILY`/`EDIT_TOOLS` sets — is a constant at the top
+of the relevant hook; tune by editing source (and extend the suite).
+
+Per project, opt into the done-gate by creating **`.tether/verify.sh`** (also honors
+`.codex`/`.claude`) — a FAST check (seconds), e.g.:
 ```bash
 #!/usr/bin/env bash
 set -e
@@ -121,14 +127,17 @@ cargo clippy -q --all-targets  # rust
 ctest --output-on-failure      # c/c++ (or your fast unit subset)
 ```
 
-Activate the linters the verify hook uses (only rustfmt/clippy present by default):
+Activate the linters the verify hook uses (all optional — a missing tool is skipped;
+rustfmt/clippy come with a Rust toolchain if you have one):
 ```bash
 pip install ruff pyright           # python lint/format + types
-brew install clang-format llvm     # c/c++ format (+ clang-tidy)
+brew install clang-format          # c/c++ format (opt-in via .clang-format)
 pip install gersemi                # cmake format   (optional)
 brew install shellcheck            # shell lint     (optional)
 ```
 
-Regression tests: `bash ~/.claude/hooks/context-health.test.sh` and
-`bash ~/.claude/hooks/verify-hooks.test.sh`.
-Disable any hook: remove its block from `settings.json` (skills still work).
+Regression tests: `bash tests/verify-hooks.test.sh` from the repo root (42 checks;
+full count assumes the optional toolchain — a missing tool SKIPs its block) — or
+`bash .claude/verify.sh`, the repo's own done-gate.
+Disable any hook: unwire it from your tool's event config (see `WIRING.md`; the
+skills/playbooks still work).
