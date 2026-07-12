@@ -45,7 +45,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 |---|------|----------|--------|
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
 | 7 | handoff × catchup — audit the real onboarding path | low | on hold (user, 2026-07-11) |
-| 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; codex branch stays local until it passes |
+| 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 |
 | 8e | Close out #8 | low | docs refreshed 2026-07-11; `/handoff` audit next; remaining: fold in 8b results when they land |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
@@ -57,7 +57,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 3 | PreCompact externalize-guard (opencode/generic: advisory/inject variant) | `9eae004` + all branches | HARNESS.md §4, WORKFLOW.md, WIRING.md (generic), PLATFORM-ASSUMPTIONS |
 | 4 | `/ship` cold reviewer | `f1fe1f1` + all branches | the skill itself, HARNESS.md skills |
 | 5 | Hygiene (MultiEdit drop, model→budget map, live-install sync) | `79fe261` + all branches | PLATFORM-ASSUMPTIONS facts 7/12 |
-| 8a/8c/8d | Ports: codex (`0ff5b54`, local until 8b) · opencode (`0bdc41c`) · generic (`6487d13`) | per branch | branch READMEs (contract deltas), PLATFORM-ASSUMPTIONS port tripwires |
+| 8a/8c/8d | Ports: codex (`0ff5b54`) · opencode (`0bdc41c`) · generic (`6487d13`) | per branch | branch READMEs (contract deltas), PLATFORM-ASSUMPTIONS port tripwires |
 
 ---
 
@@ -192,11 +192,13 @@ catchup, else ship the verbatim-step-1 form there.
 
 Items #1–#5 are ported everywhere (see Completed). What's left is user-run:
 
-- **8b — live verification (user-run): codex + opencode.**
+- **8b — live verification (user-run): codex + opencode.** Both branches are pushed
+  (2026-07-11, user call) — 8b confirms the ported pieces live and updates the
+  coverage claims.
   *Codex* (authenticated session): trip verify-on-edit, finish red for the done-gate,
   weaken the verifier for the one-time tamper block, `/compact` on a dirty tree for
-  the guard. Then push the branch (`0ff5b54` stays local until this passes).
-  *opencode* (interactive session; branch already pushed): trip verify-on-edit, fail
+  the guard.
+  *opencode* (interactive session): trip verify-on-edit, fail
   `.tether/verify.sh` at idle, weaken the verifier for the one-time tamper report
   (console), and compact with a dirty tree — expect the injected context in the
   summary + the console warning.
