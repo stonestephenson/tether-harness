@@ -44,8 +44,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | # | Task | Priority | Status |
 |---|------|----------|--------|
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
-| 7 | handoff × catchup — audit the real onboarding path | low | ✅ done on main (2026-07-12) — live-tested with one cold Agent A run (catchup invocable in-subagent; contract, provenance, and pointer-graph checks all fired); **ports pending** (codex/opencode skill copies — confirm each tool supports skill invocation inside a subagent, else ship the verbatim-step-1 form) |
-| 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 |
+| 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
@@ -57,6 +56,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 3 | PreCompact externalize-guard (opencode/generic: advisory/inject variant) | `9eae004` + all branches | HARNESS.md §4, WORKFLOW.md, WIRING.md (generic), PLATFORM-ASSUMPTIONS |
 | 4 | `/ship` cold reviewer | `f1fe1f1` + all branches | the skill itself, HARNESS.md skills |
 | 5 | Hygiene (MultiEdit drop, model→budget map, live-install sync) | `79fe261` + all branches | PLATFORM-ASSUMPTIONS facts 7/12 |
+| 7 | handoff × catchup — audit the real onboarding path | `c8d8bbe` (main, 2026-07-12) + all branches (2026-07-12: codex `075a8eb`, opencode `9e9f69d`, generic `3517dc9`) | the handoff/catchup skills themselves (coupling notes), HARNESS.md §5; live-tested on main (cold Agent A run — catchup invocable in-subagent, contract + provenance + pointer-graph checks fired); codex/opencode ship a layered invocation (native → read the installed file → verbatim fallback) — live confirmation rides the 8b demos |
 | 8a/8c/8d | Ports: codex (`0ff5b54`) · opencode (`0bdc41c`) · generic (`6487d13`) | per branch | branch READMEs (contract deltas), PLATFORM-ASSUMPTIONS port tripwires |
 
 ---
@@ -142,10 +142,13 @@ git history; the behavior now lives in the shipped skills:
 invocable inside the subagent, delivered the full four-part contract, no fallback
 needed; provenance tags and the pointer-graph check both produced real findings.
 
-**Port notes.** Apply to the `codex` / `opencode` skill copies only after confirming
-each tool's skill-invocation mechanism works inside a subagent; else ship the
-verbatim-step-1 form there. `generic` ships skills as plain playbooks — port the
-prompt text as-is.
+**Ports: ✅ done 2026-07-12** (codex `075a8eb`, opencode `9e9f69d`, generic
+`3517dc9`). Each uses its tool's native cold-spawn mechanism (`codex exec` /
+`opencode run` children / tool-neutral wording) and a **layered catchup invocation**
+— native skill where available, else *read the installed catchup file and follow it*
+(which preserves the anti-drift property: always the current version), else the
+verbatim entry-doc fallback, reported loudly. Live confirmation of the codex and
+opencode paths rides the 8b demos.
 
 ---
 
@@ -158,11 +161,13 @@ Items #1–#5 are ported everywhere (see Completed). What's left is user-run:
   coverage claims.
   *Codex* (authenticated session): trip verify-on-edit, finish red for the done-gate,
   weaken the verifier for the one-time tamper block, `/compact` on a dirty tree for
-  the guard.
+  the guard. Optional: run the handoff skill once — confirms a `codex exec` child
+  can run/read the catchup skill (#7's layered invocation).
   *opencode* (interactive session): trip verify-on-edit, fail
   `.tether/verify.sh` at idle, weaken the verifier for the one-time tamper report
   (console), and compact with a dirty tree — expect the injected context in the
-  summary + the console warning.
+  summary + the console warning. Optional: run the handoff command once — confirms
+  the `opencode run` child reads and follows the installed catchup command (#7).
 - **8e — close out.** Docs refreshed and the final `/handoff` cold audit run
   2026-07-11 (with the pre-#7 handoff skill, user call — re-audit if #7 lands and
   materially changes the procedure). Both cold agents verdicted "Partially"; every
