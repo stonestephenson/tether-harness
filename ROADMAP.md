@@ -48,7 +48,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 5 | Hygiene batch | low | ✅ done (2026-07-11) — 5a/5b on main (model map: current gen natively 1M, `[1m]` caveat narrowed to 200k-default models); 5c live install synced with user OK; 5d cruft deleted |
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
 | 7 | handoff × catchup — audit the real onboarding path | low | on hold (user, 2026-07-11) |
-| 8 | Port the 2026-07 upgrades (#1–#5) to the other branches + close out | medium | in progress — **NEXT: 8c opencode port** (worktree at `../tether-harness-opencode`); 8a codex done (`0ff5b54`, unpushed); 8b live verify is user-run; no `/handoff` until opencode + generic are done (8e) |
+| 8 | Port the 2026-07 upgrades (#1–#5) to the other branches + close out | medium | in progress — **NEXT: 8d generic branch** (WIRING.md prose); 8a codex done (`0ff5b54`, unpushed) + 8c opencode done (`0bdc41c`, unpushed; suite 42/42); 8b live verifies (codex + opencode, user-run); no `/handoff` until 8e |
 
 ---
 
@@ -372,11 +372,18 @@ main. Sub-items in execution order:
   session: trip verify-on-edit, finish red for the done-gate, weaken the verifier for
   the one-time tamper block, `/compact` on a dirty tree for the guard. Then push the
   branch.
-- **8c — opencode port.** Same five items against the opencode contract
-  (`.tether/verify.sh`, async `session.idle` done-gate with the known headless caveat,
-  JS plugin layer — re-read the branch docs first; the PreCompact-equivalent event is
-  an open platform-fact question there). Fresh session recommended; orient with
-  `/catchup` in the worktree.
+- **8c — opencode port.** ✅ Done (branch commit `0bdc41c`, 2026-07-11): all five
+  items against the opencode contract. The open platform-fact question is resolved
+  (verified against the 1.17.15 installed plugin typedefs): the PreCompact-equivalent
+  `experimental.session.compacting` is the **inverse** of Claude Code's PreCompact —
+  it can inject context into the compaction prompt but cannot block, and exposes no
+  manual/auto trigger — so the guard hardens the summary (injects the dirty-file
+  state + a preserve instruction) instead of blocking. Done-gate tamper reports via
+  exit 2 + stderr (opencode can't hard-block); the plugin now passes `session.idle`'s
+  `sessionID` to key the baseline (a stale cross-session baseline would false-flag).
+  The branch gained its first regression suite (`opencode/tests/`, 42/42) plus a
+  maintainer-side `.claude/verify.sh`. Live verification in an interactive opencode
+  session is user-run — same checklist shape as 8b.
 - **8d — generic branch.** WIRING.md prose: describe the anti-tamper baseline,
   pre-compact-guard semantics, and the two new skills for tool-agnostic adopters.
 - **8e — close out.** Update main's README port-status table + the "ports pending"
