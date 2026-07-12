@@ -64,8 +64,9 @@ built on two evidence-backed pillars:
 | Hook | Event(s) | Fires | Acts? |
 |---|---|---|---|
 | `verify-on-edit.py` | `PostToolUse` (Edit/Write/…) | after every file edit | Reports diagnostics (exit 2 → agent sees them). Never rewrites the file. |
-| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red. Opt-in; loop-guarded; time-boxed. |
-| `context-health.py` | `Stop` + `UserPromptSubmit` | task boundaries | Nudges only; never acts. |
+| `done-gate.py` | `Stop` (or your tool's finish/idle event) | when the agent tries to finish | Blocks the stop if `verify` is red (reports where the tool can't block). Anti-tamper: baselines the verifier's SHA-256 per session; if it changed, reports once with the diff. Opt-in; loop-guarded; time-boxed. |
+| `context-health.py` | `Stop` + `UserPromptSubmit` | task boundaries | Nudges only; never acts. (Claude-Code-only.) |
+| `pre-compact-guard.py` | your tool's pre-compaction event | before a compaction | Dirty git tree → emits the un-externalized state (stdout = compaction-prompt context, stderr = user warning). Advisory in this edition; `main`'s edition blocks a manual compact once. |
 
 All hooks: measure real state, degrade gracefully on missing tools, and **fail open**
 — a broken hook never blocks your edits or traps the agent.

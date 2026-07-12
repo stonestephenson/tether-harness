@@ -8,11 +8,12 @@ the harness as portable parts you wire into whatever tool you use.
 
 - **`AGENTS.md`** — the operating defaults. Most agentic tools read `AGENTS.md`; drop it in
   your project root or your tool's global config.
-- **`skills/`** — the eight playbooks as plain markdown. Use them as your tool's custom
+- **`skills/`** — the nine playbooks as plain markdown. Use them as your tool's custom
   commands/prompts, or just follow them.
-- **`hooks/`** — the three deterministic verification/context scripts (standalone).
+- **`hooks/`** — the four deterministic verification/context scripts (standalone).
 - **`WIRING.md`** — the hook contract (JSON in → exit-2 + stderr out) and how to connect the
   scripts to your tool's event system.
+- **`tests/`** — the hook regression suite (`bash tests/verify-hooks.test.sh`).
 - **`references/`** — `HARNESS.md` (what/why/when + the research), `WORKFLOW.md` (the loop).
 
 ## How portable is each part
@@ -20,7 +21,8 @@ the harness as portable parts you wire into whatever tool you use.
 | Part | Portability |
 |---|---|
 | `AGENTS.md` + skills | ✅ anywhere — plain markdown; `AGENTS.md` is widely read |
-| verify-on-edit + done-gate | ✅ any tool with a shell/command or plugin hook system — wire per `WIRING.md` |
+| verify-on-edit + done-gate (incl. the verifier anti-tamper guard) | ✅ any tool with a shell/command or plugin hook system — wire per `WIRING.md` |
+| pre-compact-guard | ✅ any tool with a pre-compaction event — advisory (stdout = compaction-prompt context, stderr = warning); tools whose event can block should use `main`'s blocking edition |
 | context-health | ⚠️ Claude-Code-specific (needs transcript token counts); no-ops elsewhere |
 
 ## Quick start
