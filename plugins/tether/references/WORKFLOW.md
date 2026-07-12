@@ -60,12 +60,12 @@ built on two evidence-backed pillars:
 | Research | `/experiment-log` | skill | Record a run so it's reproducible and comparable. |
 | Depart | `/handoff` | skill | Prove a zero-context agent could resume; fix doc gaps. |
 
-## The automatic hooks (Layer 1 — triggers, in `settings.json`)
+## The automatic hooks (Layer 1 — triggers, wired in the plugin's `hooks/hooks.json`; a standalone `~/.claude` install wires the same blocks into `settings.json`)
 
 | Hook | Event(s) | Fires | Acts? |
 |---|---|---|---|
 | `verify-on-edit.py` | `PostToolUse` (Edit/Write/…) | after every file edit | Reports diagnostics (exit 2 → agent sees them). Never rewrites the file. |
-| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red. Anti-tamper: baselines the verifier's SHA-256 per session; if it changed, flags the user and blocks once with the diff. Opt-in; loop-guarded; time-boxed. |
+| `done-gate.py` | `Stop` | when the agent tries to finish | Blocks the stop if `verify` is red (once per stop cycle — an immediately repeated stop passes; it prods, never traps). Anti-tamper: baselines the verifier's SHA-256 per session; if it changed, flags the user and blocks once with the diff. Opt-in; time-boxed. |
 | `context-health.py` | `Stop` + `UserPromptSubmit` | task boundaries | Nudges only; never acts. |
 | `pre-compact-guard.py` | `PreCompact` | before a compaction | Blocks a **manual** compact once while the git tree is dirty; re-run `/compact` to override. Auto-compact never blocks. |
 
@@ -84,9 +84,10 @@ All hooks: measure real state, degrade gracefully on missing tools, and **fail o
 
 ## Grounding (LSP)
 
-Enabled: `rust-analyzer`, `clangd`, `pyright` (Python). LSP gives the agent real
-go-to-def / find-refs / diagnostics instead of guessing symbols — the ACI insight
-from SWE-agent. Its diagnostics complement the verify hooks.
+Whatever language servers the platform has enabled (e.g. `rust-analyzer`, `clangd`,
+`pyright`) give the agent real go-to-def / find-refs / diagnostics instead of guessing
+symbols — the ACI insight from SWE-agent. Their diagnostics complement the verify
+hooks; the harness ships no LSP config of its own.
 
 ## Invariants
 
@@ -116,6 +117,10 @@ from SWE-agent. Its diagnostics complement the verify hooks.
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — bands (`.70` / `.85` / `.95`).
 - `CLAUDE_VERIFY_CMD` — command the done-gate runs on Stop (overrides the file below).
 
+Those are the only runtime knobs. Everything else — subprocess timeouts, output caps,
+the `MODEL_BUDGETS` model→window map, the `C_FAMILY`/`EDIT_TOOLS` sets — is a constant
+at the top of the relevant hook; tune by editing source (and extend the suite).
+
 Per project, opt into the done-gate by creating **`.claude/verify.sh`** — a FAST
 check (seconds), e.g.:
 ```bash
@@ -141,6 +146,7 @@ pip install gersemi                # cmake format   (optional)
 brew install shellcheck            # shell lint     (optional)
 ```
 
-Regression tests: `bash ~/.claude/hooks/context-health.test.sh` and
-`bash ~/.claude/hooks/verify-hooks.test.sh`.
-Disable any hook: remove its block from `settings.json` (skills still work).
+Regression tests: from `plugins/tether/`, `bash tests/context-health.test.sh` and
+`bash tests/verify-hooks.test.sh` — or `bash .claude/verify.sh` from the repo root.
+Disable any hook: remove its block from the plugin's `hooks/hooks.json` (or, in a
+standalone `~/.claude` install, from `settings.json`). Skills still work either way.

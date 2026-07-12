@@ -46,7 +46,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
 | 7 | handoff × catchup — audit the real onboarding path | low | on hold (user, 2026-07-11) |
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 |
-| 8e | Close out #8 | low | docs refreshed 2026-07-11; `/handoff` audit next; remaining: fold in 8b results when they land |
+| 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
 
@@ -202,10 +202,11 @@ Items #1–#5 are ported everywhere (see Completed). What's left is user-run:
   `.tether/verify.sh` at idle, weaken the verifier for the one-time tamper report
   (console), and compact with a dirty tree — expect the injected context in the
   summary + the console warning.
-- **8e — close out.** Docs refreshed 2026-07-11. The final `/handoff` audit runs with
-  the pre-#7 handoff skill (user call, 2026-07-11) — re-audit if #7 lands and
-  materially changes the procedure. Remaining: fold the 8b live-verify results into
-  the branch READMEs' coverage claims when they land.
+- **8e — close out.** Docs refreshed and the final `/handoff` cold audit run
+  2026-07-11 (with the pre-#7 handoff skill, user call — re-audit if #7 lands and
+  materially changes the procedure). Both cold agents verdicted "Partially"; every
+  blocking gap they found was fixed same-day (see the 8e status row). Remaining: fold
+  the 8b live-verify results into the branch READMEs' coverage claims when they land.
 
 ---
 
@@ -243,4 +244,6 @@ Items #1–#5 are ported everywhere (see Completed). What's left is user-run:
 
 **Meta-posture** (from Anthropic's harness work): *iteratively prune scaffolding* — as
 models improve, periodically re-test whether each hook/skill still earns its place. The
-audit that produced this file is the template (memory note: `sota-audit-2026-07`).
+audit that produced this file is the template — its method is codified in the
+`sota-radar` skill (`.claude/skills/sota-radar/SKILL.md`), and this file's git history
+holds the full audit write-up.

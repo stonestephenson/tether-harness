@@ -79,6 +79,9 @@ def build_checks(path):
         if _find_up(path, (".clang-format", "_clang-format")):
             add("clang-format", ["--dry-run", "--Werror", path], "clang-format")
     elif ext == ".rs":
+        # Unconditional (unlike clang-format): rustfmt defines one universal default
+        # style. Edition is pinned because a lone file can't reveal the crate's; 2021
+        # parses all current stable syntax — bump if an edition adds grammar.
         add("rustfmt", ["--edition", "2021", "--check", path], "rustfmt")
     elif base == "CMakeLists.txt" or ext == ".cmake":
         if not add("gersemi", ["--check", path], "gersemi"):
