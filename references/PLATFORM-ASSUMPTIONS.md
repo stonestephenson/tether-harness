@@ -46,6 +46,19 @@ re-baseline the doc's event count, read as 29 vs 32 across the two fetches).
   `SubagentStart/Stop`, `ConfigChange` (blockable), `InstructionsLoaded`. No harness use
   identified yet — re-evaluate only with a concrete need.
 
+## Port-branch facts (tracked on their branches; radar sweeps them too)
+
+The `codex` / `opencode` branches pin their own contracts in their READMEs; the two
+fragile ones worth a tripwire here (verified 2026-07-11):
+
+- **Codex `PreCompact` blocks via `{"continue": false, "stopReason": …}` JSON, not
+  exit 2** (learn.chatgpt.com/docs/hooks) — relied on by the codex `pre-compact-guard.py`.
+- **opencode's pre-compaction hook is `experimental.session.compacting`** (inject-only —
+  `output.context` reaches the compaction prompt; no block channel, no manual/auto
+  field; verified against the 1.17.15 `@opencode-ai/plugin` typedefs). Relied on by the
+  opencode plugin's pre-compact wiring. The `experimental.` prefix means this can rename
+  or change shape in any release — re-check the typedefs on opencode upgrades.
+
 ## How to re-verify (the radar's Step 1 recipe)
 
 1. Fetch the hooks doc; check facts 1–8, 12, 13 against its event/output tables.

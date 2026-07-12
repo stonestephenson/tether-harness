@@ -41,14 +41,14 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 1 | Verifier-integrity guard (done-gate anti-tamper) | high | ✅ done on main (2026-07-11) — SessionStart baseline not taken (optional); ports pending |
-| 2 | Corrections→enforcement compiler (`/harden`) | high | ✅ done on main (2026-07-11) — standalone skill; not wired into `/ship` (resolved with #4: ship's review step names repeat-nits as /harden candidates); ports pending |
-| 3 | PreCompact externalize-guard | medium | ✅ done on main (2026-07-11) — auto+dirty emits the optional systemMessage; ports pending |
-| 4 | `/ship` cold reviewer | medium | ✅ done on main (2026-07-11) — mechanical scan stays in-thread; judgment review goes cold (/code-review, else one cold subagent); ports pending |
-| 5 | Hygiene batch | low | ✅ done (2026-07-11) — 5a/5b on main (model map: current gen natively 1M, `[1m]` caveat narrowed to 200k-default models); 5c live install synced with user OK; 5d cruft deleted |
+| 1 | Verifier-integrity guard (done-gate anti-tamper) | high | ✅ done on main (2026-07-11) — SessionStart baseline not taken (optional); ported to all branches 2026-07-11 |
+| 2 | Corrections→enforcement compiler (`/harden`) | high | ✅ done on main (2026-07-11) — standalone skill; not wired into `/ship` (resolved with #4: ship's review step names repeat-nits as /harden candidates); ported to all branches 2026-07-11 |
+| 3 | PreCompact externalize-guard | medium | ✅ done on main (2026-07-11) — auto+dirty emits the optional systemMessage; ported to all branches 2026-07-11 (opencode/generic: advisory/inject variant — no block channel there) |
+| 4 | `/ship` cold reviewer | medium | ✅ done on main (2026-07-11) — mechanical scan stays in-thread; judgment review goes cold (/code-review, else one cold subagent); ported to all branches 2026-07-11 |
+| 5 | Hygiene batch | low | ✅ done (2026-07-11) — 5a/5b on main (model map: current gen natively 1M, `[1m]` caveat narrowed to 200k-default models) + ported to all branches; 5c live install synced with user OK; 5d cruft deleted |
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
-| 7 | handoff × catchup — audit the real onboarding path | low | on hold (user, 2026-07-11) |
-| 8 | Port the 2026-07 upgrades (#1–#5) to the other branches + close out | medium | in progress — **NEXT: 8d generic branch** (WIRING.md prose); 8a codex done (`0ff5b54`, unpushed) + 8c opencode done (`0bdc41c`, unpushed; suite 42/42); 8b live verifies (codex + opencode, user-run); no `/handoff` until 8e |
+| 7 | handoff × catchup — audit the real onboarding path | low | on hold (user, 2026-07-11) — note: 8e's `/handoff` audit was designed to run *after* #7; decide at close-out |
+| 8 | Port the 2026-07 upgrades (#1–#5) to the other branches + close out | medium | in progress — **NEXT: 8b live verifies (user-run: codex + opencode)**, then 8e close-out; 8a codex done (`0ff5b54`, local until 8b passes) · 8c opencode done (`0bdc41c`, pushed) · 8d generic done (`6487d13`, pushed); no `/handoff` until 8e |
 
 ---
 
@@ -368,10 +368,14 @@ main. Sub-items in execution order:
   docs): PreCompact exists with `manual`/`auto` trigger but blocks via
   `{"continue": false, "stopReason": …}` JSON, **not** exit 2. Suite 40/40; installer
   smoke-tested into a temp `CODEX_HOME`.
-- **8b — codex live verification + push (user-run).** In an authenticated Codex
-  session: trip verify-on-edit, finish red for the done-gate, weaken the verifier for
-  the one-time tamper block, `/compact` on a dirty tree for the guard. Then push the
-  branch.
+- **8b — live verification (user-run): codex + opencode.**
+  *Codex* (authenticated session): trip verify-on-edit, finish red for the done-gate,
+  weaken the verifier for the one-time tamper block, `/compact` on a dirty tree for
+  the guard. Then push the branch (it stays local until this passes).
+  *opencode* (interactive session; branch already pushed): trip verify-on-edit, fail
+  `.tether/verify.sh` at idle, weaken the verifier for the one-time tamper report
+  (console), and compact with a dirty tree — expect the injected context in the
+  summary + the console warning.
 - **8c — opencode port.** ✅ Done (branch commit `0bdc41c`, 2026-07-11): all five
   items against the opencode contract. The open platform-fact question is resolved
   (verified against the 1.17.15 installed plugin typedefs): the PreCompact-equivalent
@@ -384,11 +388,22 @@ main. Sub-items in execution order:
   The branch gained its first regression suite (`opencode/tests/`, 42/42) plus a
   maintainer-side `.claude/verify.sh`. Live verification in an interactive opencode
   session is user-run — same checklist shape as 8b.
-- **8d — generic branch.** WIRING.md prose: describe the anti-tamper baseline,
-  pre-compact-guard semantics, and the two new skills for tool-agnostic adopters.
-- **8e — close out.** Update main's README port-status table + the "ports pending"
-  notes in rows 1–5; then run `/handoff` on main as the final doc audit (deliberately
-  after #7 lands, so the audit exercises #7's rewritten catchup-first procedure).
+- **8d — generic branch.** ✅ Done (branch commit `6487d13`, 2026-07-11, pushed).
+  WIRING.md documents the anti-tamper baseline (incl. why `session_id` must be
+  passed), the pre-compact guard's two delivery channels (stdout = compaction-prompt
+  context for inject-capable tools, stderr = user warning; block-capable tools should
+  use main's blocking edition), and the config aliases. Scope extension beyond the
+  original prose-only sketch: the branch ships actual artifacts, so those were synced
+  too — hooks (tamper done-gate, advisory pre-compact-guard, MultiEdit drop,
+  context-health budget map), skills (harden.md new, ship.md cold reviewer), and the
+  branch's first regression suite (42/42) — otherwise the prose would describe
+  upgrades the shipped scripts didn't have.
+- **8e — close out.** README port-status table + rows 1–5 notes were refreshed
+  2026-07-11 (docs-review pass); at close-out, fold in the 8b live-verify results,
+  then run `/handoff` on main as the final doc audit. **Open decision:** that audit
+  was designed to run *after* #7 lands (so it exercises #7's catchup-first
+  procedure), but #7 is on hold — either un-hold #7 first, or run the audit with the
+  current handoff skill and re-audit if #7 lands later.
 
 **Acceptance.** Each branch's suite green; branch READMEs document contract deltas;
 main's port-status table current; 8e's handoff audit passes cold.
