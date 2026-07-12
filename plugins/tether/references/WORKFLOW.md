@@ -138,10 +138,11 @@ shell-based writes:
 "permissions": { "deny": ["Edit(./.claude/verify.sh)", "Write(./.claude/verify.sh)"] }
 ```
 
-Activate the linters the verify hook uses (only rustfmt/clippy present by default):
+Activate the linters the verify hook uses (all optional — a missing tool is skipped;
+rustfmt/clippy come with a Rust toolchain if you have one):
 ```bash
 pip install ruff pyright           # python lint/format + types
-brew install clang-format llvm     # c/c++ format (+ clang-tidy)
+brew install clang-format          # c/c++ format (opt-in via .clang-format)
 pip install gersemi                # cmake format   (optional)
 brew install shellcheck            # shell lint     (optional)
 ```

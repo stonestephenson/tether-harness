@@ -15,8 +15,10 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
   (`ruff --select E9,F`, `shellcheck`) everywhere; **formatting/style is opt-in**
   (clang-format, `ruff format`) and runs only when the project ships a style config
   (`.clang-format`, or any `ruff.toml`/`pyproject.toml`), so hand-formatted code isn't
-  churned. Exception: `rustfmt` and `gersemi`/`cmake-format` run on every `.rs`/CMake
-  edit unconditionally — those toolchains define one universal default style.
+  churned. With a ruff config present, the project's **own** `ruff check` runs instead
+  of the E9,F floor — a config that narrows `select` wins. Exception: `rustfmt`
+  (pinned `--edition 2021`) and `gersemi`/`cmake-format` run on every `.rs`/CMake edit
+  unconditionally — those toolchains define one universal default style.
 - **done-gate** (`Stop`) — runs a project's `.claude/verify.sh` when the agent finishes and
   blocks on failure — once per stop cycle (the loop guard lets an immediately repeated
   stop through rather than trapping the agent). Opt-in per project; fails open.
@@ -29,7 +31,8 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
 
 **Skills:** `/catchup`, `/context-health`, `/handoff`, `/ship` (session lifecycle);
 `/plan-change`, `/test-first`, `/council`, `/harden` (execution quality);
-`/experiment-log` (research).
+`/experiment-log` (research). Each skill's full text lives at
+`skills/<name>/SKILL.md`.
 
 ## Install
 
@@ -81,6 +84,9 @@ From this directory (`plugins/tether/`):
 bash tests/context-health.test.sh    # 18 checks
 bash tests/verify-hooks.test.sh      # 46 checks (verify-on-edit, done-gate + tamper, pre-compact-guard)
 ```
+
+Full counts assume the optional toolchain (ruff, rustfmt, git); a missing tool SKIPs
+its block — fewer passes on a lean machine is expected, failures are not.
 
 Or one command from the repo root: `bash .claude/verify.sh` (runs both — it's this
 repo's own done-gate).

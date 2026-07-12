@@ -44,7 +44,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | # | Task | Priority | Status |
 |---|------|----------|--------|
 | 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
-| 7 | handoff × catchup — audit the real onboarding path | low | on hold (user, 2026-07-11) |
+| 7 | handoff × catchup — audit the real onboarding path | low | ✅ done on main (2026-07-12) — live-tested with one cold Agent A run (catchup invocable in-subagent; contract, provenance, and pointer-graph checks all fired); **ports pending** (codex/opencode skill copies — confirm each tool supports skill invocation inside a subagent, else ship the verbatim-step-1 form) |
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
 
@@ -123,68 +123,29 @@ closing the item.
 README one-liner. No hook or skill changes.
 
 ---
-
 ## 7. handoff × catchup — audit the real onboarding path
 
-**Provenance.** User-commissioned 2026-07-10 from a design review of the handoff/catchup
-mirror pair. No radar sweep behind it and no paper needed — this is an
-internal-consistency fix (design-reasoning tier), not an evidence-tier claim.
+**✅ Landed on main 2026-07-12** (user-commissioned 2026-07-10; design-reasoning tier —
+internal-consistency fix, no paper needed). The full design sketch is in this file's
+git history; the behavior now lives in the shipped skills:
 
-**Problem.** handoff's cold Agent A audits a path no real agent takes. Its prompt names
-the doc set ("Read the entry docs (README, CLAUDE.md/AGENTS.md, ROADMAP/CHANGELOG,
-docs/)"), so it finds e.g. an unlinked ROADMAP by listing files. But every future cold
-agent in this ecosystem starts with `/catchup`, which reads the entry doc and follows
-only **its pointers** — catchup itself flags an unmapped entry doc as a handoff smell.
-So a failure class the audit structurally cannot catch today: **docs that exist but are
-unreachable from the entry doc's pointer graph**, and catchup orientations that come out
-wrong (wrong test command, missed backlog). The audit should test the composed system
-(docs × catchup), because that's what cold agents actually experience.
+- `plugins/tether/skills/handoff/SKILL.md` — Agent A orients by invoking `/catchup`
+  for real (contract-with-fallback: missing deliverables → verbatim entry-doc list,
+  reported loudly), tags comprehension answers `[docs]` vs `[spelunked]`
+  (spelunking-only = doc gap), and checks for docs unreachable from the entry-doc
+  pointer graph. Agent B is unchanged — the catchup-free control. Step 6 reports the
+  catchup path's health to the user.
+- `plugins/tether/skills/catchup/SKILL.md` — coupling note (change-site guard).
+- `HARNESS.md` §5 `/handoff` — one line on the coupling.
 
-**Design sketch.**
-- **Agent A's first act = literally run `/catchup`** (Skill invocation, not an inlined
-  paraphrase — a copy would drift from the real catchup and defeat the realism purpose;
-  when catchup evolves, the audit should test the evolved version). Agent A's existing
-  build/run/test probing (its steps 2–4) stays unchanged: catchup is orientation, not
-  audit — it never tries every documented run mode, probes extension questions, or hunts
-  stale claims.
-- **New gap class in A's step 4:** docs unreachable from the entry-doc pointer graph;
-  anything wrong or missing in the catchup orientation (commands, backlog, conventions).
-- **Provenance rule (anti-masking):** when A answers the comprehension questions, it
-  notes whether each answer came from the docs or from git/code spelunking;
-  spelunking-only answers count as doc gaps. This guard is catchup-version-independent —
-  catchup getting "better" at git archaeology can't silently mask doc gaps.
-- **Contract-with-fallback (anti-quiet-regression):** handoff's prompt states what the
-  catchup orientation must deliver — build/run/test commands, the backlog, the
-  conventions. If any are missing, A falls back to the current verbatim step 1 **and
-  reports the fallback in its findings** — a catchup regression becomes a loud line in
-  the audit report instead of a silent weakening.
-- **Agent B unchanged** — it is READ-ONLY (catchup runs checks; would collide with A) and
-  stays the catchup-free control in every run, so the verdict never rests solely on the
-  catchup path.
-- **Coupling note in catchup's SKILL.md** (change-site guard): handoff's cold audit
-  invokes this skill; if you change Step 1's pointer-following or the orientation report
-  shape, re-check handoff Step 2.
-- The existing "harness can't spawn subagents" fallback gains a sibling: `/catchup` not
-  invocable inside the subagent → use the verbatim step 1.
+**Live-tested 2026-07-12** (one cold Agent A run against this repo): `/catchup` was
+invocable inside the subagent, delivered the full four-part contract, no fallback
+needed; provenance tags and the pointer-graph check both produced real findings.
 
-**Rejected during design — standing third agent** (a copy of A without catchup) as a
-catchup-regression detector: permanent per-run cost to detect a rare event with a noisy
-instrument (two stochastic cold agents differ run-to-run anyway, so attribution needs
-repetition), and it mixes auditing-this-repo with regression-testing-catchup. Catchup
-breakage is already the loudest failure in the workflow (it runs at every session start),
-and the masking direction is covered by the provenance rule + Agent B. If "does
-catchup-first change audit quality?" ever needs a measured answer, run it once as a
-`bench/` (#6) differential experiment when catchup materially changes — not as a fixture.
-
-**Acceptance.** `plugins/tether/skills/handoff/SKILL.md`: Agent A's prompt opens with the
-`/catchup` invocation + contract-with-fallback + provenance rule + the new gap class;
-Agent B and the fix/re-verify steps untouched. `plugins/tether/skills/catchup/SKILL.md`:
-coupling note added. `HARNESS.md` skills section: one line on the handoff↔catchup
-coupling. No hook changes; regression suites unaffected.
-
-**Port notes.** Apply to the `codex` / `opencode` skill copies only after main is
-verified; confirm each tool's skill-invocation mechanism supports a subagent calling
-catchup, else ship the verbatim-step-1 form there.
+**Port notes.** Apply to the `codex` / `opencode` skill copies only after confirming
+each tool's skill-invocation mechanism works inside a subagent; else ship the
+verbatim-step-1 form there. `generic` ships skills as plain playbooks — port the
+prompt text as-is.
 
 ---
 

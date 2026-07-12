@@ -94,7 +94,9 @@ context window*, not "specialization."
 - **What:** after I edit a file, it runs fast, file-local checks for that language and
   hands any problems straight back to me to fix. Check-only — it never rewrites your file.
   **Real-bug lint** (unused imports / undefined names via `ruff --select E9,F`, plus
-  `shellcheck`) runs everywhere; **formatting/style** (clang-format, `ruff format`) is
+  `shellcheck`) runs everywhere — though when the project has a ruff config, its
+  **own** `ruff check` runs instead of the E9,F floor (the project's `select` wins);
+  **formatting/style** (clang-format, `ruff format`) is
   **opt-in** — it runs only when the project ships a style config (`.clang-format`, or
   any `ruff.toml`/`pyproject.toml` — note a `pyproject.toml` without a `[tool.ruff]`
   section still counts). That keeps hand-formatted codebases from being churned. The
@@ -170,6 +172,9 @@ context window*, not "specialization."
 ### `/handoff` — export context before you leave
 - **What:** spawns fresh cold subagents to prove a zero-context agent could build, run,
   test, and extend the project from the docs alone — then fixes whatever they trip on.
+  Its onboarding auditor orients by invoking `/catchup` for real, so the audit tests
+  the composed docs×catchup path an actual cold agent takes (the two skills are
+  coupled — each SKILL.md carries the contract/change-site note).
 - **Why:** the real test of documentation is a cold pickup. This is the safety gate
   before `/clear`: if a fresh agent couldn't resume, you're not allowed to wipe the
   thread yet.
