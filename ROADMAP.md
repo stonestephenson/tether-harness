@@ -27,8 +27,17 @@ goal.** The list is approved as a backlog; items are green-lit individually.
   agent, or wedge a session. Time-box every subprocess. Never auto-revert user files.
 - Every hook change lands with regression coverage (each branch has its own suite;
   `.claude/verify.sh` runs it — the repo's own done-gate on every branch).
-- **No new skills beyond what's listed here.** Minimal scaffolds are the evidence-backed
-  position (mini-swe-agent: ~74% SWE-bench Verified from a ~100-line harness).
+- **New hooks/skills carry a burden of proof — and never enter unprompted.** (Reworded
+  2026-07-12: the earlier flat "no new skills" was the audit's scoping rule, not a
+  research finding.) Minimal-*sufficient* scaffolding is the evidence-backed position
+  (mini-swe-agent: ~74% SWE-bench Verified from ~100 lines — heavy scaffolding isn't
+  *necessary*; the landscape survey: process-heavy scaffolding without verification
+  signal audits badly). A new piece must (a) sit at a high-leverage moment no existing
+  piece covers — extend before adding; (b) be the right kind (must-happen → hook,
+  judgment → skill); (c) pay for its standing context + maintenance cost; (d) land
+  main-first with regression coverage + docs; (e) get the user's explicit green-light.
+  Agents propose; they never add scaffolding unprompted. The meta-posture (bottom)
+  runs the same test in reverse on the existing pieces.
 - The user's live install (`~/.claude`) is **not a test bed**. Verify in-repo with the
   suites and temp dirs. Touching the live install requires their explicit OK.
 - When behavior changes, update `HARNESS.md` / `WORKFLOW.md` / the plugin README, and keep
@@ -183,8 +192,13 @@ Items #1–#5 are ported everywhere (see Completed). What's left is user-run:
   ("Rethinking the Value of Agent-Generated Tests", arXiv 2602.07900 — test-writing volume
   doesn't correlate with success; prompting for more tests doesn't help), and
   `/test-first`'s "watch it fail first" already delivers the core guarantee.
-- **More skills / skill sprawl.** Minimal scaffolds are SOTA (mini-swe-agent ~74%
-  SWE-bench Verified, ~100 lines, swebench.com). Twenty marginal skills mean nothing.
+- **Skill sprawl / process-heavy scaffolding without verification signal.** What the
+  evidence rejects is not "new scaffolding" but scaffolding that adds process without
+  adding signal: mini-swe-agent (~74% SWE-bench Verified, ~100 lines, swebench.com)
+  shows heavy scaffolds aren't *necessary*, and the 2026-07 landscape survey found
+  persona/pipeline-heavy frameworks audit badly. Twenty marginal skills mean nothing;
+  a piece that passes the ground-rules burden-of-proof test is fine — `/harden` and
+  #7 entered exactly that way.
   *Field check 2026-07 (anecdote-tier — single-run YouTuber bake-off, via EveryDev):*
   vanilla Claude Code beat all five big frameworks (20 min/200k tokens vs 60–110+ min);
   directional corroboration only — see `references/LANDSCAPE.md`.
