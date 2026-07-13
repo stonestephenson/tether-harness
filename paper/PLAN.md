@@ -6,6 +6,13 @@ reframed 2026-07-12 from a zero-budget self-check to a paper-grade study — "Op
 Target: arXiv preprint + an agents/evaluation workshop; a main-conference submission is
 out of scope unless Phase 0/1 evidence argues otherwise.
 
+**Thesis.** Deterministic verification scaffolding — hooks carrying a real, external
+verification signal — causally improves coding-agent outcomes on tasks where its
+target failure mode occurs, costs ≈nothing where it doesn't, and the effect varies by
+mechanism and by model capability. tether is the *instantiation under test*, not the
+thesis: the ablation arms isolate mechanisms, not the brand, and the harness version
+is a documented parameter (treatment versioning, under Conventions).
+
 **Status: Phase 0 (scaffold ✅ 2026-07-12 · novelty audit pending).** Each phase below
 ends at a gate; nothing advances past a gate without the user.
 
@@ -95,6 +102,16 @@ Terminal-Bench, mini-swe-agent — full citations in
 
 ## Conventions
 
+- **Treatment versioning (decided 2026-07-12).** The harness evolves normally (the
+  ROADMAP process) until the Phase-4 freeze; pre-freeze changes must be justified on
+  their own evidence — never by task-suite performance (tuning the treatment to the
+  instrument is overfitting, not improvement). Harness *bug* fixes surfaced by the
+  pilot are allowed pre-freeze, documented. The Phase-4 tag pins design **and**
+  treatment in one commit (plugin, tasks, and prereg share this repo); arms install
+  tether at that tag and the paper cites it. During Phases 5–6 the harness does not
+  change — new evidence queues via RADAR/ROADMAP and waits. Post-study, the bench
+  becomes the harness's regression benchmark: improvements are *measured* against the
+  published baseline on the same frozen task suite (the meta-posture's instrument).
 - **One home per fact** (documentation policy, HARNESS §9): this file owns the study
   plan and its rationale; RELATED-WORK.md will own study citations (PAPERS.md-style
   format) — only evidence that changes *harness* design flows back to PAPERS.md;
