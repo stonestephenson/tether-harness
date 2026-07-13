@@ -3,8 +3,8 @@
 **What this is.** A pre-registered, reproducible study of what verification scaffolding
 actually does to coding-agent outcomes, built on the `bench/` instrument (ROADMAP #6,
 reframed 2026-07-12 from a zero-budget self-check to a paper-grade study — "Option B").
-Target: arXiv preprint + an agents/evaluation workshop; a main-conference submission is
-out of scope unless Phase 0/1 evidence argues otherwise.
+Target: arXiv preprint + an agents/evaluation workshop; a main-conference submission
+upgrades in only via the pre-committed scope-upgrade criteria at the Phase-1 gate.
 
 **Thesis.** Deterministic verification scaffolding — hooks carrying a real, external
 verification signal — causally improves coding-agent outcomes on tasks where its
@@ -13,8 +13,11 @@ mechanism and by model capability. tether is the *instantiation under test*, not
 thesis: the ablation arms isolate mechanisms, not the brand, and the harness version
 is a documented parameter (treatment versioning, under Conventions).
 
-**Status: Phase 0 (scaffold ✅ 2026-07-12 · novelty audit pending).** Each phase below
-ends at a gate; nothing advances past a gate without the user.
+**Status: Phase 0 complete (scaffold + novelty audit, 2026-07-12) — gate open:** the
+audit's verdicts and recommended reframe (headline C1; C2 secondary; C3 cut; C4 as
+framing) are in [`RELATED-WORK.md`](RELATED-WORK.md), awaiting the user's
+proceed / reframe / kill call. Each phase below ends at a gate; nothing advances past
+a gate without the user.
 
 ## Why paper-grade (decision record, 2026-07-12)
 
@@ -32,7 +35,7 @@ ends at a gate; nothing advances past a gate without the user.
   ROADMAP tier structure that treated framework arms as API spend. API-key auth is
   supported in the runner **only** so third parties can reproduce.
 
-## Candidate contributions (Phase 0 validates each: open / crowded / taken)
+## Candidate contributions (verdicts: [`RELATED-WORK.md`](RELATED-WORK.md))
 
 - **C1 — mechanism decomposition.** Ablation arms (vanilla / single-hook / full harness)
   with held-out verifiers: *which* scaffolding components move outcomes, and when.
@@ -62,13 +65,21 @@ ends at a gate; nothing advances past a gate without the user.
 
 ## Phases and gates
 
-0. **Scaffold + novelty audit.** Scaffold ✅. Next: related-work sweep (harness
-   ablations, agent-eval methodology, held-out-verifier designs, AGENTS.md/context
-   studies, Terminal-Bench follow-ups) → RELATED-WORK.md with a per-contribution
-   verdict. **Gate: user reads the verdict — proceed / reframe / kill.**
+0. **Scaffold + novelty audit.** ✅ 2026-07-12 — sweep run, verdicts in
+   [`RELATED-WORK.md`](RELATED-WORK.md) (C1 open — loudly; C2 crowded; C3 taken;
+   C4 framing-only). **Gate: user reads the verdict — proceed / reframe / kill.**
 1. **Experimental design** → DESIGN.md: pre-specified hypotheses, task-construction
    protocol, arm/model matrix with run-budget math, power analysis, stats plan.
-   **Gate: `/council` on the design, then user approval.**
+   **Gate: `/council` on the design, then user approval.** The gate also fixes
+   scope. Default = arXiv + workshop; upgrade toward a main-conference /
+   datasets-and-benchmarks target only if the pre-committed criteria hold:
+   (a) Phase 0 found the question loudly open or contradictorily answered;
+   (b) the task protocol scales to 50+ tasks at acceptable AI-labor cost;
+   (c) a second model family is feasible at ~zero marginal cost (the opencode
+   port + local models — qwen3-coder already verified end-to-end); (d) the power
+   analysis makes the C2 interaction detectable at feasible n. Either way the
+   workshop → main-conf extension path stays open (workshops are non-archival;
+   the frozen instrument re-runs later with more arms/tasks).
 2. **Instrument build** → `bench/`: tasks per protocol; runner provisioning per-arm
    `CLAUDE_CONFIG_DIR` sandboxes (live `~/.claude` never touched — standing ground
    rule); dry-run self-test with no model calls; test-first where checkable.
