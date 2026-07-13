@@ -52,7 +52,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | low | on hold (user, 2026-07-11) |
+| 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | medium | **green-lit (user, 2026-07-12) — build next, in a fresh session**: agent builds all four tasks + runner + sandboxes; user fires the Tier-0 runs under their own auth |
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
 | 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending, batched** (policy: flush the port queue before a live demo on that branch, when a behavior-critical change enters it, or at 2–3 queued items). Port spec: apply main's `plugins/tether/skills/handoff/SKILL.md` deltas from commits `c8d8bbe` (#7) *if not already ported* and `b6c9008` (#9 — excess class, Economy checklist, deleting-is-a-fix rules; tool-agnostic prose, ports near-verbatim) to each branch's handoff copy; HARNESS §9 policy section ports as-is; the verify.sh link check is optional per-branch maintainer tooling |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
@@ -93,7 +93,10 @@ model, 5.2-pt spread across harnesses), i.e. this measurement is worth making;
 mini-swe-agent — predicts ≈parity on easy tasks (an overhead check, not a win condition).
 
 **Design sketch.**
-- New top-level `bench/`: task templates + a runner + `RESULTS.md`. Each task = a
+- New top-level `bench/` **on `main`** (decided 2026-07-12: no separate testing
+  branch — plugin installs ship only `plugins/tether/`, so `bench/` never reaches
+  users; branches mean tool editions here; and a public, reproducible bake-off on the
+  default branch is part of the point): task templates + a runner + `RESULTS.md`. Each task = a
   self-contained temp-repo template with a pre-registered prompt, visible checks, and a
   **hidden verifier** the runner executes only after the session ends — it never enters
   the agent's context (SpecBench pattern; this is what keeps a "showcase" honest).
