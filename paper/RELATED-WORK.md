@@ -5,7 +5,9 @@ sweep run 2026-07-12 (arXiv + industry sources; abstract-level reads — the fou
 load-bearing papers below get full reads in Phase 1 before the design freezes).
 Harness evidence already cited by the plugin lives in
 [`PAPERS.md`](../plugins/tether/references/PAPERS.md) (SpecBench, EvilGenie,
-Terminal-Bench, mini-swe-agent) and is not restated here.
+Terminal-Bench, mini-swe-agent) and is not restated here. Local PDFs of every paper
+cited below: `paper/papers/` (gitignored, same convention as `references/papers/` —
+re-fetch by arXiv id if missing; filenames are `<slug>-<arxiv-id>.pdf`).
 
 | # | Candidate contribution | Verdict | One-line reason |
 |---|---|---|---|

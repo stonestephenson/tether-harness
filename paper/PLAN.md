@@ -13,11 +13,11 @@ mechanism and by model capability. tether is the *instantiation under test*, not
 thesis: the ablation arms isolate mechanisms, not the brand, and the harness version
 is a documented parameter (treatment versioning, under Conventions).
 
-**Status: Phase 0 complete (scaffold + novelty audit, 2026-07-12) — gate open:** the
-audit's verdicts and recommended reframe (headline C1; C2 secondary; C3 cut; C4 as
-framing) are in [`RELATED-WORK.md`](RELATED-WORK.md), awaiting the user's
-proceed / reframe / kill call. Each phase below ends at a gate; nothing advances past
-a gate without the user.
+**Status: Phase 1 at its gate (2026-07-12).** Phase 0 done (reframe approved:
+headline C1 — [`RELATED-WORK.md`](RELATED-WORK.md)); papers pulled to
+`paper/papers/`; [`DESIGN.md`](DESIGN.md) drafted, council-reviewed (4 lenses; v1's
+trap-class bug and admission contradiction fixed in v2), **awaiting user approval**.
+Each phase below ends at a gate; nothing advances past a gate without the user.
 
 ## Why paper-grade (decision record, 2026-07-12)
 
@@ -65,12 +65,13 @@ a gate without the user.
 
 ## Phases and gates
 
-0. **Scaffold + novelty audit.** ✅ 2026-07-12 — sweep run, verdicts in
-   [`RELATED-WORK.md`](RELATED-WORK.md) (C1 open — loudly; C2 crowded; C3 taken;
-   C4 framing-only). **Gate: user reads the verdict — proceed / reframe / kill.**
-1. **Experimental design** → DESIGN.md: pre-specified hypotheses, task-construction
-   protocol, arm/model matrix with run-budget math, power analysis, stats plan.
-   **Gate: `/council` on the design, then user approval.** The gate also fixes
+0. **Scaffold + novelty audit.** ✅ 2026-07-12 — verdicts in
+   [`RELATED-WORK.md`](RELATED-WORK.md); gate passed: **reframe approved by user**
+   (headline C1, C2 secondary, C3 cut, C4 framing).
+1. **Experimental design** → [`DESIGN.md`](DESIGN.md): ✅ drafted + council-reviewed
+   2026-07-12 (v2 fixes the trap-class causal path, drops per-task outcome
+   screening, restructures H-family to one confirmatory test). **Gate: user
+   approval — open.** The gate also fixes
    scope. Default = arXiv + workshop; upgrade toward a main-conference /
    datasets-and-benchmarks target only if the pre-committed criteria hold:
    (a) Phase 0 found the question loudly open or contradictorily answered;
