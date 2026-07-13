@@ -52,7 +52,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 6 | Harness self-benchmark (`bench/`, zero-budget Tier 0) | medium | **green-lit (user, 2026-07-12) — build next, in a fresh session**: agent builds all four tasks + runner + sandboxes; user fires the Tier-0 runs under their own auth |
+| 6 | Harness bake-off study (`paper/` + `bench/`) | high | **reframed to paper-grade 2026-07-12 (user: "Option B")** — pre-registered publishable study; plan, phases, and gates live in [`paper/PLAN.md`](paper/PLAN.md); Phase 0 scaffold ✅, novelty audit next |
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
 | 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending, batched** (policy: flush the port queue before a live demo on that branch, when a behavior-critical change enters it, or at 2–3 queued items). Port spec: apply main's `plugins/tether/skills/handoff/SKILL.md` deltas from commits `c8d8bbe` (#7) *if not already ported* and `b6c9008` (#9 — excess class, Economy checklist, deleting-is-a-fix rules; tool-agnostic prose, ports near-verbatim) to each branch's handoff copy; HARNESS §9 policy section ports as-is; the verify.sh link check is optional per-branch maintainer tooling |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
@@ -71,74 +71,25 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 ---
 
-## 6. Harness self-benchmark (`bench/`) — reproducible A/B vs vanilla
+## 6. Harness bake-off study — pre-registered, publishable (`paper/` + `bench/`)
 
-**Provenance.** Not from the audit five: commissioned by the user 2026-07-09 as the
-follow-up to the landscape survey (`references/LANDSCAPE.md`; RADAR entry same date).
-**Budget constraint (user-set): no API spend.** Tier 0 below is designed to complete at
-zero marginal cost on the user's existing subscription; the paid tiers are optional
-extensions and are NOT required to close this item.
+**Provenance.** Commissioned by the user 2026-07-09 as the follow-up to the landscape
+survey (`references/LANDSCAPE.md`; RADAR entry same date). **Reframed 2026-07-12
+(user decision, "Option B"):** the user has personal verification from daily use; the
+item's value is rigorous *public* evidence, so it is designed as a publishable study
+from day one — pre-registration, mechanical task construction, ablation arms, power
+analysis — targeting arXiv + an agents/evaluation workshop. The user's Max
+subscription makes runs zero marginal cost, superseding the original zero-budget tier
+structure (full pre-Option-B design sketch: this file's git history at `fd61a71`).
 
-**Problem.** tether's design is research-backed but has never been self-measured, and the
-only public framework bake-off is anecdote-tier (single-run YouTube video, no published
-prompt — LANDSCAPE.md). The meta-posture at the bottom of this file — "periodically
-re-test whether each hook/skill still earns its place" — has no instrument. Nobody in the
-field publishes a reproducible harness bake-off; shipping one is itself a frontier
-position.
+**One home for the plan: [`paper/PLAN.md`](paper/PLAN.md)** — candidate
+contributions, threats to validity, the phase pipeline with gates, and conventions.
+`bench/` (Phase 2) stays the instrument; `paper/` is the study; neither ships to
+plugin users.
 
-**Evidence.** SpecBench (2605.21384) — held-out verifiers the agent never sees are what
-make agent evals trustworthy; EvilGenie (2511.21654) — tamper-bait task design;
-Terminal-Bench (ICLR 2026) — harness choice moves scores more than model choice (same
-model, 5.2-pt spread across harnesses), i.e. this measurement is worth making;
-mini-swe-agent — predicts ≈parity on easy tasks (an overhead check, not a win condition).
-
-**Design sketch.**
-- New top-level `bench/` **on `main`** (decided 2026-07-12: no separate testing
-  branch — plugin installs ship only `plugins/tether/`, so `bench/` never reaches
-  users; branches mean tool editions here; and a public, reproducible bake-off on the
-  default branch is part of the point): task templates + a runner + `RESULTS.md`. Each task = a
-  self-contained temp-repo template with a pre-registered prompt, visible checks, and a
-  **hidden verifier** the runner executes only after the session ends — it never enters
-  the agent's context (SpecBench pattern; this is what keeps a "showcase" honest).
-- Arms = per-arm `CLAUDE_CONFIG_DIR` sandboxes provisioned by the runner. The live
-  `~/.claude` is never touched (standing ground rule).
-- v1 task set, one per mechanism: **finish-red trap** (done-gate: the obvious fix breaks a
-  neighboring test; metric = hidden-suite pass at session end) · **lint-landmine
-  refactor** (verify-on-edit: metric = residual F-class lint + fix-loop turns) ·
-  **greenfield parity check** (overhead tax: metric = token/time delta vs vanilla;
-  expected result ≈parity, and that parity is the point) · **doc-set differential**
-  (added 2026-07-12 from the docs discussion: same task on three copies of one repo —
-  docs as-shipped / pruned to HARNESS §9's documentation policy / no docs; metric =
-  hidden-verifier pass + tokens + turns; directly answers "same quality with less
-  context?" — the closest published work, the 2026 AGENTS.md studies, is new and
-  workshop-tier, so this is worth measuring ourselves). Deferred: long-horizon context
-  task (hard to score cheaply); tamper-bait (#1 landed, so this now measures the guard —
-  include the before/after framing when designed).
-- Metrics per run: hidden-verifier pass rate, tokens, wall time, turn count. **All runs
-  reported** — no cherry-picking. Parity or a loss is the prune signal working, not a
-  failed benchmark.
-- **Tier 0 (zero marginal cost — the acceptance target):** 2 arms (vanilla, tether) ×
-  3 tasks × 3 reps = 18 serial headless runs on the user's subscription, spread over days
-  to respect limits. The agent prepares tasks/runner/sandboxes; the user fires the runs
-  under their own auth.
-- **Tier 1 (optional, small API spend):** framework arms from LANDSCAPE.md — superpowers,
-  SuperClaude, BMAD, gstack as installed-config arms; spec-kit scripted or excluded with
-  rationale; ruflo included specifically to measure its token overhead. Documented caveat:
-  headless runs measure automatic behavior + passive overhead — fair to tether/superpowers
-  (auto-trigger), generous to pipeline-driven frameworks.
-- **Tier 2 (optional, real spend):** Terminal-Bench 2.1 subset via Harbor's Claude Code
-  adapter for external validation. Note TB task repos ship no `.claude/verify.sh`, so the
-  done-gate idles — TB answers "never worse?", not "catches what vanilla misses?".
-
-**Acceptance.** `bench/` exists with ≥3 tasks (each: pre-registered prompt + visible
-checks + hidden verifier) and a runner that provisions sandboxed arms without touching the
-live install; the Tier-0 matrix has been run to completion with every run logged in
-`bench/RESULTS.md` (experiment-log format: command, config, model id, metrics); results
-summarized in LANDSCAPE.md regardless of direction. Tiers 1–2 explicitly out of scope for
-closing the item.
-
-**Files.** `bench/` (new — tasks, runner, RESULTS.md); LANDSCAPE.md results section;
-README one-liner. No hook or skill changes.
+**Next: Phase 0 novelty audit** (related-work sweep → RELATED-WORK.md; gate: user
+verdict per candidate contribution). Every later phase gates on the user; runs are
+user-fired under their own auth.
 
 ---
 ## 7. handoff × catchup — audit the real onboarding path
