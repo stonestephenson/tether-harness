@@ -44,4 +44,14 @@ if python3 "$HERE/parse_result.py" \
   echo "PASS  parse_result on sample JSON"
 else echo "FAIL  parse_result sample"; fail=1; fi
 
+# 4) portable_timeout: fires the cap on a slow command, passes a fast one through.
+# shellcheck source=_timeout.sh
+. "$HERE/_timeout.sh"
+rc=0; portable_timeout 1 sleep 5 || rc=$?
+[ "$rc" -eq 124 ] && echo "PASS  portable_timeout caps a slow command (rc=124)" \
+  || { echo "FAIL  portable_timeout slow: rc=$rc (expected 124)"; fail=1; }
+rc=0; portable_timeout 5 sleep 1 || rc=$?
+[ "$rc" -eq 0 ] && echo "PASS  portable_timeout passes a fast command (rc=0)" \
+  || { echo "FAIL  portable_timeout fast: rc=$rc (expected 0)"; fail=1; }
+
 if [ "$fail" -eq 0 ]; then echo "ALL SELFTESTS PASS"; else echo "SELFTEST FAILURES"; exit 1; fi

@@ -9,6 +9,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../../.." && pwd)"
 GATE="$REPO/plugins/tether/hooks/done-gate.py"
 [ -f "$GATE" ] || { echo "cannot find done-gate at $GATE" >&2; exit 1; }
+# shellcheck source=_timeout.sh
+. "$HERE/_timeout.sh"
 
 SBX="$(mktemp -d "${TMPDIR:-/tmp}/tether-p1real.XXXXXX")"
 CONFIG="$SBX/config"; PROJ="$SBX/proj"; COUNTERS="$SBX/counters"
@@ -34,14 +36,18 @@ EOF
 
 echo "sandbox: $SBX"
 echo "CLI version: $(claude --version 2>/dev/null || echo '??')"
-echo "firing claude -p (300s timeout backstop; expected to finish well under)..."
+echo "firing claude -p (300s cap backstop; expected to finish well under)..."
 set +e
-( cd "$PROJ" && CLAUDE_CONFIG_DIR="$CONFIG" DISABLE_AUTOUPDATER=1 \
-    timeout 300 claude -p "Create a file hello.txt containing the word hi, then finish." \
-    --output-format json > "$SBX/result.json" 2> "$SBX/stderr.log" )
+(
+  cd "$PROJ"
+  export CLAUDE_CONFIG_DIR="$CONFIG" DISABLE_AUTOUPDATER=1
+  portable_timeout 300 claude -p \
+    "Create a file hello.txt containing the word hi, then finish." \
+    --output-format json
+) < /dev/null > "$SBX/result.json" 2> "$SBX/stderr.log"
 code=$?
 set -e
-echo "claude -p exit code: $code   (124 == hit the 300s timeout => it LOOPED)"
+echo "claude -p exit code: $code   (124 == hit the 300s cap => it LOOPED)"
 echo "done-gate invocations: $(cat "$COUNTERS/invocations" 2>/dev/null || echo 0)"
 echo "done-gate blocks:      $(cat "$COUNTERS/blocks" 2>/dev/null || echo 0)"
 echo "  1 block  => single forced nudge (H1 wording must change from 'until green')"
