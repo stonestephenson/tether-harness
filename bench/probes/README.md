@@ -13,6 +13,13 @@ first so no quota is spent on a broken harness.
 
 The load-bearing one: what does headless `claude -p` do when a Stop hook blocks?
 
+0. **One-time auth** (sandboxes don't inherit the keychain login — see FINDINGS
+   item 1b). Generate a subscription token and export it in the shell you'll fire
+   from — zero API cost, never commit it:
+   ```
+   claude setup-token
+   export CLAUDE_CODE_OAUTH_TOKEN='<paste the token it prints>'
+   ```
 1. **Validate the harness (no model calls, safe to run now):**
    ```
    bash bench/probes/stop_hook/selftest.sh

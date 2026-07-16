@@ -11,6 +11,8 @@ GATE="$REPO/plugins/tether/hooks/done-gate.py"
 [ -f "$GATE" ] || { echo "cannot find done-gate at $GATE" >&2; exit 1; }
 # shellcheck source=_timeout.sh
 . "$HERE/_timeout.sh"
+# shellcheck source=_auth_preflight.sh
+. "$HERE/_auth_preflight.sh"; require_oauth_token
 
 SBX="$(mktemp -d "${TMPDIR:-/tmp}/tether-p1real.XXXXXX")"
 CONFIG="$SBX/config"; PROJ="$SBX/proj"; COUNTERS="$SBX/counters"

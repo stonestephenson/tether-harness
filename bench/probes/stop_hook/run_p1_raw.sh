@@ -7,6 +7,8 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=_timeout.sh
 . "$HERE/_timeout.sh"
+# shellcheck source=_auth_preflight.sh
+. "$HERE/_auth_preflight.sh"; require_oauth_token
 SBX="$(mktemp -d "${TMPDIR:-/tmp}/tether-p1raw.XXXXXX")"
 CONFIG="$SBX/config"; PROJ="$SBX/proj"
 mkdir -p "$CONFIG" "$PROJ/.claude"

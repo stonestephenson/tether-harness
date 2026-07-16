@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 references/papers/
 paper/papers/
+# never commit auth tokens / local secrets (bench runner + probes read these)
+.secrets
+*.secret
+bench/**/.env.local
+CLAUDE_CODE_OAUTH_TOKEN*

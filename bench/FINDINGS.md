@@ -8,8 +8,9 @@ the model are **user-fired** (author's subscription auth); the harness for each 
 
 | # | Question | Probe | Status | Finding |
 |---|----------|-------|--------|---------|
-| 1 | Headless `claude -p` under a **blocking Stop hook** — does it loop, or hit an internal turn ceiling? And how many times does the **real done-gate** actually block (its `stop_hook_active` guard may block only once, not "until green")? | `probes/stop_hook/` (P1-raw + P1-real) | **rebuilt, awaiting re-fire** | 1st fire (2026-07-16) hit a portability bug, not a result — see log below |
-| 2 | Does subscription auth accept dated model-snapshot ids, and does the result JSON reliably report usage (incl. cache-read tokens), `num_turns`, served model id? | `probes/stop_hook/` (parse_result on any run) | **built, awaiting user fire** | — |
+| 1 | Headless `claude -p` under a **blocking Stop hook** — does it loop, or hit an internal turn ceiling? And how many times does the **real done-gate** actually block (its `stop_hook_active` guard may block only once, not "until green")? | `probes/stop_hook/` (P1-raw + P1-real) | **blocked on auth (solved); awaiting re-fire** | the Stop-hook question is still open — 2 fires hit a portability bug then an auth wall (both fixed); see log |
+| 1b | **Auth: how does a sandboxed arm authenticate as the subscription?** (surfaced by the 2nd fire) | same | **✅ ANSWERED — runner design decision** | A fresh `CLAUDE_CONFIG_DIR` does NOT inherit the macOS-keychain login (run returned `"Not logged in · Please run /login"`). Solution: `claude setup-token` → export **`CLAUDE_CODE_OAUTH_TOKEN`** (confirmed the CLI reads it: `Authorization: Bearer $CLAUDE_CODE_OAUTH_TOKEN`). Subscription auth, zero API cost, works across sandboxes. The runner sets this env for every arm; probes fail fast without it (`_auth_preflight.sh`). Token is gitignored, never logged. |
+| 2 | Does subscription auth accept dated model-snapshot ids, and does the result JSON reliably report usage (incl. cache-read tokens), `num_turns`, served model id? | `probes/stop_hook/` (parse_result on any run) | **JSON shape confirmed; values pending a clean run** | The result JSON exposes `num_turns`, `duration_ms`/`duration_api_ms`, `usage.{input,output,cache_read,cache_creation}_tokens`, `total_cost_usd`, `modelUsage` (served model id lands here), `stop_reason`, `terminal_reason`, `permission_denials`, `fast_mode_state`. Values were 0 only because the run errored pre-model; a clean run populates them. Snapshot-id acceptance still to confirm on a real run. |
 | 3 | Weekly cap sizes vs measured gated-arm token burn — do ~610 runs fit in ~2–3 weeks? | (needs the burn multiplier from a pilot cell) | pending | — |
 | 4 | Is autoupdate-disable effective in headless sandboxes (CLI version stays pinned across the window)? | `probes/stop_hook/` sets `DISABLE_AUTOUPDATER=1`; check `claude --version` before/after | **partially covered by P1** | — |
 | 5 | A0's **spontaneous** `verify.sh`-run rate on dev tasks (grounds H1's mediator baseline — how often does vanilla finish red when told to verify?) | needs dev tasks (later in Phase 2) | pending | — |
@@ -28,6 +29,14 @@ use this wrapper for its caps.** Re-fire pending. (Also observed: the live CLI i
 2.1.211, up from 2.1.207 on 2026-07-12 — relevant to verification item #4; the
 Phase-4 freeze must pin the installed binary version and disable background updates
 for the collection window.)
+
+**2026-07-16 — P1-real, second fire: auth wall, no result.** `claude` launched
+(59ms, `num_turns:1`, `is_error:true`) and returned `result: "Not logged in ·
+Please run /login"`, `terminal_reason: api_error`. Root cause + solution recorded
+as item **1b** above (sandbox needs `CLAUDE_CODE_OAUTH_TOKEN`). Silver lining: the
+error envelope confirmed the item-#2 result-JSON shape. The **Stop-hook behavior
+question (item #1) is still unanswered** — the done-gate never fired because the
+session died before any Stop. Re-fire after `claude setup-token` + export.
 
 ## Open note carried from the done-gate source read (2026-07-15)
 
