@@ -52,10 +52,11 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 6 | Harness bake-off study (`paper/` + `bench/`) | high | **reframed to paper-grade 2026-07-12 (user: "Option B")** — pre-registered publishable study; plan, phases, and gates live in [`paper/PLAN.md`](paper/PLAN.md); Phase 0 scaffold ✅, novelty audit next |
+| 6 | Harness bake-off study (`paper/` + `bench/`) | high | **paper-grade study (user: "Option B"), Phase 2 in progress** — Phases 0–1 done: novelty audit + council-reviewed design (headline C1: done-gate enforcement-vs-instruction), DESIGN.md v2 approved 2026-07-15; now building the `bench/` instrument, verification probes first. Plan/phases/gates: [`paper/PLAN.md`](paper/PLAN.md) |
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
 | 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending, batched** (policy: flush the port queue before a live demo on that branch, when a behavior-critical change enters it, or at 2–3 queued items). Port spec: apply main's `plugins/tether/skills/handoff/SKILL.md` deltas from commits `c8d8bbe` (#7) *if not already ported* and `b6c9008` (#9 — excess class, Economy checklist, deleting-is-a-fix rules; tool-agnostic prose, ports near-verbatim) to each branch's handoff copy; HARNESS §9 policy section ports as-is; the verify.sh link check is optional per-branch maintainer tooling |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
+| 10 | Interpreter/shell portability (Windows-native support) | low | **proposed 2026-07-13, not green-lit** — see §10; hooks hardcode `python3` + `bash`, so Windows fails *open* (silently no-ops). Deliberately deferred: the paper track owns the treatment until the Phase-4 freeze |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
 
@@ -178,6 +179,47 @@ pattern as #7); the link check is optional per-branch. Rejected within this batc
 rewriting docs in compressed "AI-native" style (out of distribution; breaks the human
 audit loop), auto-generated doc files (measured harm — ETH study), a standalone
 docs-diet skill (rides handoff), and any hook that edits docs automatically.
+
+---
+
+## 10. Interpreter/shell portability — Windows-native support (proposed, not green-lit)
+
+**Provenance.** Surfaced 2026-07-13 while writing throwaway setup docs for a Windows user
+with no toolchain. Not a research finding — a portability gap found by trying to use the
+thing. Logged so it isn't rediscovered; **deferred on purpose** (see Scoping).
+
+**The gap.** Two hardcoded Unix assumptions:
+
+- `plugins/tether/hooks/hooks.json` (and the codex/opencode equivalents) invoke every
+  hook as `python3 "…"`. On Windows, python.org's installer provides `python.exe`, not
+  `python3`; Windows also ships a `python3.exe` App Execution Alias that opens the
+  Microsoft Store. So the command resolves to nothing, or to a store stub.
+- `hooks/done-gate.py` builds its verifier command as `bash "{script}"` (line ~70), and
+  `verify.sh` is bash throughout.
+
+Grep confirms the repo has **zero** occurrences of windows/wsl/powershell/win32 — there is
+no Windows support and no Windows caveat anywhere in the docs.
+
+**Why it's worse than a normal missing feature.** The hooks **fail open** by ground rule
+(a broken hook must never block an edit or wedge a session — correct, and not up for
+debate). The consequence on Windows is that a missing `python3` produces *no error at
+all*: the agent runs, looks completely normal, and silently carries none of the harness.
+The user cannot tell installed-and-working from installed-and-inert. For the harness's own
+"verify, don't self-certify" thesis, a silent no-op is the worst available failure mode —
+worse than a crash, which at least reports itself.
+
+**Shape of the fix** (if it's ever green-lit): probe rather than assume — resolve the
+interpreter (`python3` → `python`) and the shell (`bash` on PATH, incl. Git-for-Windows)
+at hook-wiring/run time; add a startup self-check that says *loudly* when the harness is
+inert; regression coverage for the resolution logic; port to all four branches. The
+self-check is arguably the higher-value half — it closes the silent-no-op class on every
+platform, not just Windows.
+
+**Scoping (why it waits).** The paper track's treatment-versioning convention (PLAN.md
+§Conventions) says the harness changes only on its own evidence before the Phase-4 freeze,
+and does not change at all during Phases 5–6. This item has no user demand behind it (one
+friend, once), and it touches the treatment. It waits. Interim answer for Windows users:
+**use WSL** — the tested environment, one command to install.
 
 ---
 

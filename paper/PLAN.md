@@ -13,11 +13,12 @@ mechanism and by model capability. tether is the *instantiation under test*, not
 thesis: the ablation arms isolate mechanisms, not the brand, and the harness version
 is a documented parameter (treatment versioning, under Conventions).
 
-**Status: Phase 1 at its gate (2026-07-12).** Phase 0 done (reframe approved:
-headline C1 — [`RELATED-WORK.md`](RELATED-WORK.md)); papers pulled to
-`paper/papers/`; [`DESIGN.md`](DESIGN.md) drafted, council-reviewed (4 lenses; v1's
-trap-class bug and admission contradiction fixed in v2), **awaiting user approval**.
-Each phase below ends at a gate; nothing advances past a gate without the user.
+**Status: Phase 2 (instrument build), in progress.** Phase 1 gate passed —
+[`DESIGN.md`](DESIGN.md) v2 **approved by the user 2026-07-15**. Phase 2 opened by
+de-risking the six-item verification list first: the `stop_hook` probe is built and
+self-tested (model-free), awaiting the user's authenticated fire; results log in
+[`../bench/FINDINGS.md`](../bench/FINDINGS.md). Each phase below ends at a gate;
+nothing advances past a gate without the user.
 
 ## Why paper-grade (decision record, 2026-07-12)
 
@@ -81,9 +82,11 @@ Each phase below ends at a gate; nothing advances past a gate without the user.
    analysis makes the C2 interaction detectable at feasible n. Either way the
    workshop → main-conf extension path stays open (workshops are non-archival;
    the frozen instrument re-runs later with more arms/tasks).
-2. **Instrument build** → `bench/`: tasks per protocol; runner provisioning per-arm
-   `CLAUDE_CONFIG_DIR` sandboxes (live `~/.claude` never touched — standing ground
-   rule); dry-run self-test with no model calls; test-first where checkable.
+2. **Instrument build** → `bench/`: **in progress.** Opens with the verification-list
+   probes (`bench/probes/`) since a surprising answer reshapes the design; then the
+   runner + per-arm `CLAUDE_CONFIG_DIR` sandboxes (live `~/.claude` never touched),
+   hidden-verifier harness, hook telemetry, and the task-mining pipeline + dev tasks.
+   Dry-run self-tests with no model calls; test-first where checkable.
 3. **Pilot** (user-fired, small matrix): validates the *instrument* — hidden-verifier
    reliability, task discrimination, cap/timing calibration, log completeness →
    FINDINGS.md. Fixes touch the instrument, never the hypotheses. **Gate:
