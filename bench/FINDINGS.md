@@ -13,7 +13,7 @@ the model are **user-fired** (author's subscription auth); the harness for each 
 | 2 | Does subscription auth accept dated model-snapshot ids, and does the result JSON reliably report usage (incl. cache-read tokens), `num_turns`, served model id? | `probes/stop_hook/` (parse_result on any run) | **✅ ANSWERED (clean run), one sub-item open** | Clean run populated everything: `num_turns` 4, `usage` = input 8 / output 1097 / **cache_read 120918** / cache_creation 9346 (cache reads dominate ⇒ the cost metric MUST exclude them, as designed), `total_cost_usd` 0.109 (reported even on subscription — an API-equivalent cost proxy, usable), plus `ttft_ms`/`time_to_request_ms`/`fast_mode_state`/`permission_denials`. **`modelUsage` = `{claude-haiku-4-5-20251001, claude-sonnet-5}`** — every session runs a **background Haiku** alongside the main model; the runner must attribute the *requested* `--model` as the arm's model and treat the background Haiku as harness overhead (its tokens still count toward cost). Default resolved to the alias `claude-sonnet-5`. **Open:** does `--model <dated-snapshot>` work under subscription? (test when the runner sets models.) |
 | 3 | Weekly cap sizes vs measured gated-arm token burn — do ~610 runs fit in ~2–3 weeks? | first real cells (dg01, Sonnet) | **answered (dev-task scale)** | A real dev-task cell ≈ **5 turns, ~$0.11–0.12 API-equiv, ~600–900 output tok, ~155k cache-read, well under the 30-min/50-turn cap** (subscription — dollars phantom). ~610 such runs is very affordable in quota/calendar terms. Harder/longer confirmatory tasks may cost more; the cap bounds worst-case. |
 | 4 | Is autoupdate-disable effective in headless sandboxes (CLI version stays pinned across the window)? | `probes/stop_hook/` sets `DISABLE_AUTOUPDATER=1`; check `claude --version` before/after | **partially covered by P1** | — |
-| 5 | A0's **spontaneous** `verify.sh`-run rate on dev tasks (grounds H1's mediator baseline — how often does vanilla finish red when told to verify?) | dg01 (Sonnet, n=1) | **partial — task-dependent** | On dg01/Sonnet, vanilla wrote a correct fix and finished **green** (hidden PASS), so finish-red ≈ 0 here ⇒ dg01 can't test H1 on Sonnet (the falsifier). The rate is a property of task × model, not a constant — the confirmatory tasks must be constructed to induce a visible-red finish (see the task-design lesson below). Needs more reps + tasks + Haiku. |
+| 5 | A0's **spontaneous** `verify.sh`-run rate on dev tasks (grounds H1's mediator baseline — how often does vanilla finish red when told to verify?) | dg01 pilot (Sonnet+Haiku, 2 reps each) | **✅ ANSWERED — HIGH (a threat to H1)** | Both models, **both arms**, all 8 cells: hidden PASS, **0 hook blocks**. Transcript check: the **vanilla (A0) arms ran `bash .claude/verify.sh` themselves** — capable models comply with the prompt's verify instruction. And Sonnet's vanilla fix was surgical (`parse_path → p.split("/")`, never touching the shared helper), side-stepping the coupling trap. So spontaneous verify rate is HIGH ⇒ **the enforcement-vs-instruction gap is small on clear tasks with capable instruction-following models** — the done-gate has nothing to catch. Early (n=1 task) but load-bearing evidence for the H1 null. See the strategic note below. |
 | 6 | Realized mining yield through stage 5 (council estimate: 1–3% of candidate PRs) | needs the mining pipeline (later in Phase 2) | pending | — |
 | 7 | **Headless permission mode** (surfaced by the first real cell) | `runner/run_cell.sh` | **✅ ANSWERED — runner design decision** | Default headless `claude -p` prompts before edits/bash; with no one to approve, the agent does **zero work** and asks for approval in its final message (first A0 fire: 5 turns, empty diff, `result:"I need permission to edit fields.py"`). Fix: `--permission-mode bypassPermissions` (choices confirmed via `claude --help`). Applied **uniformly to all arms** — permission mode is harness environment, **not** a treatment variable — and the workspace is a throwaway isolated copy. |
 
@@ -65,6 +65,22 @@ take that route. Two consequences: (a) the mining/injection protocol must
 select/verify **visible-red-inducing** traps (calibrated per model on dev tasks);
 (b) the capability angle (S2/Haiku) is live here — the same trap may spring on
 Haiku where it doesn't on Sonnet. Next cheap probe: dg01 on Haiku (A0 vs A2).
+
+**2026-07-17 — pilot batch (dg01 × {Sonnet, Haiku} × {A0, A2} × 2 reps = 8 cells):
+the central risk of the study, surfaced.** All 8 hidden PASS, 0 blocks anywhere;
+transcripts show the **vanilla arms self-verified** (ran `verify.sh`) and wrote
+clean fixes. Cost/turn confirmed (item #3): Sonnet ~$0.117/5t, Haiku ~$0.032/4t.
+**Strategic implication:** for capable, instruction-following models on clear,
+well-specified tasks, deterministic verification *enforcement* adds little because
+the model already *self*-verifies when told to. The done-gate's value lives in a
+different regime — verification-skipping / reward-hacking (SpecBench, EvilGenie),
+weaker models, vaguer prompts that don't spoon-feed the verify step, or tasks
+complex enough that one verify pass misses subtle breakage. **Two design choices
+suppressed the effect here and need a decision:** (a) the prompt explicitly says
+"run `verify.sh` before finishing," which hands vanilla the verification step and
+shrinks the very gap H1 measures; (b) dg01's fix is easy/surgical. This is a
+divergent call on task-construction direction (and possibly the headline
+mechanism) — carried to the user, not resolved here.
 
 **2026-07-16 — P1-raw: CLI raw ceiling.** An unconditional-block Stop hook (no
 `stop_hook_active` guard, self-cap 6) drove `claude -p` to 6/6 blocks, 18 turns,
