@@ -45,15 +45,17 @@ while IFS=$'\t' read -r run task model arm; do
     cell_out="$batch_out/cell_$run"
     echo "  [$((run+1))/$n] task=$task model=$model arm=$arm"
     bash "$HERE/run_cell.sh" "$tasks_root/$task" "$arm" --model "$model" --cap "$cap" \
-      --out "$cell_out" "${ndry[@]}" >/dev/null 2>&1 || true
-    python3 - "$cell_out/summary.json" "$results" "$model" <<'PY'
-import json, os, sys, time
-sm, results, model = sys.argv[1], sys.argv[2], sys.argv[3]
+      --out "$cell_out" ${ndry[@]+"${ndry[@]}"} >/dev/null 2>&1 || true
+    python3 - "$cell_out/summary.json" "$results" "$model" "$task" "$arm" <<'PY'
+import json, sys, time
+sm, results, model, task, arm = sys.argv[1:6]
 try: s = json.load(open(sm))
-except Exception: s = {"task": "?", "arm": "?", "exit": "ERR"}
-row = (f"| {time.strftime('%Y-%m-%dT%H:%M')} | {s.get('task')} | {model} | {s.get('arm')} "
+except Exception: s = {}
+tname = s.get("task") or task.split("/")[-1]
+aname = s.get("arm") or arm
+row = (f"| {time.strftime('%Y-%m-%dT%H:%M')} | {tname} | {model} | {aname} "
        f"| {s.get('hidden_pass')} | {s.get('hook_blocks')} | {s.get('turns')} "
-       f"| {s.get('cost_usd')} | {s.get('exit')} | {s.get('out','')} |")
+       f"| {s.get('cost_usd')} | {s.get('exit', 'ERR')} | {s.get('out', '')} |")
 open(results, "a").write(row + "\n")
 print("     ->", s.get("hidden_pass"), "blocks=", s.get("hook_blocks"), "turns=", s.get("turns"))
 PY
