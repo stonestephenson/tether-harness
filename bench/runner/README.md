@@ -39,11 +39,14 @@ wall-clock caps. Never touches `~/.claude`. Validate model-free:
   naive` skips the model and simulates the agent with a task variant — the whole
   provision→harvest→grade path is validated model-free that way.
 
+- **`run_batch.sh`** — turns a blocks spec + seed into a reproducible schedule
+  (`schedule.py`), fires each cell (`run_cell.sh`), and appends one experiment-log
+  row per cell to `../RESULTS.md`. `--dry-run V` runs the whole batch model-free.
+  Specs live in `../runs/` (e.g. `pilot_dg01.json`). Fire the pilot:
+  `bash bench/runner/run_batch.sh bench/runs/pilot_dg01.json --seed 1234`.
+
 ## Not built yet (next)
 
-A batch driver over `schedule.py` (fire the ordered cell list, failure-disposition
-+ drift-canary, append to `RESULTS.md`), more dev tasks, and the task-mining
-pipeline. Verification items #3–#6 (`../FINDINGS.md`) close as these land — the
-first user-fired `run_cell.sh` on `dg01` (A0 then A2) answers #5 (A0's spontaneous
-verify.sh-run rate) and #3 (real cap-vs-burn), and gives the first live signal on
-whether the done-gate nudge helps.
+Failure-disposition + drift-canary hardening in the batch loop, more dev tasks,
+and the task-mining pipeline (verification item #6). The instrument is otherwise
+end-to-end: provision → real `claude -p` → harvest → hidden grade → logged.

@@ -84,9 +84,9 @@ fi
 diff -ruN "$task_dir/repo" "$WORK" > "$out/agent.diff" 2>/dev/null || true   # for the record
 python3 "$HERE/verify_hidden.py" "$task_dir" "$WORK" --out "$out/hidden.json" >/dev/null 2>&1 || true
 
-python3 - "$out" "$arm" "$model" "$code" "$TELE" <<'PY'
+python3 - "$out" "$arm" "$model" "$code" "$TELE" "$(basename "$task_dir")" <<'PY'
 import json, os, sys
-out, arm, model, code, tele = sys.argv[1:6]
+out, arm, model, code, tele, task = sys.argv[1:7]
 def load(p):
     try: return json.load(open(p))
     except Exception: return {}
@@ -97,17 +97,26 @@ if os.path.isfile(tele):
         try: blocks += 1 if json.loads(line).get("blocked") else 0
         except Exception: pass
 u = res.get("usage", {}) or {}
+try: no_edits = os.path.getsize(f"{out}/agent.diff") == 0
+except OSError: no_edits = None
+summary = {
+    "task": task, "arm": arm, "model": model, "exit": int(code),
+    "turns": res.get("num_turns"), "hook_blocks": blocks,
+    "cost_usd": res.get("total_cost_usd"),
+    "output_tokens": u.get("output_tokens"),
+    "cache_read_tokens": u.get("cache_read_input_tokens"),
+    "overall_pass": hid.get("overall_pass"), "visible_pass": hid.get("visible_pass"),
+    "hidden_pass": hid.get("hidden_pass"), "failures": hid.get("failures"),
+    "no_edits": no_edits, "out": out,
+}
+json.dump(summary, open(f"{out}/summary.json", "w"), indent=2)
 print("---- cell summary ----")
-print(f"arm={arm} model={model} exit={code} turns={res.get('num_turns')} "
+print(f"task={task} arm={arm} model={model} exit={code} turns={res.get('num_turns')} "
       f"hook_blocks={blocks} cost_usd~{res.get('total_cost_usd')}")
 print(f"output_tok={u.get('output_tokens')} cache_read_tok={u.get('cache_read_input_tokens')}")
 print(f"HIDDEN GRADE: overall_pass={hid.get('overall_pass')} "
       f"visible_pass={hid.get('visible_pass')} hidden_pass={hid.get('hidden_pass')}")
 if hid.get("failures"): print("  failures:", ", ".join(hid["failures"]))
-try:
-    if os.path.getsize(f"{out}/agent.diff") == 0:
-        print("  NOTE: agent made no file edits (check permissions / the result text).")
-except OSError:
-    pass
-print(f"artifacts: {out}  (result.json, hidden.json, agent.diff, hooks.jsonl)")
+if no_edits: print("  NOTE: agent made no file edits (check permissions / the result text).")
+print(f"artifacts: {out}  (result.json, hidden.json, agent.diff, hooks.jsonl, summary.json)")
 PY
