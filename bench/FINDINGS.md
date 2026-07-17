@@ -15,6 +15,7 @@ the model are **user-fired** (author's subscription auth); the harness for each 
 | 4 | Is autoupdate-disable effective in headless sandboxes (CLI version stays pinned across the window)? | `probes/stop_hook/` sets `DISABLE_AUTOUPDATER=1`; check `claude --version` before/after | **partially covered by P1** | — |
 | 5 | A0's **spontaneous** `verify.sh`-run rate on dev tasks (grounds H1's mediator baseline — how often does vanilla finish red when told to verify?) | needs dev tasks (later in Phase 2) | pending | — |
 | 6 | Realized mining yield through stage 5 (council estimate: 1–3% of candidate PRs) | needs the mining pipeline (later in Phase 2) | pending | — |
+| 7 | **Headless permission mode** (surfaced by the first real cell) | `runner/run_cell.sh` | **✅ ANSWERED — runner design decision** | Default headless `claude -p` prompts before edits/bash; with no one to approve, the agent does **zero work** and asks for approval in its final message (first A0 fire: 5 turns, empty diff, `result:"I need permission to edit fields.py"`). Fix: `--permission-mode bypassPermissions` (choices confirmed via `claude --help`). Applied **uniformly to all arms** — permission mode is harness environment, **not** a treatment variable — and the workspace is a throwaway isolated copy. |
 
 ## Probe run log
 

@@ -48,7 +48,11 @@ else
   (
     cd "$WORK"
     export CLAUDE_CONFIG_DIR="$CONFIG" DISABLE_AUTOUPDATER=1
-    portable_timeout "$cap" claude -p "$prompt" --model "$model" --output-format json
+    # bypassPermissions: headless has no one to approve edits/bash, and the agent
+    # must freely edit + run verify.sh. Uniform across ALL arms (not a treatment
+    # variable); the workspace is a throwaway isolated copy.
+    portable_timeout "$cap" claude -p "$prompt" --model "$model" \
+      --permission-mode bypassPermissions --output-format json
   ) < /dev/null > "$out/result.json" 2> "$out/stderr.log"
   code=$?
   set -e
@@ -100,5 +104,10 @@ print(f"output_tok={u.get('output_tokens')} cache_read_tok={u.get('cache_read_in
 print(f"HIDDEN GRADE: overall_pass={hid.get('overall_pass')} "
       f"visible_pass={hid.get('visible_pass')} hidden_pass={hid.get('hidden_pass')}")
 if hid.get("failures"): print("  failures:", ", ".join(hid["failures"]))
+try:
+    if os.path.getsize(f"{out}/agent.diff") == 0:
+        print("  NOTE: agent made no file edits (check permissions / the result text).")
+except OSError:
+    pass
 print(f"artifacts: {out}  (result.json, hidden.json, agent.diff, hooks.jsonl)")
 PY

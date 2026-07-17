@@ -155,6 +155,10 @@ reproduction from the issue text alone (no repo); reported as a covariate.
   of `claude --version`, requested + served model id, timestamps, cap-window id.
   Temperature/seed are not controllable in the CLI — reps are the variance
   instrument (stated in the paper).
+- **Permission mode:** all arms run `--permission-mode bypassPermissions` (headless
+  has no approver, and the agent must edit files + run `verify.sh`). Uniform harness
+  environment, **not** a treatment variable; the workspace is a throwaway isolated
+  copy (found in the first real cell — `bench/FINDINGS.md` item 7).
 - **Per-run caps:** hard wall-clock and turn cap (set from pilot; ~30 min / 50
   turns initial); cap-hit ⇒ pass₁ = 0, **included** (a gate arm that loops forever
   is a real cost of the mechanism, not missing data).
