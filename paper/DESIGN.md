@@ -27,9 +27,16 @@ explicitly out of scope (the opencode port is the pre-committed extension path).
 - **H1 (done-gate, the headline).** On T-DG tasks, the done-gate arm (A2) beats
   vanilla (A0) on hidden-verifier pass₁. Causal path (explicit): the trap makes the
   *naive* fix break a coupled **visible** test; vanilla's modal trajectory finishes
-  visible-red (ships anyway or stops early); the done-gate blocks Stop until
-  `verify.sh` is green, forcing the repair. Hidden suite = visible suite **plus a
-  disjoint held-out margin** (withheld tests policing overfitting-to-visible).
+  visible-red (ships anyway or stops early); the done-gate blocks the **first**
+  finish attempt with the failing output — one forced round of verify-and-repair —
+  then its `stop_hook_active` loop-guard lets the next attempt through (measured
+  2026-07-16, perpetually-red verifier: invocations 2, blocks 1, clean exit in 4
+  turns — `bench/FINDINGS.md`). So the treatment is a **single deterministic
+  finish-time nudge**, not a hold-until-green wall (corrected from v2's wording
+  after the P1-real probe); H1 tests whether that one forced verification — the
+  check the agent was told to run but may skip — lifts hidden pass. Hidden suite =
+  visible suite **plus a disjoint held-out margin** (withheld tests policing
+  overfitting-to-visible).
   Primary endpoint: full hidden pass. Reported alongside, pre-registered: the
   **disjoint-margin pass** (the transfer component) and the **mediator manipulation
   check** — A0's finish-while-visible-red rate. **Falsifier:** if A0's finish-red
