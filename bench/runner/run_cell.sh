@@ -54,6 +54,29 @@ else
   set -e
 fi
 
+# Auth failures produce a "successful" envelope with is_error + a 401/login result
+# and zero work — catch it so it can't masquerade as a graded cell.
+if [ -z "$dry" ] && python3 - "$out/result.json" <<'PY'
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(1)
+r = str(d.get("result", "")).lower()
+bad = d.get("is_error") and (d.get("api_error_status") == 401
+      or "authenticate" in r or "not logged in" in r or "bearer token" in r)
+sys.exit(0 if bad else 1)
+PY
+then
+  echo "!! AUTH FAILED — the run did no work; grading skipped (it would be meaningless)."
+  python3 -c 'import json,sys; print("   error:", json.load(open(sys.argv[1])).get("result"))' "$out/result.json" 2>/dev/null || true
+  echo "   Your CLAUDE_CODE_OAUTH_TOKEN is missing or invalid in THIS shell. Fix:"
+  echo "     claude setup-token"
+  echo "     export CLAUDE_CODE_OAUTH_TOKEN='<paste the fresh token>'"
+  echo "   then re-run in the same shell."
+  exit 3
+fi
+
 diff -ruN "$task_dir/repo" "$WORK" > "$out/agent.diff" 2>/dev/null || true   # for the record
 python3 "$HERE/verify_hidden.py" "$task_dir" "$WORK" --out "$out/hidden.json" >/dev/null 2>&1 || true
 
