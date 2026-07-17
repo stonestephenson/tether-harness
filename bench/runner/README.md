@@ -24,11 +24,18 @@ wall-clock caps. Never touches `~/.claude`. Validate model-free:
   local paired comparisons) while shuffling groups to interleave blocks and spread
   serving drift. Reproducible; the seed is pre-registered.
 
+- **`verify_hidden.py`** — the hidden-verifier harness: fresh scrubbed checkout of
+  a task's `repo/`, overlay ONLY the agent's source edits (path allowlist —
+  test/config files stay at base so a weakened visible test can't leak into the
+  grade), drop in the held-out hidden tests, run the full suite, report
+  visible/hidden/overall pass. Validated end-to-end by
+  `../tasks/dev/dg01/validate.sh` (fail-on-base, pass-on-golden, trap-fires).
+
 ## Not built yet (next)
 
 Cell execution (provision → fire `claude -p` under `portable_timeout` → harvest
-the per-run bundle: session JSONL, hook log, agent diff, hidden-verifier output),
-the hidden-verifier harness (scrubbed checkout, diff-apply through a path
-allowlist, test-config reset), failure-disposition + drift-canary, `RESULTS.md`
-logging, and the task-mining pipeline + dev tasks. Verification items #3–#6
-(`../FINDINGS.md`) close as these land.
+the per-run bundle: session JSONL, hook log, agent diff → `verify_hidden`),
+failure-disposition + drift-canary, `RESULTS.md` logging, more dev tasks, and the
+task-mining pipeline. Verification items #3–#6 (`../FINDINGS.md`) close as these
+land — the first user-fired cell on `dg01` answers #5 (A0's verify.sh-run rate)
+and #3 (real cap-vs-burn).
