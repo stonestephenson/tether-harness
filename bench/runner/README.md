@@ -31,11 +31,19 @@ wall-clock caps. Never touches `~/.claude`. Validate model-free:
   visible/hidden/overall pass. Validated end-to-end by
   `../tasks/dev/dg01/validate.sh` (fail-on-base, pass-on-golden, trap-fires).
 
+- **`run_cell.sh`** — executes one cell end-to-end: provision the arm → copy the
+  task's `repo/` into a workspace → fire `claude -p --model` under
+  `portable_timeout` → harvest (`result.json`, `agent.diff`, `hooks.jsonl`) →
+  grade with `verify_hidden` → print a summary (turns, hook-blocks, cost, hidden
+  grade). Sandboxed; user-fired (needs the OAuth token). `--dry-run base|golden|
+  naive` skips the model and simulates the agent with a task variant — the whole
+  provision→harvest→grade path is validated model-free that way.
+
 ## Not built yet (next)
 
-Cell execution (provision → fire `claude -p` under `portable_timeout` → harvest
-the per-run bundle: session JSONL, hook log, agent diff → `verify_hidden`),
-failure-disposition + drift-canary, `RESULTS.md` logging, more dev tasks, and the
-task-mining pipeline. Verification items #3–#6 (`../FINDINGS.md`) close as these
-land — the first user-fired cell on `dg01` answers #5 (A0's verify.sh-run rate)
-and #3 (real cap-vs-burn).
+A batch driver over `schedule.py` (fire the ordered cell list, failure-disposition
++ drift-canary, append to `RESULTS.md`), more dev tasks, and the task-mining
+pipeline. Verification items #3–#6 (`../FINDINGS.md`) close as these land — the
+first user-fired `run_cell.sh` on `dg01` (A0 then A2) answers #5 (A0's spontaneous
+verify.sh-run rate) and #3 (real cap-vs-burn), and gives the first live signal on
+whether the done-gate nudge helps.
