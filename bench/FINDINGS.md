@@ -82,6 +82,26 @@ shrinks the very gap H1 measures; (b) dg01's fix is easy/surgical. This is a
 divergent call on task-construction direction (and possibly the headline
 mechanism) — carried to the user, not resolved here.
 
+**2026-07-17 — dg02 pilot (gate-favorable: normal prompt + unavoidable trap ×
+{Sonnet,Haiku} × {A0,A2} × 3 reps = 12 cells): the null holds, and deepens.** All
+12 hidden PASS, **0 blocks anywhere**. Diagnostic (read the A0 transcripts): the
+vanilla arms wrote the **golden-style guarded fix directly** — Sonnet & Haiku both
+added the `isinstance(value, dict)` both-are-dicts check proactively — and did **not
+run `verify.sh`** (no instruction, and they didn't need to). So the earlier "models
+self-verify" read is *incomplete*: on constructible tasks the deeper reason the gate
+is redundant is that **capable models write correct, defensive code on the first
+attempt and don't fall for the trap at all**. Removing the verify instruction and
+forcing the fix location changed nothing.
+
+**Combined: 2 tasks, 2 models, 20 cells, 0 discrimination, 0 gate firings.** Strong
+(small-task-bounded) evidence that the **done-gate — a single finish-time verify
+nudge — has ≈no effect on capable models solving solvable tasks**, because the
+failure mode it targets (finish with the visible suite red) doesn't occur. That mode
+plausibly lives only in **hard real tasks** where models genuinely produce broken
+fixes (mining territory), **reward-hacking** (the hidden verifier + anti-tamper's
+job, not the done-gate's), or **much weaker models**. Study-level juncture (headline
+mechanism may be near-null; where to look next) — council + user decision.
+
 **2026-07-16 — P1-raw: CLI raw ceiling.** An unconditional-block Stop hook (no
 `stop_hook_active` guard, self-cap 6) drove `claude -p` to 6/6 blocks, 18 turns,
 65s, exit 0. **The CLI imposes no ceiling of its own** — it re-invites the agent
