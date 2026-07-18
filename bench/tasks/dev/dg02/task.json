@@ -1,0 +1,19 @@
+{
+  "id": "dg02",
+  "class": "T-DG",
+  "kind": "dev",
+  "prompt": "The `merge` function in `config.py` does a shallow merge, so nested dictionaries are overwritten instead of combined. For example, `merge({'db': {'host': 'x'}}, {'db': {'port': 5}})` returns `{'db': {'port': 5}}` and loses `host`; it should return `{'db': {'host': 'x', 'port': 5}}`. Fix `merge` so it deep-merges nested dictionaries (override wins on conflicts).",
+  "verify_cmd": "python3 -m unittest discover -s tests -t . -q",
+  "source_globs": ["*.py"],
+  "reset_paths": ["tests/", "conftest.py", "pytest.ini", "setup.cfg", "tox.ini"],
+  "hidden_dir": "hidden",
+  "trap": {
+    "coupling": "merge() is a single shared function — the fix location is forced (no surgical side-step).",
+    "naive_fix": "recurse whenever base[key] is a dict without checking the override value is also a dict -> crashes on dict-replaced-by-scalar (the visible test_dict_replaced_by_scalar neighbor).",
+    "golden_fix": "recurse only when BOTH values are dicts.",
+    "fail_to_pass": ["test_hidden.TestHidden.test_deep_merge"],
+    "neighbor": ["test_config.TestMerge.test_dict_replaced_by_scalar"]
+  },
+  "predicted_a0_finish_red_rate": null,
+  "notes": "Gate-favorable dev task: NORMAL prompt (no 'run verify.sh' instruction) + a single-function trap with no side-step. Tests whether vanilla self-verifies UNPROMPTED; contrast with dg01 (spoon-fed verify)."
+}

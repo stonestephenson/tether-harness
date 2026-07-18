@@ -1,0 +1,4 @@
+[
+  {"name": "dg02-sonnet", "model": "claude-sonnet-5",            "arms": ["A0", "A2"], "tasks": ["dev/dg02"], "reps": 3},
+  {"name": "dg02-haiku",  "model": "claude-haiku-4-5-20251001", "arms": ["A0", "A2"], "tasks": ["dev/dg02"], "reps": 3}
+]

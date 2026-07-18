@@ -40,7 +40,13 @@ prompt="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["promp
 echo "cell: task=$(basename "$task_dir") arm=$arm model=$model  out=$out"
 if [ -n "$dry" ]; then
   echo "[dry-run] simulating agent = '$dry' variant (no model call)"
-  [ "$dry" = base ] || cp "$task_dir/variants/fields_$dry.py" "$WORK/fields.py"
+  if [ "$dry" != base ]; then
+    # variants are named <source>_<variant>.py (e.g. config_golden.py -> config.py)
+    for vf in "$task_dir"/variants/*_"$dry".py; do
+      [ -e "$vf" ] || continue
+      bn="$(basename "$vf")"; cp "$vf" "$WORK/${bn%_$dry.py}.py"
+    done
+  fi
   printf '{"subtype":"dry-run","is_error":false,"num_turns":0}' > "$out/result.json"
   code=0
 else
