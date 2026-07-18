@@ -52,11 +52,10 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 6 | tether-vs-vanilla mechanism evaluation (`eval/` + `bench/`) | high | **internal eval (reframed 2026-07-17 from the paper track)** — instrument built + working; pilot finding: done-gate ~null for frontier models on solvable tasks. Next: SWE-bench-Verified subset on Sonnet. Goal/design/findings: [`eval/README.md`](eval/README.md) |
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
 | 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending, batched** (policy: flush the port queue before a live demo on that branch, when a behavior-critical change enters it, or at 2–3 queued items). Port spec: apply main's `plugins/tether/skills/handoff/SKILL.md` deltas from commits `c8d8bbe` (#7) *if not already ported* and `b6c9008` (#9 — excess class, Economy checklist, deleting-is-a-fix rules; tool-agnostic prose, ports near-verbatim) to each branch's handoff copy; HARNESS §9 policy section ports as-is; the verify.sh link check is optional per-branch maintainer tooling |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
-| 10 | Interpreter/shell portability (Windows-native support) | low | **proposed 2026-07-13, not green-lit** — see §10; hooks hardcode `python3` + `bash`, so Windows fails *open* (silently no-ops). Deliberately deferred: the paper track owns the treatment until the Phase-4 freeze |
+| 10 | Interpreter/shell portability (Windows-native support) | low | **proposed 2026-07-13, not green-lit** — see §10; hooks hardcode `python3` + `bash`, so Windows fails *open* (silently no-ops) |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
 
@@ -69,28 +68,24 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 5 | Hygiene (MultiEdit drop, model→budget map, live-install sync) | `79fe261` + all branches | PLATFORM-ASSUMPTIONS facts 7/12 |
 | 7 | handoff × catchup — audit the real onboarding path | `c8d8bbe` (main, 2026-07-12) + all branches (2026-07-12: codex `075a8eb`, opencode `9e9f69d`, generic `3517dc9`) | the handoff/catchup skills themselves (coupling notes), HARNESS.md §5; live-tested on main (cold Agent A run — catchup invocable in-subagent, contract + provenance + pointer-graph checks fired); codex/opencode ship a layered invocation (native → read the installed file → verbatim fallback) — live confirmation rides the 8b demos |
 | 8a/8c/8d | Ports: codex (`0ff5b54`) · opencode (`0bdc41c`) · generic (`6487d13`) | per branch | branch READMEs (contract deltas), PLATFORM-ASSUMPTIONS port tripwires |
+| 6 | tether-vs-vanilla mechanism evaluation | **concluded 2026-07-17** | [`eval/README.md`](eval/README.md) — finding: the done-gate carries ~no weight for frontier models on solvable tasks (they self-verify / write correct code first-try; consistent with RLVM + mini-swe-agent). Instrument + detail in `bench/`; the paper track was dropped (git history). |
 
 ---
 
-## 6. tether-vs-vanilla mechanism evaluation (`eval/` + `bench/`)
+## 6. tether-vs-vanilla mechanism evaluation — CONCLUDED 2026-07-17
 
-**Provenance.** Commissioned 2026-07-09 as a self-benchmark; briefly reframed to a
-pre-registered publishable study (2026-07-12, "Option B"); **reframed again
-2026-07-17 to an internal engineering evaluation** after the pilot showed the headline
-mechanism (done-gate) is ~null on capable models solving small tasks, and that tether's
-value splits into easy-to-measure hooks (mostly unneeded by frontier models) and
-hard-to-measure context/planning value. Goal now: objectively find **which mechanisms
-carry weight vs. vanilla, on the models actually used, on real tasks** — not a paper.
-
-**One home: [`eval/README.md`](eval/README.md)** — goal, design (arms A0–A3 + hidden
-verifiers), the condensed decision record, findings, and next steps. `bench/` is the
-instrument (built, working end-to-end); neither ships to plugin users. The paper
-apparatus (pre-registration, mining pipeline, power analysis, multi-model, workshop
-target) was **dropped** — it lives in git history if ever wanted.
-
-**Next:** wire a SWE-bench-Verified subset into the runner; fire tether-vs-vanilla +
-per-mechanism on Sonnet; report which mechanisms move outcomes (findings in
-`bench/FINDINGS.md`, runs in `bench/RESULTS.md`).
+Commissioned 2026-07-09 as a self-benchmark; briefly reframed to a publishable study
+("Option B", 2026-07-12) then to an internal evaluation, and **concluded 2026-07-17**.
+The pilot answered the first-order question: **the done-gate carries ~no weight for
+frontier models on solvable tasks** — capable models self-verify and write correct code
+first-try, so the failure mode it targets doesn't occur (consistent with RLVM and
+mini-swe-agent). The deeper read: tether's value splits into easy-to-measure hooks
+(mostly unneeded by frontier models) and hard-to-measure context/planning value that a
+bugfix benchmark can't see. Getting the fuller answer meant heavy SWE-bench/Docker
+infrastructure for diminishing return, so we stopped. Full record:
+[`eval/README.md`](eval/README.md); detail in `bench/FINDINGS.md`. The paper apparatus
+(pre-registration, mining pipeline, power analysis, multi-model) was dropped — git
+history if ever wanted.
 
 ---
 ## 7. handoff × catchup — audit the real onboarding path

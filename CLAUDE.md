@@ -7,7 +7,8 @@ Where everything lives:
 - [`ROADMAP.md`](ROADMAP.md) — the active backlog, **ground rules for implementing
   agents**, and the rejected-on-evidence list. Read it before changing anything.
 - [`eval/README.md`](eval/README.md) — the tether-vs-vanilla mechanism evaluation
-  (ROADMAP #6): goal, design, findings, next steps. `bench/` is its instrument.
+  (ROADMAP #6, **concluded**): what we tested and found (done-gate ~null for frontier
+  models). `bench/` is the instrument + detail; `bench/FINDINGS.md` has the specifics.
 - [`plugins/tether/README.md`](plugins/tether/README.md) — the plugin itself: hooks,
   skills, config, tests, and the maintainer dev loop (sandboxed live-testing).
 - [`plugins/tether/references/`](plugins/tether/references/) — `HARNESS.md` (every

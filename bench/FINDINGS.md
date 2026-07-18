@@ -1,6 +1,8 @@
 # FINDINGS — instrument facts + pilot results
 
-The findings log for the tether-vs-vanilla evaluation ([`../eval/README.md`](../eval/README.md)).
+The findings log for the tether-vs-vanilla evaluation ([`../eval/README.md`](../eval/README.md)),
+**concluded 2026-07-17** — kept as the durable record; the instrument in `runner/`
+reproduces it.
 **Bottom line so far:** the instrument works end-to-end, and the **done-gate carries
 ~no weight for frontier models on solvable tasks** (20 pilot cells, 0 discrimination —
 capable models self-verify / write correct code first-try). Next: real SWE-bench tasks.

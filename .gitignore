@@ -8,3 +8,5 @@ eval/papers/
 *.secret
 bench/**/.env.local
 CLAUDE_CODE_OAUTH_TOKEN*
+# personal / never-push local notes
+*.local.md
