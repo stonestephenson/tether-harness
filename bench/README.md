@@ -1,9 +1,8 @@
-# bench/ — the harness bake-off instrument (ROADMAP #6)
+# bench/ — the tether-vs-vanilla evaluation instrument (ROADMAP #6)
 
-The measurement rig for the pre-registered study whose plan, hypotheses, and gates
-live in [`../paper/PLAN.md`](../paper/PLAN.md) and
-[`../paper/DESIGN.md`](../paper/DESIGN.md). `bench/` is the *instrument*; `paper/` is
-the *study*. Neither ships to plugin users (installs carry only `plugins/tether/`).
+The measurement rig for the evaluation whose goal, design, and findings live in
+[`../eval/README.md`](../eval/README.md). `bench/` is the *instrument*; `eval/` is the
+*study*. Neither ships to plugin users (installs carry only `plugins/tether/`).
 
 **Status: Phase 2 (instrument build), starting with de-risking probes.** Before
 building the full runner we answer the six load-bearing unknowns DESIGN.md flagged as

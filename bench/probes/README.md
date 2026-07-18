@@ -1,7 +1,7 @@
 # probes/ — de-risking the DESIGN.md verification list
 
 Small, sandboxed experiments that answer the six unknowns in
-[`../../paper/DESIGN.md`](../../paper/DESIGN.md) (its "Phase-2 verification list")
+[`../../eval/README.md`](../../eval/README.md) (its design + the runner controls)
 before the full runner is built. Results land in [`../FINDINGS.md`](../FINDINGS.md).
 
 Each probe provisions a throwaway `CLAUDE_CONFIG_DIR` under `$TMPDIR` and never

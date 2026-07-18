@@ -1,10 +1,16 @@
-# FINDINGS — Phase 2 verification list + pilot
+# FINDINGS — instrument facts + pilot results
 
-The six unknowns DESIGN.md flagged as *assumed, not verified* (its Phase-2
-verification list), tracked to resolution. Each is a gate on the Phase-4
-pre-registration freeze: a surprising answer can change the design. Probes that call
-the model are **user-fired** (author's subscription auth); the harness for each is in
-`probes/` and self-tests model-free first.
+The findings log for the tether-vs-vanilla evaluation ([`../eval/README.md`](../eval/README.md)).
+**Bottom line so far:** the instrument works end-to-end, and the **done-gate carries
+~no weight for frontier models on solvable tasks** (20 pilot cells, 0 discrimination —
+capable models self-verify / write correct code first-try). Next: real SWE-bench tasks.
+
+Two record types below: (1) a table of runner/platform unknowns resolved while building
+the instrument (auth, permissions, timeout, result-JSON shape); (2) a run log of the
+pilot results. *Historical note:* early entries use paper-era terms (`H1`,
+`pre-registration freeze`, `DESIGN.md`) from the dropped paper track — the **facts**
+hold; only the framing changed. Probes that call the model are user-fired (subscription
+auth); each self-tests model-free first.
 
 | # | Question | Probe | Status | Finding |
 |---|----------|-------|--------|---------|

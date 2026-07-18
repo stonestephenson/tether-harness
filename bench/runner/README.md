@@ -1,7 +1,7 @@
 # runner/ — the bake-off execution rig
 
 Provisions sandboxed arms and (soon) executes the run matrix for the study in
-[`../../paper/DESIGN.md`](../../paper/DESIGN.md). Built on the two mechanisms the
+[`../../eval/README.md`](../../eval/README.md). Built on the two mechanisms the
 `stop_hook` probes proved out: `CLAUDE_CODE_OAUTH_TOKEN` auth (subscription, zero
 API cost) and `../probes/stop_hook/_timeout.sh`'s `portable_timeout` for per-run
 wall-clock caps. Never touches `~/.claude`. Validate model-free:

@@ -52,7 +52,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 6 | Harness bake-off study (`paper/` + `bench/`) | high | **paper-grade study (user: "Option B"), Phase 2 in progress** — Phases 0–1 done: novelty audit + council-reviewed design (headline C1: done-gate enforcement-vs-instruction), DESIGN.md v2 approved 2026-07-15; now building the `bench/` instrument, verification probes first. Plan/phases/gates: [`paper/PLAN.md`](paper/PLAN.md) |
+| 6 | tether-vs-vanilla mechanism evaluation (`eval/` + `bench/`) | high | **internal eval (reframed 2026-07-17 from the paper track)** — instrument built + working; pilot finding: done-gate ~null for frontier models on solvable tasks. Next: SWE-bench-Verified subset on Sonnet. Goal/design/findings: [`eval/README.md`](eval/README.md) |
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
 | 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending, batched** (policy: flush the port queue before a live demo on that branch, when a behavior-critical change enters it, or at 2–3 queued items). Port spec: apply main's `plugins/tether/skills/handoff/SKILL.md` deltas from commits `c8d8bbe` (#7) *if not already ported* and `b6c9008` (#9 — excess class, Economy checklist, deleting-is-a-fix rules; tool-agnostic prose, ports near-verbatim) to each branch's handoff copy; HARNESS §9 policy section ports as-is; the verify.sh link check is optional per-branch maintainer tooling |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
@@ -72,25 +72,25 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 
 ---
 
-## 6. Harness bake-off study — pre-registered, publishable (`paper/` + `bench/`)
+## 6. tether-vs-vanilla mechanism evaluation (`eval/` + `bench/`)
 
-**Provenance.** Commissioned by the user 2026-07-09 as the follow-up to the landscape
-survey (`references/LANDSCAPE.md`; RADAR entry same date). **Reframed 2026-07-12
-(user decision, "Option B"):** the user has personal verification from daily use; the
-item's value is rigorous *public* evidence, so it is designed as a publishable study
-from day one — pre-registration, mechanical task construction, ablation arms, power
-analysis — targeting arXiv + an agents/evaluation workshop. The user's Max
-subscription makes runs zero marginal cost, superseding the original zero-budget tier
-structure (full pre-Option-B design sketch: this file's git history at `fd61a71`).
+**Provenance.** Commissioned 2026-07-09 as a self-benchmark; briefly reframed to a
+pre-registered publishable study (2026-07-12, "Option B"); **reframed again
+2026-07-17 to an internal engineering evaluation** after the pilot showed the headline
+mechanism (done-gate) is ~null on capable models solving small tasks, and that tether's
+value splits into easy-to-measure hooks (mostly unneeded by frontier models) and
+hard-to-measure context/planning value. Goal now: objectively find **which mechanisms
+carry weight vs. vanilla, on the models actually used, on real tasks** — not a paper.
 
-**One home for the plan: [`paper/PLAN.md`](paper/PLAN.md)** — candidate
-contributions, threats to validity, the phase pipeline with gates, and conventions.
-`bench/` (Phase 2) stays the instrument; `paper/` is the study; neither ships to
-plugin users.
+**One home: [`eval/README.md`](eval/README.md)** — goal, design (arms A0–A3 + hidden
+verifiers), the condensed decision record, findings, and next steps. `bench/` is the
+instrument (built, working end-to-end); neither ships to plugin users. The paper
+apparatus (pre-registration, mining pipeline, power analysis, multi-model, workshop
+target) was **dropped** — it lives in git history if ever wanted.
 
-**Next: Phase 0 novelty audit** (related-work sweep → RELATED-WORK.md; gate: user
-verdict per candidate contribution). Every later phase gates on the user; runs are
-user-fired under their own auth.
+**Next:** wire a SWE-bench-Verified subset into the runner; fire tether-vs-vanilla +
+per-mechanism on Sonnet; report which mechanisms move outcomes (findings in
+`bench/FINDINGS.md`, runs in `bench/RESULTS.md`).
 
 ---
 ## 7. handoff × catchup — audit the real onboarding path

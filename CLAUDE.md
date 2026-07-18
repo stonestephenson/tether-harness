@@ -6,8 +6,8 @@ Where everything lives:
 - [`README.md`](README.md) — what tether is, the per-tool branch table, install, layout.
 - [`ROADMAP.md`](ROADMAP.md) — the active backlog, **ground rules for implementing
   agents**, and the rejected-on-evidence list. Read it before changing anything.
-- [`paper/PLAN.md`](paper/PLAN.md) — the harness bake-off study (ROADMAP #6, paper
-  track): phases, gates, status. `bench/` (once built) is its instrument.
+- [`eval/README.md`](eval/README.md) — the tether-vs-vanilla mechanism evaluation
+  (ROADMAP #6): goal, design, findings, next steps. `bench/` is its instrument.
 - [`plugins/tether/README.md`](plugins/tether/README.md) — the plugin itself: hooks,
   skills, config, tests, and the maintainer dev loop (sandboxed live-testing).
 - [`plugins/tether/references/`](plugins/tether/references/) — `HARNESS.md` (every
