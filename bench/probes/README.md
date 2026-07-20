@@ -1,4 +1,4 @@
-# probes/ — de-risking the DESIGN.md verification list
+# probes/ — de-risking the design's verification list
 
 Small, sandboxed experiments that answer the six unknowns in
 [`../../eval/README.md`](../../eval/README.md) (its design + the runner controls)
@@ -31,7 +31,7 @@ The load-bearing one: what does headless `claude -p` do when a Stop hook blocks?
    ```
    Reports done-gate invocation + block counts and the result-JSON field presence.
    *1 block* ⇒ the gate gives a single forced repair-nudge (H1's mechanism wording
-   in DESIGN.md must change from "blocks until green"); *>1 block* ⇒ repeated
+   in the design must change from "blocks until green"); *>1 block* ⇒ repeated
    enforcement.
 3. **P1-raw — the CLI's own ceiling under an unconditional block** (optional; the
    hook self-caps at 6 blocks so quota is bounded):

@@ -53,7 +53,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | # | Task | Priority | Status |
 |---|------|----------|--------|
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
-| 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending, batched** (policy: flush the port queue before a live demo on that branch, when a behavior-critical change enters it, or at 2–3 queued items). Port spec: apply main's `plugins/tether/skills/handoff/SKILL.md` deltas from commits `c8d8bbe` (#7) *if not already ported* and `b6c9008` (#9 — excess class, Economy checklist, deleting-is-a-fix rules; tool-agnostic prose, ports near-verbatim) to each branch's handoff copy; HARNESS §9 policy section ports as-is; the verify.sh link check is optional per-branch maintainer tooling |
+| 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending, batched** (policy: flush the port queue before a live demo on that branch, when a behavior-critical change enters it, or at 2–3 queued items). Port spec: apply main's `plugins/tether/skills/handoff/SKILL.md` deltas from commits `c8d8bbe` (#7) *if not already ported* and `b6c9008` (#9 — excess class, Economy checklist, deleting-is-a-fix rules; tool-agnostic prose, ports near-verbatim) to each branch's handoff copy; HARNESS §9 policy section ports as-is; the verify.sh link check is optional per-branch maintainer tooling. **Also queued (2026-07-20):** the WORKFLOW.md done-gate correction ("blocked with failures until green" → measured once-per-stop wording, per the #6 finding) — all three ports carry the stale line |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
 | 10 | Interpreter/shell portability (Windows-native support) | low | **proposed 2026-07-13, not green-lit** — see §10; hooks hardcode `python3` + `bash`, so Windows fails *open* (silently no-ops) |
 
@@ -210,10 +210,9 @@ inert; regression coverage for the resolution logic; port to all four branches. 
 self-check is arguably the higher-value half — it closes the silent-no-op class on every
 platform, not just Windows.
 
-**Scoping (why it waits).** The paper track's treatment-versioning convention (PLAN.md
-§Conventions) says the harness changes only on its own evidence before the Phase-4 freeze,
-and does not change at all during Phases 5–6. This item has no user demand behind it (one
-friend, once), and it touches the treatment. It waits. Interim answer for Windows users:
+**Scoping (why it waits).** Plain cost/benefit: this item has no user demand behind it
+(one friend, once), and with the eval (#6) concluded, nothing forces a change to the
+hooks. It waits. Interim answer for Windows users:
 **use WSL** — the tested environment, one command to install.
 
 ---

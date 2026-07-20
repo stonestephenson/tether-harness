@@ -61,8 +61,10 @@ data other tools don't expose; the other branches ship it unwired. See each bran
 ## Roadmap (what's next)
 
 The vetted backlog lives in [`ROADMAP.md`](ROADMAP.md) — its Active table is the
-current truth (as of 2026-07-12: the zero-budget self-benchmark #6 on hold, the
-user-run live port verification 8b, and pending ports of the docs-diet batch #9);
+current truth (as of 2026-07-17: the tether-vs-vanilla eval #6 **concluded** — the
+done-gate showed ~no effect for frontier models on solvable tasks, finding in
+[`eval/README.md`](eval/README.md); still open: the user-run live port verification
+8b and pending ports of the docs-diet batch #9);
 everything else from the 2026-07 audit — the five needle-mover tasks, the
 handoff×catchup audit-realism change #7 — is landed on every branch and archived in
 the ROADMAP's Completed table. It also carries the ground rules for implementing

@@ -30,7 +30,7 @@ built on two evidence-backed pillars:
 
   FINISH A CHANGE
      ├─ agent tries to stop ─► [done-gate HOOK] runs .claude/verify.sh (auto)
-     │                          └─ red? blocked with failures until green
+     │                          └─ red? that finish is blocked, failures fed back
      └─ /ship ............... full gates + cold review + local commit
 
   RESEARCH RUNS
@@ -52,7 +52,7 @@ built on two evidence-backed pillars:
 | Localize / read | `Explore` | subagent | Breadth-first search in an isolated window; returns summaries. Keeps the main thread lean. |
 | Implement | `/test-first` | skill | Failing test/repro first, then make it pass. The external-verifier loop. |
 | Verify (per edit) | **verify-on-edit** | hook (auto) | Fast file-local fmt/lint on the changed file; feeds diagnostics back. |
-| Verify (on finish) | **done-gate** | hook (auto) | Runs the project's fast check on Stop; blocks finishing while it's red. Opt-in. |
+| Verify (on finish) | **done-gate** | hook (auto) | Runs the project's fast check on Stop; red blocks that finish attempt and feeds back the failures (once per stop cycle — loop-guarded). Opt-in. |
 | Monitor context | **context-health** | hook (auto) | Measures window occupancy; nudges at 70/85/95%. |
 | Decide context | `/context-health` | skill | continue / compact / handoff+clear. Confirms the lossy/destructive steps. |
 | Checkpoint | `/ship` | skill | Full gates + **cold** diff review (fresh-context, advisory) + **local** commit. Stops before push/PR. |

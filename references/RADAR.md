@@ -44,8 +44,7 @@ covers swept external findings; #6 is a user-initiated instrument, not a promote
 
 **Verdict: NULL** — first scheduled-cloud sweep, fired the same day as the inaugural baseline,
 so a near-zero window. Contracts intact; everything surfaced clusters onto already-incorporated
-or already-queued items. Run: routine `tether-sota-radar`, session
-`cse_01EwBrX1RbvixN8NefJaNuoB` (claude-opus-4-8, read-only tools).
+or already-queued items. Run: routine `tether-sota-radar` (claude-opus-4-8, read-only tools).
 
 **Platform drift:** none. 13/13 PLATFORM-ASSUMPTIONS facts checked against the hooks doc — 11
 confirmed outright; facts 2–3 (`decision:block` confirmed; `stop_hook_active` not surfaced by

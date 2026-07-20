@@ -2,7 +2,7 @@
 
 One row per cell (experiment-log format), appended by `runner/run_batch.sh`. The
 `dg01`/`dg02` rows are the dev-task pilot behind the done-gate null finding
-([`FINDINGS.md`](FINDINGS.md)); real-task rows (SWE-bench-Verified) come next.
+([`FINDINGS.md`](FINDINGS.md)); the study concluded before any real-task rows were needed.
 `run_dir` paths are ephemeral (per-machine `$TMPDIR`); the durable artifacts are the
 per-cell bundles harvested there during the run.
 

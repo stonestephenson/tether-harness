@@ -3,9 +3,10 @@
 The findings log for the tether-vs-vanilla evaluation ([`../eval/README.md`](../eval/README.md)),
 **concluded 2026-07-17** — kept as the durable record; the instrument in `runner/`
 reproduces it.
-**Bottom line so far:** the instrument works end-to-end, and the **done-gate carries
+**Bottom line:** the instrument works end-to-end, and the **done-gate carries
 ~no weight for frontier models on solvable tasks** (20 pilot cells, 0 discrimination —
-capable models self-verify / write correct code first-try). Next: real SWE-bench tasks.
+capable models self-verify / write correct code first-try). The study concluded there —
+a deliberate stop; the reasoning is in [`../eval/README.md`](../eval/README.md).
 
 Two record types below: (1) a table of runner/platform unknowns resolved while building
 the instrument (auth, permissions, timeout, result-JSON shape); (2) a run log of the

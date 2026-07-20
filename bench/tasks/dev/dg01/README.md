@@ -4,8 +4,7 @@ The first hand-built **dev** task: a small Python module carrying a done-gate "t
 (the naive fix breaks a visible neighbor). Along with dg02 it's the reproducible basis
 of the pilot finding that the done-gate is ~null for frontier models on solvable tasks
 ([`../../../FINDINGS.md`](../../../FINDINGS.md); design in
-[`../../../../eval/README.md`](../../../../eval/README.md)). Real evaluation tasks now
-come from SWE-bench-Verified, not hand-built traps. Validate model-free (no `claude`):
+[`../../../../eval/README.md`](../../../../eval/README.md)). Validate model-free (no `claude`):
 `bash bench/tasks/dev/dg01/validate.sh`.
 
 ## The trap (a natural coupling)

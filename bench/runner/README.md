@@ -1,6 +1,6 @@
 # runner/ — the bake-off execution rig
 
-Provisions sandboxed arms and (soon) executes the run matrix for the study in
+Provisions sandboxed arms and executes the run matrix for the study in
 [`../../eval/README.md`](../../eval/README.md). Built on the two mechanisms the
 `stop_hook` probes proved out: `CLAUDE_CODE_OAUTH_TOKEN` auth (subscription, zero
 API cost) and `../probes/stop_hook/_timeout.sh`'s `portable_timeout` for per-run
@@ -45,8 +45,9 @@ wall-clock caps. Never touches `~/.claude`. Validate model-free:
   Specs live in `../runs/` (e.g. `pilot_dg01.json`). Fire the pilot:
   `bash bench/runner/run_batch.sh bench/runs/pilot_dg01.json --seed 1234`.
 
-## Not built yet (next)
+## Not built (the study concluded first)
 
 Failure-disposition + drift-canary hardening in the batch loop, more dev tasks,
-and the task-mining pipeline (verification item #6). The instrument is otherwise
-end-to-end: provision → real `claude -p` → harvest → hidden grade → logged.
+and the task-mining pipeline (verification item #6) — the pilot answered the
+question before these were needed. The instrument is otherwise end-to-end:
+provision → real `claude -p` → harvest → hidden grade → logged.
