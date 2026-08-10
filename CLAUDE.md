@@ -17,9 +17,12 @@ Where everything lives:
 - [`references/`](references/) — `PLATFORM-ASSUMPTIONS.md` (pinned platform facts the
   hooks depend on, incl. port-branch tripwires), `RADAR.md` (monthly sweep log),
   `LANDSCAPE.md` (graded competitor survey).
+- [`.claude/README.md`](.claude/README.md) — **maintainer tooling, not shipped**: the
+  `sota-radar` sweep skill and the `plain-english` triage hook. Nothing here reaches
+  tether users, and the ROADMAP's new-scaffolding burden of proof doesn't govern it.
 
-Definition of done: `bash .claude/verify.sh` green (both regression suites — 18 + 46
-checks with the full optional toolchain; missing tools skip their blocks — plus a
+Definition of done: `bash .claude/verify.sh` green (three regression suites — 20 + 46 +
+22 checks with the full optional toolchain; missing tools skip their blocks — plus a
 doc-link check), and docs kept in sync when behavior changes (HARNESS / WORKFLOW /
 plugin README / PAPERS). The ports live on branches `codex` / `opencode` / `generic` — same
 skills, per-tool contracts; local worktrees may exist at `../tether-harness-<branch>`.
