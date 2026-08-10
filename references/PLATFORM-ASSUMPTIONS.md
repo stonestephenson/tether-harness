@@ -10,6 +10,14 @@ regression suites, and a live transcript parse. Re-confirmed doc-side by the 202
 cloud sweep (facts 2–3 pending behavioral re-verify on the next local sweep; also
 re-baseline the doc's event count, read as 29 vs 32 across the two fetches).
 
+Re-checked doc-side **2026-08-01** (cloud sweep): no contract breaks; facts 4 and 12
+explicitly re-confirmed, fact 13 amended with the changelog URL. Fact 3
+(`stop_hook_active`) is still absent from the doc — the same doc-vs-behavior gap the
+2026-07-09 sweep flagged; the local suite exercises it behaviourally. One drift found
+and fixed: the model→budget map (ROADMAP #11). **Caution from that sweep:** a
+single doc fetch's summary wrongly reported fact 4 as broken and a focused re-fetch
+corrected it — double-check any break a lone fetch reports before acting on it.
+
 ## Contracts the hooks rely on (breaks if changed)
 
 | # | Fact | Relied on by |
@@ -25,8 +33,8 @@ re-baseline the doc's event count, read as 29 vs 32 across the two fetches).
 | 9 | Transcript is JSONL; main-thread assistant lines have `type:"assistant"`, `message.usage.{input_tokens,cache_read_input_tokens,cache_creation_input_tokens}`, and sidechains are marked `isSidechain:true` | `context-health.py` occupancy measurement (live-fire verified 2026-07-09) |
 | 10 | `settings.json` `env` vars reach hook subprocesses (`CLAUDE_CONTEXT_BUDGET` flow) | `context-health.py` |
 | 11 | Project opt-in convention: `.claude/verify.sh` + `CLAUDE_VERIFY_CMD` override | `done-gate.py` |
-| 12 | Hook inputs carry **no** context-window size and no model id (except an optional `model` on `SessionStart`) | why context-health reads `message.model` from the transcript instead (5b, 2026-07-11) and `CLAUDE_CONTEXT_BUDGET` stays the always-wins knob |
-| 13 | Hooks docs live at `code.claude.com/docs/en/hooks` (`docs.claude.com` 301s there) | the radar itself |
+| 12 | Hook inputs carry **no** context-window size and no model id (except an optional `model` on `SessionStart`) | why context-health reads `message.model` from the transcript instead (5b, 2026-07-11; re-verified 2026-08-01) and `CLAUDE_CONTEXT_BUDGET` stays the always-wins knob. Corollary: the `MODEL_BUDGETS` allowlist must be hand-updated per model launch — a standing radar chore (ROADMAP #11) until an occupancy primitive ships |
+| 13 | Hooks docs live at `code.claude.com/docs/en/hooks` (`docs.claude.com` 301s there); the **changelog** is `raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` — `code.claude.com/docs/en/release-notes` 404s (cost the 2026-08-01 cloud sweep a fetch) | the radar itself |
 
 ## Opportunities watch (new capabilities → harness upgrades)
 
@@ -39,7 +47,9 @@ re-baseline the doc's event count, read as 29 vs 32 across the two fetches).
   re-injecting branch/verify-status/file:line after compaction becomes possible.
 - Watch for a **context-window/occupancy field** in hook input or a supported API —
   would supersede 5b's transcript-model→budget map (landed 2026-07-11) with true
-  auto-calibration, and remove the `[1m]`-beta env-var caveat.
+  auto-calibration, remove the 1M-beta env-var caveat, and retire the per-launch
+  map-update chore (ROADMAP #11). Still absent as of the 2026-08-01 sweep; re-check
+  every sweep, since this is the only fix that stops the allowlist lagging launches.
 - `SessionStart` can inject `additionalContext` + register `watchPaths`; `FileChanged`
   fires on watched paths — candidate strengthening for ROADMAP #1 (verifier watch).
 - Unexploited events as of 2026-07: `PostToolUseFailure`, `PostToolBatch`,

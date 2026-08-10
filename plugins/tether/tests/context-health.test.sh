@@ -106,5 +106,14 @@ check "env var beats the model map"               "$(run UserPromptSubmit "$FIX/
 # T14 unknown id + NO env -> 200k fallback (150k -> warn)
 check "unknown model id falls back to 200k"       "$(run UserPromptSubmit "$FIX/model_unknown" cht_m3 -u CLAUDE_CONTEXT_BUDGET)" contains "getting heavy"
 
+# T15/T16 opus-5 is natively 1M. The id also ships a "[1m]" deployment suffix
+# (claude-opus-5[1m]) — prefix matching must map both to 1M, or the gauge
+# over-warns ~5x on the current flagship. Regression for the 2026-08-01 sweep.
+printf '%s\n' '{"type":"assistant","message":{"model":"claude-opus-5","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_opus5"
+printf '%s\n' '{"type":"assistant","message":{"model":"claude-opus-5[1m]","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_opus5_suffixed"
+
+check "claude-opus-5 maps to 1M (150k silent)"    "$(run UserPromptSubmit "$FIX/model_opus5" cht_m4 -u CLAUDE_CONTEXT_BUDGET)" empty ""
+check "claude-opus-5[1m] suffix maps to 1M too"   "$(run UserPromptSubmit "$FIX/model_opus5_suffixed" cht_m5 -u CLAUDE_CONTEXT_BUDGET)" empty ""
+
 printf '\n%d passed, %d failed\n' "$pass" "$fail"
 [[ $fail -eq 0 ]]

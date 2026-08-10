@@ -53,9 +53,10 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | # | Task | Priority | Status |
 |---|------|----------|--------|
 | 8b | Live verification of the ports (user-run: codex + opencode) | medium | pending — checklists below; both branches pushed 2026-07-11 (ports refreshed 2026-07-12 with #7 + doc-accuracy fixes) |
-| 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports pending, batched** (policy: flush the port queue before a live demo on that branch, when a behavior-critical change enters it, or at 2–3 queued items). Port spec: apply main's `plugins/tether/skills/handoff/SKILL.md` deltas from commits `c8d8bbe` (#7) *if not already ported* and `b6c9008` (#9 — excess class, Economy checklist, deleting-is-a-fix rules; tool-agnostic prose, ports near-verbatim) to each branch's handoff copy; HARNESS §9 policy section ports as-is; the verify.sh link check is optional per-branch maintainer tooling. **Also queued (2026-07-20):** the WORKFLOW.md done-gate correction ("blocked with failures until green" → measured once-per-stop wording, per the #6 finding) — all three ports carry the stale line |
+| 9 | Docs-diet batch (documentation policy + excess-hunting audit + link check) | low | ✅ done on main (2026-07-12) — see §9 below; **ports flushed 2026-08-10** alongside #11 (the behavior-critical trigger in the batching policy). All three branches now carry the HARNESS §9 policy section, the four handoff deltas from `b6c9008` (excess class, redundancy flag, deleting-is-a-fix, Economy checklist), and the WORKFLOW done-gate correction. The verify.sh link check stays main-only (optional per-branch maintainer tooling) |
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
 | 10 | Interpreter/shell portability (Windows-native support) | low | **proposed 2026-07-13, not green-lit** — see §10; hooks hardcode `python3` + `bash`, so Windows fails *open* (silently no-ops) |
+| 11 | Context-budget map: add `claude-opus-5` (+ standing per-launch chore) | medium | ✅ done on main 2026-08-10 — see §11; from the 2026-08-01 radar sweep. Ports landed with the batched #9 flush |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
 
@@ -169,8 +170,10 @@ hook behavior is restated across ~4 docs (consistent today — collapse is a can
 follow-up); HARNESS §12's interview section is author-personal content in user-facing
 docs (user's call); the link check validates file targets, not `#section` anchors.
 
-**Ports pending:** the handoff-skill edits to `codex`/`opencode`/`generic` (same
-pattern as #7); the link check is optional per-branch. Rejected within this batch:
+**Ports: ✅ done 2026-08-10**, flushed with #11 (a behavior-critical change entering the
+branches is one of the policy's flush triggers). Each branch got the HARNESS §9 policy
+section verbatim and the four handoff deltas; the `verify.sh` link check stays main-only
+maintainer tooling. Rejected within this batch:
 rewriting docs in compressed "AI-native" style (out of distribution; breaks the human
 audit loop), auto-generated doc files (measured harm — ETH study), a standalone
 docs-diet skill (rides handoff), and any hook that edits docs automatically.
@@ -214,6 +217,51 @@ platform, not just Windows.
 (one friend, once), and with the eval (#6) concluded, nothing forces a change to the
 hooks. It waits. Interim answer for Windows users:
 **use WSL** — the tested environment, one command to install.
+
+---
+
+## 11. Context-budget map — `claude-opus-5`, and the chore behind it
+
+**Provenance.** The 2026-08-01 monthly cloud sweep (`references/RADAR.md`) — the first
+sweep to return a non-NULL verdict. Platform-drift hygiene, the same lane as ROADMAP 5b;
+not a research finding.
+
+**The defect.** `plugins/tether/hooks/context-health.py`'s `MODEL_BUDGETS` allowlist
+omitted `claude-opus-5` (natively 1M). The lookup is a prefix match, and
+`"claude-opus-5".startswith("claude-opus-4-8")` is False, so Opus 5 sessions fell through
+to `DEFAULT_BUDGET = 200_000` and measured occupancy against a fifth of the real window —
+firing WARN/ACT/CRIT at roughly 14%/17%/19% of actual capacity. The gauge nagged
+`/context-health`, compact, and handoff about 5× too early on the current flagship. It
+failed in the *safe* direction and never wedged a session, so this was a calibration
+defect rather than a break — but it made the gauge actively misleading on the model the
+maintainer runs daily.
+
+**✅ Landed on main 2026-08-10** (test-first, red→green verified):
+
+- `("claude-opus-5", 1_000_000)` added to `MODEL_BUDGETS`. Prefix matching covers both
+  the bare id and the `claude-opus-5[1m]` deployment suffix that appears in real
+  transcripts — two regression cases pin exactly that (suites now 20 + 46).
+- The dated code comment was refreshed (it claimed a 2026-07 verification and carried a
+  stale caveat asserting the `[1m]` suffix "never appears in the transcript model id" —
+  it does).
+- `PLATFORM-ASSUMPTIONS.md` fact 12 re-verified 2026-08-01 and annotated with the chore;
+  fact 13 gained the changelog URL (`code.claude.com/docs/en/release-notes` 404s — the
+  canonical source is the GitHub `CHANGELOG.md`, which cost the sweep a wasted fetch).
+- Live `~/.claude` install synced with the user's explicit OK (the install was actively
+  over-warning).
+
+**The design choice, deliberately kept.** The allowlist stays an allowlist. A denylist
+(assume 1M, list the 200k exceptions) would remove the chore but flip the failure
+direction: an unknown id would map *high* and the gauge would stay silent through a real
+context exhaustion — under-warning, which is the dangerous direction for a piece whose
+whole job is to warn early. Over-warning on an unknown model is the correct default.
+
+**The standing chore.** This allowlist lags every frontier launch by construction, so
+"add the new model id" is now a recurring radar item, not a one-off. The durable fix is a
+platform-supplied context-window/occupancy field, which would supersede 5b's whole
+transcript-model→budget mechanism with true auto-calibration; it is tracked in
+PLATFORM-ASSUMPTIONS "opportunities watch" and was re-confirmed absent on 2026-08-01.
+Until it ships, every sweep checks the map against the current model roster.
 
 ---
 
