@@ -3,6 +3,8 @@ set -e
 cd "$(dirname "$0")/.."
 bash plugins/tether/tests/context-health.test.sh
 bash plugins/tether/tests/verify-hooks.test.sh
+# maintainer-personal tooling, not part of the shipped plugin (see .claude/README.md)
+bash .claude/tests/plain-english.test.sh
 
 # harden(2026-07-12): docs pointer-graph hygiene — a relative link to a .md file
 # that doesn't exist is doc rot at commit time, not audit time. .md targets only
