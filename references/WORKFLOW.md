@@ -30,7 +30,7 @@ built on two evidence-backed pillars:
 
   FINISH A CHANGE
      ├─ agent tries to stop ─► [done-gate HOOK] runs .codex/verify.sh (auto)
-     │                          └─ red? blocked with failures until green
+     │                          └─ red? that finish is blocked, failures fed back
      └─ /ship ............... full gates + self-review + local commit
 
   RESEARCH RUNS
