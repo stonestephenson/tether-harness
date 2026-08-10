@@ -40,15 +40,20 @@ BAND_NAME = {1: "getting heavy", 2: "act soon", 3: "critical"}
 
 DEFAULT_BUDGET = 200000
 # Known model-id prefixes -> context window (verified against the models docs,
-# 2026-07: the current Fable/Opus/Sonnet generation is natively 1M; Haiku 4.5
-# and older models are 200k). Prefix match tolerates date-suffixed ids.
+# 2026-08: the current Fable/Opus/Sonnet generation is natively 1M; Haiku 4.5
+# and older models are 200k). Prefix match tolerates both date-suffixed ids and
+# deployment suffixes like "claude-opus-5[1m]".
 # Unknown ids fall back to DEFAULT_BUDGET — the safe direction (over-warn).
-# Caveat: 200k-default models running the 1M beta (a settings suffix like
-# "[1m]" that never appears in the transcript model id) map low — those users
-# must keep CLAUDE_CONTEXT_BUDGET set; it always wins.
+# Caveat: a 200k-default model running the 1M beta maps low if its transcript
+# id carries no distinguishing suffix — those users must keep
+# CLAUDE_CONTEXT_BUDGET set; it always wins.
+# This allowlist lags every frontier launch by design (a denylist would flip
+# the safe direction to under-warning). Adding each new model id is a standing
+# chore for the monthly maintainer sweep.
 MODEL_BUDGETS = (
     ("claude-fable-5", 1_000_000),
     ("claude-mythos-5", 1_000_000),
+    ("claude-opus-5", 1_000_000),
     ("claude-opus-4-8", 1_000_000),
     ("claude-opus-4-7", 1_000_000),
     ("claude-opus-4-6", 1_000_000),
