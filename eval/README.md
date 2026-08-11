@@ -11,10 +11,17 @@ Detail + run log: [`../bench/FINDINGS.md`](../bench/FINDINGS.md),
 
 - **The done-gate carries ~no weight for frontier models on solvable tasks.** 20 cells
   (dg01/dg02 trap tasks × Sonnet 5 + Haiku 4.5 × vanilla/done-gate): zero
-  discrimination, zero gate firings. Capable models self-verify (ran `verify.sh` even
-  unprompted) and write correct code first-try, so the "finish with tests red" failure
-  mode the gate targets doesn't occur. Consistent with the research — RLVM (gates help
-  only where the model can't self-check) and mini-swe-agent (minimal scaffolds win).
+  discrimination, zero gate firings. The reason sharpened between the two pilots, and
+  the second reading is the one that stands: in dg01 the vanilla arms did run
+  `verify.sh` — but the prompt told them to, which hands vanilla the verification step
+  and shrinks the very gap being measured. dg02 removed that instruction, and the arms
+  **did not run `verify.sh` at all** and still passed every hidden test, because they
+  wrote the correct guarded fix on the first attempt and never fell for the trap. So
+  the gate is redundant here not because models reliably self-verify, but because on
+  constructible tasks capable models write correct, defensive code first-try — the
+  "finish with tests red" failure mode simply doesn't occur. Consistent with the
+  research — RLVM (gates help only where the model can't self-check) and mini-swe-agent
+  (minimal scaffolds win). Detail: [`../bench/FINDINGS.md`](../bench/FINDINGS.md) §dg02.
 - **The deeper point:** tether's value splits into **easy-to-measure hooks** (the
   deterministic gates, which capable models mostly don't need on clean tasks) and
   **hard-to-measure judgment/context value** (planning, context management,

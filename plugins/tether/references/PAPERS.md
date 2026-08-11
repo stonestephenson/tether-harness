@@ -114,6 +114,33 @@ alternatives.
   *Backs:* generator–evaluator separation (models self-evaluate leniently) → ROADMAP #4
   (`/ship` cold reviewer); plus the "iteratively prune scaffolding" posture.
 
+## The evaluation's evidence base — ROADMAP #6 (concluded 2026-07-17)
+
+These are the works the tether-vs-vanilla evaluation reasoned against, and the ones its
+null result is consistent with. Filed here 2026-08-10 after a cold audit found them cited
+across [`eval/README.md`](../../../eval/README.md), `ROADMAP.md`, and
+[`RADAR.md`](../../../references/RADAR.md) but absent from this bibliography — the exact
+"designated home doesn't hold the fact" gap §9's policy is meant to prevent. Entries carry
+the identifiers the citing docs use; PDFs are gitignored, re-fetch by arXiv id.
+
+- **RLVM — reinforcement learning from verifiable machine feedback.**
+  arXiv:[2607.07405](https://arxiv.org/abs/2607.07405).
+  *Backs:* verification gates help where the model **cannot self-check**; where it can,
+  they add process without signal. The frame the #6 null is read through — the done-gate
+  showed ~no effect precisely because the models could self-check the task.
+- **mini-swe-agent** — ~74% SWE-bench Verified from ~100 lines of scaffold
+  ([swebench.com/verified](https://www.swebench.com/verified)).
+  *Backs:* heavy scaffolding isn't *necessary* for frontier performance → the
+  minimal-sufficient-scaffolding position in the ROADMAP ground rules, and the rejection
+  of "skill sprawl / process-heavy scaffolding without verification signal."
+- **Harness-Bench.** arXiv:[2605.27922](https://arxiv.org/abs/2605.27922).
+  *Backs:* harness-level comparison methodology — how to attribute an effect to the
+  scaffold rather than the model.
+- **Stop Comparing (agent-eval methodology).**
+  arXiv:[2605.23950](https://arxiv.org/abs/2605.23950).
+  *Backs:* the design discipline behind #6's arms and hidden-verifier grading; also why
+  the pilot was allowed to conclude on a null rather than being scaled up.
+
 ## Documentation as agent context — 2026-07 policy additions
 
 Behind HARNESS.md §9's documentation policy and handoff's docs-diet gap class

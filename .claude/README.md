@@ -81,7 +81,7 @@ be guessing which uuid is which terminal.
 | `PLAIN_MIN_CHARS` | `1200` | Shorter replies are skipped; they don't need triaging. |
 | `PLAIN_NUM_CTX` | `16384` | Must exceed prompt + message. Too small silently truncates. |
 | `PLAIN_TIMEOUT` | `150` | Seconds. |
-| `PLAIN_DIR` | `~/.claude/plain` | One append-only `<session>.md` per session. |
+| `PLAIN_DIR` | `~/.claude/plain` | One append-only `<cwd-slug>.md` per project — see "Which session does a pane follow?" above. |
 | `PLAIN_OLLAMA_URL` | `http://127.0.0.1:11434/api/chat` | |
 
 ### The three properties the tests exist to protect

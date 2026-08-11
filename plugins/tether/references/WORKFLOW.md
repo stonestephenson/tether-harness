@@ -74,8 +74,10 @@ All hooks: measure real state, degrade gracefully on missing tools, and **fail o
 
 ## What runs where (per-file vs project-wide)
 
-- **Per edit (verify-on-edit):** real-bug lint (`ruff --select E9,F`, `shellcheck`)
-  always; **formatting/style is opt-in** — clang-format / `ruff format` run only when the
+- **Per edit (verify-on-edit):** real-bug lint (`shellcheck`, and for Python the
+  project's own `ruff check` when it ships a ruff/pyproject config, else a
+  `--select E9,F` floor — a config that narrows `select` wins);
+  **formatting/style is opt-in** — clang-format / `ruff format` run only when the
   project ships a style config (`.clang-format`, `ruff.toml`/`pyproject.toml`), so
   hand-formatted code isn't churned. Exception: rustfmt and gersemi/cmake-format run
   unconditionally on `.rs`/CMake edits (universal default styles — see HARNESS §4).
@@ -114,8 +116,9 @@ hooks; the harness ships no LSP config of its own.
 `settings.json` (`env`) or your shell:
 - `CLAUDE_CONTEXT_BUDGET` — window tokens; optional override that always wins. When
   unset, context-health maps the transcript's model id to its window (current
-  Fable/Opus/Sonnet generation → 1M; unknown → 200k). Keep it set for 200k-default
-  models running the `[1m]` beta (the suffix never appears in the transcript).
+  Fable/Opus/Sonnet generation → 1M; unknown → 200k). Keep it set for a 200k-default
+  model whose transcript id carries no distinguishing suffix; a `[1m]` suffix that does
+  reach the transcript (e.g. `claude-opus-5[1m]`) is handled by the prefix match.
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — bands (`.70` / `.85` / `.95`).
 - `CLAUDE_VERIFY_CMD` — command the done-gate runs on Stop (overrides the file below).
 

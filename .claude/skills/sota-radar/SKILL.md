@@ -49,7 +49,7 @@ and LANDSCAPE files live in repo-root `references/`, NOT under this skill's dire
   the file's "opportunities watch" section says what to look for).
 - Scan the Claude Code changelog/release notes since the watermark for hook-, skill-,
   context-, or memory-related changes.
-- **Local mode only:** also run `bash .claude/verify.sh` (both suites) and live-fire
+- **Local mode only:** also run `bash .claude/verify.sh` (all suites) and live-fire
   `plugins/tether/hooks/context-health.py` against a real current transcript (read-only;
   fake `session_id`) to confirm the transcript format still parses.
 

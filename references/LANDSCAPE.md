@@ -142,4 +142,4 @@ repetitions; anecdote tier, cite as directional only) ·
 [roman-rr Ruflo audit](https://gist.github.com/roman-rr/ed603b676af019b8740423d2bb8e4bf6) ·
 papers cited short-form above: TRACE (2606.13174), Zheng et al. 2024, Huang et al. 2023,
 Cognition "Don't Build Multi-Agents", Chroma context rot, mini-swe-agent, EvilGenie
-(2511.21654) — all in `PAPERS.md`.
+(2511.21654) — in `PAPERS.md`.

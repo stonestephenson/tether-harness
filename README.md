@@ -44,7 +44,7 @@ verification hooks. Pick the branch for your agent:
 | **`main`** | Claude Code | the two commands under *Install* below |
 | **`codex`** | OpenAI Codex CLI | `git clone -b codex https://github.com/stonestephenson/tether-harness && bash tether-harness/codex/install.sh` |
 | **`opencode`** | opencode | `git clone -b opencode https://github.com/stonestephenson/tether-harness && bash tether-harness/opencode/install.sh` |
-| **`generic`** | any other agentic AI | wire the hooks per `WIRING.md` |
+| **`generic`** | any other agentic AI | wire the hooks per `WIRING.md` *(on the `generic` branch, not `main`)* |
 
 `context-health` (context-pressure nudges) is Claude-Code-only — it needs transcript token
 data other tools don't expose; the other branches ship it unwired. See each branch's README.
@@ -53,21 +53,19 @@ data other tools don't expose; the other branches ship it unwired. See each bran
 
 | Branch | State | Notes |
 |---|---|---|
-| **`main`** (Claude Code) | ✅ verified end-to-end | hooks fire, skills load, regression suites pass (18 + 46 checks — `bash .claude/verify.sh`) |
+| **`main`** (Claude Code) | ✅ verified end-to-end | hooks fire, skills load, regression suites pass (`bash .claude/verify.sh` — counts in [`CLAUDE.md`](CLAUDE.md)) |
 | **`opencode`** | ✅ verified live on **1.17.15** (2026-07) | edit → lint → agent-fix loop closes (agent removed an unused import after an `F401`); done-gate **failing path verified live** (`session.idle` → failing `.tether/verify.sh` surfaces the block, repeatedly). Also drives a **local model** (qwen3-coder via Ollama @ 64k ctx — see `opencode/LOCAL-MODELS.md`). **2026-07 upgrades (#1–#5) ported** (suite 42/42): verifier anti-tamper, `/harden`, `/ship` cold reviewer, and a pre-compact guard that *injects* dirty-tree state into the compaction prompt (opencode's compacting hook can't block — inverse of Claude Code); live re-verify of the new pieces pending. Caveat: done-gate is reliable **interactively**; under headless `opencode run` the process can exit before the async hook writes. |
 | **`codex`** | ✅ verified live on **0.143.0** (2026-07) | Codex's hooks are a near-clone of Claude Code's (same events + JSON stdin/stdout), so both fire in an authenticated turn: verify-on-edit parses `apply_patch` (V4A) payloads and blocks the edit with lint feedback; done-gate blocks a failing finish via `{"decision":"block"}`. Skills ship as **native Codex skills** (`~/.codex/skills/`); the installer merges a tether block into `AGENTS.md` without clobbering an existing one. `context-health` stays unwired (needs transcript tokens Codex doesn't expose). **2026-07 upgrades (#1–#5) ported** (suite 40/40; PreCompact blocks via `continue:false` JSON there); live re-verify of the new pieces pending. |
 | **`generic`** | ✅ scripts + suite (2026-07) | ships the four standalone hook scripts (incl. verifier anti-tamper and the advisory pre-compact guard), the nine skill playbooks, and a regression suite (42/42) — wire per `WIRING.md`; verify per-tool when adopting |
 
 ## Roadmap (what's next)
 
-The vetted backlog lives in [`ROADMAP.md`](ROADMAP.md) — its Active table is the
-current truth (as of 2026-07-17: the tether-vs-vanilla eval #6 **concluded** — the
-done-gate showed ~no effect for frontier models on solvable tasks, finding in
-[`eval/README.md`](eval/README.md); still open: the user-run live port verification
-8b and pending ports of the docs-diet batch #9);
-everything else from the 2026-07 audit — the five needle-mover tasks, the
-handoff×catchup audit-realism change #7 — is landed on every branch and archived in
-the ROADMAP's Completed table. It also carries the ground rules for implementing
+The vetted backlog lives in [`ROADMAP.md`](ROADMAP.md) — **its Active table is the
+current truth; this page deliberately doesn't restate it**, because a second copy only
+drifts. The one durable headline: the tether-vs-vanilla evaluation (#6) **concluded**
+that the done-gate carries ~no weight for frontier models on solvable tasks — the
+finding and its limits are in [`eval/README.md`](eval/README.md). Everything landed
+from the 2026-07 audit is archived in the ROADMAP's Completed table. It also carries the ground rules for implementing
 agents and the list of ideas **rejected on evidence**. Agents picking up work: read
 it first; confirm scope with the user before implementing.
 
@@ -106,4 +104,13 @@ plugins/tether/            # the plugin
   references/   HARNESS.md (what/why/when + evidence), PAPERS.md (bibliography),
                 WORKFLOW.md (the loop)
   tests/        hook regression suites
+references/                # PLATFORM-ASSUMPTIONS, RADAR (sweep log), LANDSCAPE
+bench/                     # the eval instrument (ROADMAP #6, concluded) + run log
+eval/                      # what the tether-vs-vanilla evaluation found
+.claude/                   # maintainer tooling, NOT shipped — verify.sh, sota-radar,
+                           # the plain-english hook + its bench (see .claude/README.md)
 ```
+
+Per-tool ports live on the `codex` / `opencode` / `generic` branches, each with its own
+entry doc and contract; `WIRING.md` and `opencode/LOCAL-MODELS.md` exist **there**, not
+on `main`.

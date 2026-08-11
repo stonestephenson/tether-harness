@@ -88,7 +88,9 @@ context window*, not "specialization."
 - **Calibration:** the window budget is auto-detected from the transcript's model id
   (the current Fable/Opus/Sonnet generation → 1M; unknown ids → conservative 200k).
   `CLAUDE_CONTEXT_BUDGET` always wins when set — keep it if you run a 200k-default
-  model with the 1M beta, whose `[1m]` settings suffix never reaches the transcript.
+  model whose transcript id carries no distinguishing suffix. A `[1m]` suffix that
+  *does* reach the transcript (`claude-opus-5[1m]`) is matched by prefix, so the map
+  handles it; the allowlist lags each frontier launch and is a standing radar chore.
 
 ### `verify-on-edit.py` — per-edit checker
 - **What:** after I edit a file, it runs fast, file-local checks for that language and
@@ -128,8 +130,12 @@ context window*, not "specialization."
 - **Integrity:** "green means green" only if the checker itself didn't quietly change —
   agents have been observed weakening tests/verifiers to get green (EvilGenie, SpecBench).
   The gate SHA-256-baselines the resolved verifier per session and re-hashes on every
-  stop; on a change it tells the user and blocks **once** with the diff so the change is
-  surfaced or reverted. Never auto-reverts; fails open on any internal error.
+  stop; on a change it tells the user and blocks with the diff so the change is
+  surfaced or reverted. **Once** applies to the green path: it re-baselines after that
+  block, so an accepted change stops nagging. On a *red* verifier it deliberately does
+  **not** re-baseline (`done-gate.py:189`) — reverting to the accepted verifier goes
+  green silently, while a further-weakened one keeps earning its block every stop.
+  Never auto-reverts; fails open on any internal error.
   **Known limits (by design):** the baseline is taken at the session's *first* stop —
   a verifier weakened before the agent ever finishes is accepted as that session's
   baseline; and only the verifier itself (the `verify.sh` bytes, or the
@@ -162,8 +168,9 @@ context window*, not "specialization."
 - **When:** you run it when opening a project cold, after a `/clear`, or "where were we."
 
 ### `/context-health` — the compaction decision
-- **What:** decides continue / compact / handoff+clear when the window is heavy, and
-  executes it safely (externalize first, confirm the lossy steps).
+- **What:** decides continue / compact / handoff+clear when the window is heavy, then
+  externalizes first and **proposes** the lossy step for you to confirm — it never
+  compacts or clears on its own.
 - **Why:** *when* and *how* to shed context is a judgment the gauge (the hook) can't
   make — especially the difference between "keep building" and "we're now discussing
   what was built" (where the detail is the point and you should NOT compact).
@@ -257,7 +264,10 @@ context window*, not "specialization."
 
 ### `Explore` (and subagents generally)
 - **What:** a read-only agent with its own fresh context that searches/reads broadly and
-  returns just a summary. `/plan-change` uses it to localize; `/handoff` uses cold
+  returns just a summary. `/plan-change` uses it to localize. (`/handoff` is the
+  exception: its auditors are `general-purpose`, not `Explore`, because Agent A must
+  actually build and run the project to test the documented commands; Agent B stays
+  read-only as the control.) `/handoff` uses cold
   subagents to audit docs; `/council` uses parallel subagents as its reviewers.
 - **Why:** two legitimate wins — **isolation** (heavy reading happens in a throwaway
   window, so the main thread stays lean — "prevention beats cleanup") and **parallelism

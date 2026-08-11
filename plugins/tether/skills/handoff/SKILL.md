@@ -164,3 +164,11 @@ probe it yourself before reporting:
   actually run; any deliberately-uncovered area is stated as a known gap.
 - **Economy:** no fact has two homes; no completed/superseded material lingering in
   the active docs; no pointers to files that no longer matter.
+
+## Coupling — this skill invokes `/catchup`
+Step 2's Agent A opens its audit by running `/catchup` for real and holds the
+orientation to a four-part contract (what/state, build/run/test commands, conventions,
+backlog). If you change that prompt's contract or its fallback wording, re-check
+`catchup`'s Step 1 and Step 4 — they are what produce those deliverables, and a silent
+mismatch degrades the audit rather than failing it loudly. The reciprocal note lives in
+`catchup/SKILL.md`; keep both sides in step.

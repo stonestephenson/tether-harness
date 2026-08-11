@@ -43,7 +43,16 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
 
 Hooks start firing and skills become available the next session.
 
-## Prerequisites (optional — hooks degrade gracefully if a tool is missing)
+## Requirements
+
+**Required: `python3` and `bash` on PATH, on macOS or Linux.** Every hook is invoked as
+`python3 …` and the done-gate runs your verifier via `bash`. There is no Windows-native
+support — on plain Windows the hooks resolve to nothing and **fail open silently**: the
+agent runs, looks completely normal, and carries none of the harness, with no error to
+tell you. Use WSL, which is the tested environment. (Tracked as ROADMAP #10; the
+silent-no-op is the reason it's tracked rather than shrugged at.)
+
+### Linters (optional — hooks degrade gracefully if a tool is missing)
 
 The verify hooks use whatever is installed:
 
@@ -71,8 +80,9 @@ ctest --output-on-failure        # c/c++ example (a fast subset)
 
 - `CLAUDE_CONTEXT_BUDGET` — window size in tokens; always wins when set. When unset, the
   budget is auto-mapped from the transcript's model id (current-gen models → 1M; unknown
-  ids → `200000`). Set it only for a 200k-default model running the `[1m]` beta (that
-  suffix never appears in the transcript) or to override the map.
+  ids → `200000`). Set it only for a 200k-default model whose transcript id carries no
+  distinguishing suffix, or to override the map. (A `[1m]` suffix *can* reach the
+  transcript — `claude-opus-5[1m]` does — and prefix matching handles it.)
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — band fractions (default `.70` / `.85` / `.95`).
 - `CLAUDE_VERIFY_CMD` — command the done-gate runs on finish (overrides `.claude/verify.sh`).
 
@@ -81,16 +91,18 @@ ctest --output-on-failure        # c/c++ example (a fast subset)
 From this directory (`plugins/tether/`):
 
 ```
-bash tests/context-health.test.sh    # 18 checks
-bash tests/verify-hooks.test.sh      # 46 checks (verify-on-edit, done-gate + tamper, pre-compact-guard)
+bash tests/context-health.test.sh    # context-health: bands, debounce, model->budget map
+bash tests/verify-hooks.test.sh      # verify-on-edit, done-gate + tamper, pre-compact-guard
 ```
 
 Full counts assume the optional toolchain (ruff, rustfmt, clang-format, git); a
 missing tool SKIPs its block — fewer passes on a lean machine is expected, failures
 are not. (Known coverage hole: shellcheck's path has no suite case yet.)
 
-Or one command from the repo root: `bash .claude/verify.sh` (both suites plus a
-doc-link check — it's this repo's own done-gate).
+Or one command from the repo root: `bash .claude/verify.sh` (these two suites, the
+maintainer-tooling suite in `.claude/tests/`, plus a doc-link check — it's this repo's
+own done-gate). Each suite prints its own totals; the expected numbers live in the
+repo's root `CLAUDE.md`.
 
 ## Developing tether (maintainers)
 

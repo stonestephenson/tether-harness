@@ -57,6 +57,7 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 8e | Close out #8 | low | ✅ `/handoff` cold audit run + gaps fixed 2026-07-11 (two cold agents; verdicts "Partially" → fixes landed: rustfmt opt-in claim, done-gate wording, tamper limits, WORKFLOW stale paths, dev-loop doc, root CLAUDE.md); remaining: fold in 8b results when they land |
 | 10 | Interpreter/shell portability (Windows-native support) | low | **proposed 2026-07-13, not green-lit** — see §10; hooks hardcode `python3` + `bash`, so Windows fails *open* (silently no-ops) |
 | 11 | Context-budget map: add `claude-opus-5` (+ standing per-launch chore) | medium | ✅ done on main 2026-08-10 — see §11; from the 2026-08-01 radar sweep. Ports landed with the batched #9 flush |
+| 12 | `plain-english` triage hook (maintainer tooling, **not shipped**) | — | ✅ done on main 2026-08-10. Lives in `.claude/`, so the new-scaffolding burden of proof doesn't govern it and it never ports. Rationale, the measured model bake-off, and known limits: [`.claude/README.md`](.claude/README.md). Recorded here only so the backlog reflects what landed |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
 
@@ -168,7 +169,9 @@ the mirror-image audit earns its keep. **Known residuals from that run** (accept
 not hidden): shellcheck's verify-on-edit path has no suite case (docs now say so);
 hook behavior is restated across ~4 docs (consistent today — collapse is a candidate
 follow-up); HARNESS §12's interview section is author-personal content in user-facing
-docs (user's call); the link check validates file targets, not `#section` anchors.
+docs (user's call). *(The "link check ignores `#section` anchors" residual was dropped
+2026-08-10 — the cold audit confirmed the repo contains zero anchor links, so it
+described a risk that doesn't exist.)*
 
 **Ports: ✅ done 2026-08-10**, flushed with #11 (a behavior-critical change entering the
 branches is one of the policy's flush triggers). Each branch got the HARNESS §9 policy
