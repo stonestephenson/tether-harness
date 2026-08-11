@@ -11,7 +11,9 @@ can gate it.
 | `verify.sh` | The repo's done-gate. Runs both plugin suites, this directory's suite, and the doc-link check. |
 | `skills/sota-radar/` | The monthly SOTA sweep. Read-only; proposes, never edits `ROADMAP.md`. |
 | `hooks/plain-english.py` | Stop hook: renders the agent's last message as a plain-English triage panel via a local model. |
-| `tests/plain-english.test.sh` | 22 hermetic checks for the above (stub HTTP server; no model needed). |
+| `bin/plain` | Opens the panel pane for the project you run it from. |
+| `bench/` | The model bake-off. Re-run it before changing `PLAIN_MODEL`. |
+| `tests/plain-english.test.sh` | 27 hermetic checks for the hook (stub HTTP server; no model needed). |
 
 ---
 
@@ -41,11 +43,34 @@ Wire it as a `Stop` hook in `~/.claude/settings.json`:
 } ] } ] } }
 ```
 
-Then keep a pane open beside your session:
+Put the launcher on your PATH (`~/.zshrc`):
 
 ```sh
-tail -f ~/.claude/plain/$(ls -t ~/.claude/plain | head -1)   # newest session
+export PATH="$HOME/.claude/bin:$PATH"
 ```
+
+Then in a split beside any session:
+
+```sh
+plain              # follow THIS project (uses $PWD) — the usual case
+plain tether       # follow the project matching "tether"
+plain -a           # follow every project at once, with headers
+plain -l           # list projects with panels, newest first
+plain -c           # clear this project's history
+```
+
+### Which session does a pane follow?
+
+**Panels are keyed on the session's working directory, not its id** — the file is
+`~/.claude/plain/<cwd-slug>.md`, using the same slug scheme as `~/.claude/projects/`.
+So `plain` with no arguments follows the project you run it from, and N terminals in
+N projects need no bookkeeping to stay matched to N panes. A pane cannot drift onto
+another session's output, which is the failure mode a "newest file" heuristic has.
+
+Two sessions in the *same* directory share one pane; each panel header carries a
+short session tag (`[a1b2c3]`) to tell them apart. If that ever becomes annoying, the
+answer is `plain -a` in one pane rather than per-session files, since you'd otherwise
+be guessing which uuid is which terminal.
 
 ### Configuration
 
@@ -84,6 +109,17 @@ exists to produce.
 | `qwen3:8b` thinking off | 6.6 | 9.2 | 4/11 (36%) | 9/18 |
 | `llama3.1:8b` | 6.6 | 9.4 | 8/11 (73%) | 12/18 |
 | `qwen3:4b` | 116+ | — | — | ignores the word cap (3272 words) |
+
+Reproduce or extend it:
+
+```sh
+cd /tmp
+python3 ~/repos/tether-harness/.claude/bench/extract_samples.py 20 samples.json
+python3 ~/repos/tether-harness/.claude/bench/bakeoff.py qwen3:8b,<candidate>
+```
+
+`bakeoff.py` imports the prompt from the hook, so the two can't drift. Append
+`:think0` to a spec to test it with thinking disabled.
 
 Two findings worth keeping:
 

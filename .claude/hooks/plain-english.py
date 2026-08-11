@@ -123,7 +123,23 @@ def already_done(session, uid):
     return False
 
 
-def worker(session, text):
+def pane_name(cwd, session):
+    """Which file this session's panels go to.
+
+    Keyed on the working directory, not the session id, using the same slug scheme as
+    ~/.claude/projects/. That is what makes `plain` work with no arguments: a pane opened
+    in a project follows that project's session, so N terminals need no bookkeeping to
+    stay matched to N panes. Two sessions in one project share a file and are told apart
+    by the session tag in each panel header.
+    """
+    if cwd:
+        slug = str(cwd).replace("/", "-")
+        if slug.strip("-"):
+            return slug[:120]
+    return str(session or "session").replace("/", "_")[:64]
+
+
+def worker(pane, session, text):
     """Detached: call the model, append the panel. Any failure is written, not raised."""
     stamp = time.strftime("%H:%M:%S")
     body = json.dumps({
@@ -151,16 +167,16 @@ def worker(session, text):
             note = (f"\n\n> ⚠ input may have been truncated "
                     f"({prompt_tokens} prompt tokens vs num_ctx {NUM_CTX}) — "
                     f"raise PLAIN_NUM_CTX.")
-        panel = (f"\n\n---\n\n### {stamp}  ·  {len(text)} chars → {len(out.split())} words  "
-                 f"·  {secs:.0f}s  ·  {MODEL}\n\n{out}{note}\n")
+        panel = (f"\n\n---\n\n### {stamp}  ·  [{session[:6]}]  ·  {len(text)} chars → "
+                 f"{len(out.split())} words  ·  {secs:.0f}s  ·  {MODEL}\n\n{out}{note}\n")
     except Exception as e:                                    # noqa: BLE001 - fail loud in the pane, never to the agent
-        panel = (f"\n\n---\n\n### {stamp}  ·  summariser unavailable\n\n"
+        panel = (f"\n\n---\n\n### {stamp}  ·  [{session[:6]}]  ·  summariser unavailable\n\n"
                  f"`{type(e).__name__}: {e}`\n\n"
                  f"Original response was {len(text)} chars. Is `ollama serve` up, "
                  f"and is `{MODEL}` pulled?\n")
     try:
         os.makedirs(OUT_DIR, exist_ok=True)
-        with open(os.path.join(OUT_DIR, f"{session}.md"), "a", encoding="utf-8") as f:
+        with open(os.path.join(OUT_DIR, f"{pane}.md"), "a", encoding="utf-8") as f:
             f.write(panel)
     except OSError:
         pass
@@ -169,8 +185,8 @@ def worker(session, text):
 def main():
     if os.environ.get("PLAIN_DISABLE"):
         return
-    if len(sys.argv) > 2 and sys.argv[1] == "--worker":
-        worker(sys.argv[2], sys.stdin.read())
+    if len(sys.argv) > 3 and sys.argv[1] == "--worker":
+        worker(sys.argv[2], sys.argv[3], sys.stdin.read())
         return
     try:
         data = json.loads(sys.stdin.read() or "{}")
@@ -180,6 +196,7 @@ def main():
         return
     path = data.get("transcript_path")
     session = str(data.get("session_id") or "session").replace("/", "_")[:64]
+    pane = pane_name(data.get("cwd"), session)
     if not path:
         return
     text, uid = last_assistant_text(path)
@@ -188,7 +205,7 @@ def main():
     try:
         # detached: the turn must not wait on ~18s of local inference
         p = subprocess.Popen(
-            [sys.executable, os.path.abspath(__file__), "--worker", session],
+            [sys.executable, os.path.abspath(__file__), "--worker", pane, session],
             stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             start_new_session=True)
         assert p.stdin is not None      # PIPE was requested

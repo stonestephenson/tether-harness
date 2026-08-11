@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Follow the plain-English triage panels for a Claude Code session.
+#
+# Panels are keyed on the session's working directory, so with no arguments this
+# follows the project you run it from — open a split in the same repo and it is
+# already pointed at the right session. That is the whole answer to "which one does
+# it follow when I have five terminals open": each pane follows its own project,
+# and no pane can drift onto another session's output.
+#
+#   plain              follow this project (cwd), waiting if it hasn't spoken yet
+#   plain tether       follow the project whose slug matches "tether"
+#   plain -a           follow every project at once, with headers
+#   plain -l           list projects with panels, newest first
+#   plain -c           clear this project's panel history
+
+set -uo pipefail
+DIR="${PLAIN_DIR:-$HOME/.claude/plain}"
+mkdir -p "$DIR"
+
+slug_of() { printf '%s' "${1//\//-}"; }
+pretty()  { printf '%s' "${1%.md}" | sed 's/^-Users-[^-]*-//; s/-/\//g'; }
+
+list() {
+  local found=0 f
+  # shellcheck disable=SC2012 - ls -t is the point; names here never contain newlines
+  for f in $(ls -t "$DIR"/*.md 2>/dev/null); do
+    found=1
+    printf '  %-42s %s\n' "$(pretty "$(basename "$f")")" \
+      "$(date -r "$f" '+%b %-d %H:%M' 2>/dev/null)"
+  done
+  [[ $found -eq 0 ]] && echo "  (no panels yet)"
+  return 0
+}
+
+case "${1:-}" in
+  -l|--list) echo "Projects with panels:"; list; exit 0 ;;
+  -a|--all)
+    # shellcheck disable=SC2046
+    exec tail -n 40 -f $(ls -t "$DIR"/*.md 2>/dev/null) ;;
+  -c|--clear)
+    target="$DIR/$(slug_of "$PWD").md"; : > "$target"
+    echo "cleared $(pretty "$(basename "$target")")"; exit 0 ;;
+  -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
+if [[ -n "${1:-}" ]]; then
+  match=$(ls -t "$DIR"/*.md 2>/dev/null | grep -i -- "$1" | head -1)
+  if [[ -z "$match" ]]; then
+    echo "No panel matching '$1'. Available:" >&2; list >&2; exit 1
+  fi
+  echo "▸ $(pretty "$(basename "$match")")"
+  exec tail -n 40 -f "$match"
+fi
+
+target="$DIR/$(slug_of "$PWD").md"
+# Create it rather than erroring: you will usually open the pane before the agent
+# has answered anything, and an empty pane that fills in is friendlier than a
+# "no such file" you have to re-run past.
+[[ -f "$target" ]] || : > "$target"
+echo "▸ $(pretty "$(basename "$target")")  — waiting for panels"
+exec tail -n 40 -f "$target"
