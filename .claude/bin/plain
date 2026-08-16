@@ -53,9 +53,23 @@ if [[ -n "${1:-}" ]]; then
 fi
 
 target="$DIR/$(slug_of "$PWD").md"
-# Create it rather than erroring: you will usually open the pane before the agent
-# has answered anything, and an empty pane that fills in is friendlier than a
-# "no such file" you have to re-run past.
-[[ -f "$target" ]] || : > "$target"
-echo "▸ $(pretty "$(basename "$target")")  — waiting for panels"
-exec tail -n 40 -f "$target"
+if [[ ! -f "$target" ]]; then
+  # Waiting silently here was the original behaviour and it was wrong: running
+  # `plain` one directory up (or in any repo with no session) looked identical to
+  # "the agent hasn't answered yet", so it waited forever and created a junk file
+  # to wait on. Say which project this pane is for and what else is available;
+  # then still wait, because opening the pane before the first answer is normal.
+  echo "▸ no panels yet for $(pretty "$(basename "$target")")"
+  if compgen -G "$DIR/*.md" >/dev/null; then
+    echo "  Panels DO exist for these projects — run plain from one of them,"
+    echo "  or: plain <name>   /   plain -a"
+    list
+  else
+    echo "  No project has panels at all yet. Is the Stop hook wired in"
+    echo "  ~/.claude/settings.json, and has a session started since?"
+  fi
+  echo "  Waiting here in case this session simply hasn't answered yet…"
+fi
+# -F (not -f) follows by name, so this picks the file up when the hook creates it
+# and we never have to create an empty one ourselves.
+exec tail -n 40 -F "$target"

@@ -68,7 +68,13 @@ N projects need no bookkeeping to stay matched to N panes. A pane cannot drift o
 another session's output, which is the failure mode a "newest file" heuristic has.
 
 Two sessions in the *same* directory share one pane; each panel header carries a
-short session tag (`[a1b2c3]`) to tell them apart. If that ever becomes annoying, the
+short session tag (`[a1b2c3]`) to tell them apart.
+
+**If a pane stays empty**, `plain` tells you which project it is watching and lists the
+projects that *do* have panels — the usual cause is running it one directory up from the
+repo the session is actually in. Two other things to check: the `Stop` hook is read at
+session start, so a session that began before you wired it produces nothing; and
+responses under `PLAIN_MIN_CHARS` (1200) are skipped by design. If that ever becomes annoying, the
 answer is `plain -a` in one pane rather than per-session files, since you'd otherwise
 be guessing which uuid is which terminal.
 
