@@ -168,8 +168,8 @@ class fired and caught, among real drift, a header my own policy edit had swallo
 the mirror-image audit earns its keep. **Known residuals from that run** (accepted,
 not hidden): shellcheck's verify-on-edit path has no suite case (docs now say so);
 hook behavior is restated across ~4 docs (consistent today — collapse is a candidate
-follow-up); HARNESS §12's interview section is author-personal content in user-facing
-docs (user's call). *(The "link check ignores `#section` anchors" residual was dropped
+follow-up); HARNESS §12's interview section was author-personal content in user-facing
+docs — **resolved 2026-08-30**: moved to a gitignored `HARNESS.interview.local.md`. *(The "link check ignores `#section` anchors" residual was dropped
 2026-08-10 — the cold audit confirmed the repo contains zero anchor links, so it
 described a risk that doesn't exist.)*
 

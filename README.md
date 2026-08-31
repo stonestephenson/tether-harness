@@ -2,9 +2,18 @@
 
 **tether** is a verification-first, context-managed harness for agentic coding tools —
 a layer of deterministic **hooks** plus judgment **skills** that wraps an AI coding agent
-(Claude Code, OpenAI Codex, opencode, …) to make it markedly more reliable and efficient.
+(Claude Code, OpenAI Codex, opencode, …) so it verifies against external signals instead of
+self-certifying, and so its context stays curated across a long session.
 
-## Why an agent is better with tether
+> **What the evidence actually says.** tether's own evaluation found that its most
+> intrusive mechanism — the done-gate — carries **~no measurable weight** for frontier
+> models on solvable bugfix tasks: 20 cells, zero discrimination, zero gate firings. That
+> null result, and what it does and doesn't generalize to, is written up in
+> [`eval/README.md`](eval/README.md). The rationale below is grounded in published
+> research; the day-to-day value on real projects is trusted from use, **not** demonstrated
+> by a benchmark. Read the eval before you believe the pitch.
+
+## What tether does
 
 An LLM coding agent has two structural weaknesses. It works inside a **finite context
 window** that quietly degrades as it fills, and it **cannot reliably tell when it's wrong
@@ -24,9 +33,13 @@ tether is the scaffolding that compensates for exactly those two limits:
   from a failing test, pressure-test an irreversible decision, hand off so the next agent
   can pick up cold.
 
-The net effect: the agent stays **correct** (because it verifies), stays **sharp** (because
-the context stays curated), and stays **resumable** (because state lives in durable
-artifacts) — instead of drifting, self-certifying, and forgetting.
+The intent: the agent stays **correct** (because it verifies), stays **sharp** (because the
+context stays curated), and stays **resumable** (because state lives in durable artifacts)
+— instead of drifting, self-certifying, and forgetting. How much each mechanism actually
+contributes is an open question, and the one piece that has been measured came back null
+(see the note above): the gates matter least exactly where the model is already capable.
+The context and judgment pieces are the part a bugfix benchmark can't see, and they remain
+unmeasured.
 
 **Grounded in research, not anecdote.** Every design choice traces to a published finding —
 that LLMs can't self-correct without an external signal, that performance "rots" as context
@@ -49,14 +62,18 @@ verification hooks. Pick the branch for your agent:
 `context-health` (context-pressure nudges) is Claude-Code-only — it needs transcript token
 data other tools don't expose; the other branches ship it unwired. See each branch's README.
 
-## Port status (what's verified, what's next)
+## Port status (suite-verified vs. live-verified)
 
-| Branch | State | Notes |
-|---|---|---|
-| **`main`** (Claude Code) | ✅ verified end-to-end | hooks fire, skills load, regression suites pass (`bash .claude/verify.sh` — counts in [`CLAUDE.md`](CLAUDE.md)) |
-| **`opencode`** | ✅ verified live on **1.17.15** (2026-07) | edit → lint → agent-fix loop closes (agent removed an unused import after an `F401`); done-gate **failing path verified live** (`session.idle` → failing `.tether/verify.sh` surfaces the block, repeatedly). Also drives a **local model** (qwen3-coder via Ollama @ 64k ctx — see `opencode/LOCAL-MODELS.md`). **2026-07 upgrades (#1–#5) ported** (suite 42/42): verifier anti-tamper, `/harden`, `/ship` cold reviewer, and a pre-compact guard that *injects* dirty-tree state into the compaction prompt (opencode's compacting hook can't block — inverse of Claude Code); live re-verify of the new pieces pending. Caveat: done-gate is reliable **interactively**; under headless `opencode run` the process can exit before the async hook writes. |
-| **`codex`** | ✅ verified live on **0.143.0** (2026-07) | Codex's hooks are a near-clone of Claude Code's (same events + JSON stdin/stdout), so both fire in an authenticated turn: verify-on-edit parses `apply_patch` (V4A) payloads and blocks the edit with lint feedback; done-gate blocks a failing finish via `{"decision":"block"}`. Skills ship as **native Codex skills** (`~/.codex/skills/`); the installer merges a tether block into `AGENTS.md` without clobbering an existing one. `context-health` stays unwired (needs transcript tokens Codex doesn't expose). **2026-07 upgrades (#1–#5) ported** (suite 40/40; PreCompact blocks via `continue:false` JSON there); live re-verify of the new pieces pending. |
-| **`generic`** | ✅ scripts + suite (2026-07) | ships the four standalone hook scripts (incl. verifier anti-tamper and the advisory pre-compact guard), the nine skill playbooks, and a regression suite (42/42) — wire per `WIRING.md`; verify per-tool when adopting |
+Each branch ships a regression suite that runs offline; "live-verified" means the hooks were
+additionally watched firing in a real authenticated session on the named version. The two
+are **not** the same claim, so they're in separate columns.
+
+| Branch | Suite | Live-verified | Notes |
+|---|---|---|---|
+| **`main`** (Claude Code) | ✅ pass | ✅ hooks fire, skills load | `bash .claude/verify.sh` — counts in [`CLAUDE.md`](CLAUDE.md). This is the reference branch. |
+| **`opencode`** | ✅ 42/42 | ⚠️ **1.17.15** (2026-07), base hooks only | edit → lint → agent-fix loop closes (agent removed an unused import after an `F401`); done-gate **failing path verified live** (`session.idle` → failing `.tether/verify.sh` surfaces the block, repeatedly). Also drives a **local model** (qwen3-coder via Ollama @ 64k ctx — see `opencode/LOCAL-MODELS.md`). **2026-07 upgrades (#1–#5) ported**, suite-verified only (42/42): verifier anti-tamper, `/harden`, `/ship` cold reviewer, and a pre-compact guard that *injects* dirty-tree state into the compaction prompt (opencode's compacting hook can't block — inverse of Claude Code). These specific pieces have **not** been watched running live. Caveat: done-gate is reliable **interactively**; under headless `opencode run` the process can exit before the async hook writes. |
+| **`codex`** | ✅ 40/40 | ⚠️ **0.143.0** (2026-07), base hooks only | Codex's hooks are a near-clone of Claude Code's (same events + JSON stdin/stdout), so both fire in an authenticated turn: verify-on-edit parses `apply_patch` (V4A) payloads and blocks the edit with lint feedback; done-gate blocks a failing finish via `{"decision":"block"}`. Skills ship as **native Codex skills** (`~/.codex/skills/`); the installer merges a tether block into `AGENTS.md` without clobbering an existing one. `context-health` stays unwired (needs transcript tokens Codex doesn't expose). **2026-07 upgrades (#1–#5) ported**, suite-verified only (40/40; PreCompact blocks via `continue:false` JSON there). These specific pieces have **not** been watched running live. |
+| **`generic`** | ✅ 42/42 | ❌ never — wire per `WIRING.md` | ships the four standalone hook scripts (incl. verifier anti-tamper and the advisory pre-compact guard), the nine skill playbooks, and a regression suite — but it has never been run against a real tool. Wire per `WIRING.md` and verify yourself when adopting. |
 
 ## Roadmap (what's next)
 

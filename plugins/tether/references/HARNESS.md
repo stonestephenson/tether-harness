@@ -403,29 +403,3 @@ context *meaningful*; context hygiene keeps the model sharp, which keeps its
 verification and judgment good. Neither works well without the other.
 
 ---
-
-## 12. Explaining this in an interview (30-second version)
-
-> "I treat the model as a reasoning engine with two weaknesses — a finite context
-> window and no reliable self-judgment — and I build scaffolding around both. For
-> self-judgment, I wire *deterministic verification hooks*: after every edit a linter
-> feeds errors straight back, and I can't 'finish' until the project's checks pass —
-> because the research is clear that LLMs can't self-correct without an external signal.
-> For context, I treat the window as a scarce resource: a hook watches how full it is,
-> and I externalize state into commits, docs, and experiment logs so the conversation
-> stays disposable — that's context engineering, motivated by 'context rot.' On top
-> sit soft-triggered *skills* for judgment work — a plan→implement→validate pipeline, a
-> test-first loop, a multi-perspective 'council' for irreversible design decisions — and
-> *subagents* that isolate heavy reading so they don't bloat the main thread. The core
-> insight is matching the tool to the task: deterministic checks for execution,
-> diverse perspectives only for open-ended decisions, and never confusing a role label
-> with a capability."
-
-**Follow-up talking points:**
-- *Convergent vs divergent* — one agent + verification for building; multiple
-  perspectives only for deciding.
-- *Why hooks, not prompts* — guarantees vs. the model remembering.
-- *Cost awareness* — multi-agent is ~15× tokens, so it's scoped to breadth-first
-  reading and high-stakes decisions, not the default.
-- *What I deliberately DON'T do* — no self-critique without a ground-truth signal, no
-  multi-agent for coupled implementation, no persona theater.
