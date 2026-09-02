@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # The project's own done-gate: hook regression suites plus a doc link
+      # check. Running the real gate rather than a CI-only approximation is
+      # the point -- the badge should mean what verify.sh means.
+      - name: Run the done-gate
+        run: bash .claude/verify.sh
