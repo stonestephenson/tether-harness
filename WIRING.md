@@ -92,11 +92,17 @@ and no-ops. **This is the one piece that doesn't generalize.**
 ## Config (env vars)
 - `VERIFY_CMD` (or `CLAUDE_VERIFY_CMD`) — command the done-gate runs (overrides the
   `.tether/verify.sh` file; either name is honored).
-- `CLAUDE_CONTEXT_BUDGET` — window size in tokens. When unset, the hook maps the
-  transcript's model id to a window size (unknown ids → `200000`).
+- `CLAUDE_CONTEXT_BUDGET` — window size in tokens; always wins when set. When unset, the
+  hook sizes the window from the transcript's model id (current-generation Claude ids or
+  any id tagged `[1m]` → 1M; everything else → `200000`) and then lowers it to match
+  Claude Code's own window caps if they are set (`CLAUDE_CODE_DISABLE_1M_CONTEXT`,
+  `CLAUDE_CODE_MAX_CONTEXT_TOKENS`, `CLAUDE_CODE_AUTO_COMPACT_WINDOW`,
+  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`). **Set it yourself whenever the session's real
+  window is smaller than that** and nothing in the environment says so — the gauge is
+  otherwise silent there.
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — occupancy bands (default `.70` / `.85` / `.95`).
 
 ## Testing
 `bash tests/verify-hooks.test.sh` drives all the hook scripts with the exact payload
-shapes documented above (42 checks — done-gate discovery + anti-tamper, the compact
+shapes documented above (44 checks — done-gate discovery + anti-tamper, the compact
 advisory's stdout/stderr split, verify-on-edit's opt-in formatting rules).

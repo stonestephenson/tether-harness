@@ -118,6 +118,12 @@ context window*, not "specialization."
   stop cycle** (`stop_hook_active`), so an immediately repeated stop passes even if
   still red — the gate prods with the failure list; it is built never to trap the
   agent in a block loop.
+- **The honest exit:** the failure report also names what to do when the failures
+  *can't* be fixed legitimately — the check itself is wrong, or the task can't be done
+  as specified: leave the verifier alone, don't hardcode around it, stop and tell the
+  user that verification is still failing and why. With only "fix it" on offer,
+  tampering is the remaining way to green; the report goes to the user, never to the
+  gate, so it is not a way to self-certify.
 - **Why:** closes the "I think I'm done" gap with an objective signal — the model
   claiming success is not the same as tests passing. This is where whole-project checks
   live (type-check, `clippy`, unit tests), because they need the full project to resolve.

@@ -193,9 +193,16 @@ def main():
     out = ((r.stdout or "") + (r.stderr or "")).strip() or f"verify exited {r.returncode}"
     if len(out) > REASON_CAP:
         out = out[-REASON_CAP:]  # tail: the failing summary is usually at the end
+    # The last sentence is the sanctioned exit: with only "fix it" on offer, an
+    # impossible task or a wrong check leaves tampering as the way to green.
+    # The report goes to the user, never to the gate — it is not a pass.
     report = (
         "Project verification is failing — resolve it before finishing "
-        f"(command: {cmd}):\n\n{out}\n\nFix these, then finish.\n"
+        f"(command: {cmd}):\n\n{out}\n\nFix these, then finish. If they "
+        "can't be fixed legitimately — the check itself is wrong, or the "
+        "task can't be done as specified — do not edit, weaken, or skip "
+        "the verifier, and do not hardcode around it. Stop and tell the "
+        "user that verification is still failing, and why.\n"
     )
     if tamper:
         # No re-baseline on red: reverting to the accepted verifier should go

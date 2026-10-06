@@ -136,7 +136,7 @@ pip install gersemi                # cmake format   (optional)
 brew install shellcheck            # shell lint     (optional)
 ```
 
-Regression tests: `bash tests/verify-hooks.test.sh` from the repo root (42 checks;
+Regression tests: `bash tests/verify-hooks.test.sh` from the repo root (44 checks;
 full count assumes the optional toolchain — a missing tool SKIPs its block) — or
 `bash .claude/verify.sh`, the repo's own done-gate.
 Disable any hook: unwire it from your tool's event config (see `WIRING.md`; the
