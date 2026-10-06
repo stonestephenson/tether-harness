@@ -24,8 +24,16 @@ Both re-arm when occupancy falls back down (after you compact/clear).
 Config via env vars (all optional):
   CLAUDE_CONTEXT_BUDGET   total window tokens — ALWAYS wins when set. When unset,
                           the budget comes from the transcript's model id via
-                          MODEL_BUDGETS below (unknown ids -> 200k fallback).
+                          MODEL_BUDGETS below (unknown ids -> 200k fallback),
+                          then is lowered by the platform's own window caps.
   CTX_WARN / CTX_ACT / CTX_CRIT   band fractions     (default .70/.85/.95)
+
+Read but not owned (Claude Code's window caps; they only ever LOWER the budget,
+and only when CLAUDE_CONTEXT_BUDGET is unset):
+  CLAUDE_CODE_DISABLE_1M_CONTEXT    on -> a 1M model is held to 200k
+  CLAUDE_CODE_MAX_CONTEXT_TOKENS    tokens -> the window declared for the model
+  CLAUDE_CODE_AUTO_COMPACT_WINDOW   tokens -> the session compacts there
+  CLAUDE_AUTOCOMPACT_PCT_OVERRIDE   1-100 -> ...at this percent of the window
 """
 import json
 import os
@@ -39,14 +47,10 @@ STATE_DIR = os.path.join(tempfile.gettempdir(), "claude-context-health-state")
 BAND_NAME = {1: "getting heavy", 2: "act soon", 3: "critical"}
 
 DEFAULT_BUDGET = 200000
-# Known model-id prefixes -> context window (verified against the models docs,
-# 2026-08: the current Fable/Opus/Sonnet generation is natively 1M; Haiku 4.5
-# and older models are 200k). Prefix match tolerates both date-suffixed ids and
-# deployment suffixes like "claude-opus-5[1m]".
+# Known model-id prefixes -> context window (verified against the model-config
+# docs, 2026-10: Fable, Sonnet 5+, and Opus 4.7+ are natively 1M; Haiku 4.5 and
+# older models are 200k). Prefix match tolerates date-suffixed ids.
 # Unknown ids fall back to DEFAULT_BUDGET — the safe direction (over-warn).
-# Caveat: a 200k-default model running the 1M beta maps low if its transcript
-# id carries no distinguishing suffix — those users must keep
-# CLAUDE_CONTEXT_BUDGET set; it always wins.
 # This allowlist lags every frontier launch by design (a denylist would flip
 # the safe direction to under-warning). Adding each new model id is a standing
 # chore for the monthly maintainer sweep.
@@ -56,10 +60,66 @@ MODEL_BUDGETS = (
     ("claude-opus-5", 1_000_000),
     ("claude-opus-4-8", 1_000_000),
     ("claude-opus-4-7", 1_000_000),
-    ("claude-opus-4-6", 1_000_000),
     ("claude-sonnet-5", 1_000_000),
-    ("claude-sonnet-4-6", 1_000_000),
 )
+# Opus 4.6 / Sonnet 4.6 are deliberately NOT in the map: they reach 1M only
+# through their "[1m]" variant, and a bare id is a 200k session. The tag is the
+# signal — an id carrying it (any casing) is one the platform itself sizes at
+# 1M, whatever the model. If a 1M session's transcript id arrives untagged it
+# maps low (over-warn); those users keep CLAUDE_CONTEXT_BUDGET set.
+TAG_1M = "[1m]"
+TAGGED_WINDOW = 1_000_000
+
+# The dangerous direction: the window belongs to the SESSION, not the model. A
+# 1M-mapped id can be running at 200k, where a 1M budget never reaches WARN and
+# the gauge stays silent through a real exhaustion. apply_platform_caps() closes
+# the cases the environment reveals. The rest leave no env signal — a plan
+# without 1M usage credits, a window set with `/autocompact` or the
+# `autoCompactWindow` setting, a model pinned without "[1m]" on a third-party
+# provider, and a 1M->200k fallback unless the transcript id changes with it.
+# Those sessions must set CLAUDE_CODE_AUTO_COMPACT_WINDOW (which also fixes the
+# session) or CLAUDE_CONTEXT_BUDGET.
+DISABLED_1M_WINDOW = 200_000  # what CLAUDE_CODE_DISABLE_1M_CONTEXT holds a 1M model to
+AUTO_COMPACT_MIN = 100_000  # the platform clamps its auto-compact window up to this
+
+
+def _env_number(name):
+    """A positive finite number from an env var, or None when unset or unreadable."""
+    try:
+        value = float(os.environ.get(name, ""))
+    except ValueError:
+        return None
+    return value if 0 < value < float("inf") else None
+
+
+def apply_platform_caps(budget):
+    """Lower `budget` to the ceiling Claude Code's own env vars imply.
+
+    Never raises it. Each var is read the way the platform documents reading it
+    (model-config + env-vars docs, 2026-10), erring toward "capped" wherever the
+    two could differ — that is the over-warn direction:
+      * the 1M switch counts as on for any value but an explicit off (a
+        superset of the platform's 1/true/yes/on);
+      * the declared window lowers the budget even for ids where the platform
+        would ignore it;
+      * the auto-compact window takes its leading integer ("500k" reads as
+        500) clamped up to the 100k minimum;
+      * the percent override moves the compaction point below the window, so
+        the bands scale down with it.
+    """
+    off = ("", "0", "false", "no", "off")
+    if os.environ.get("CLAUDE_CODE_DISABLE_1M_CONTEXT", "").strip().lower() not in off:
+        budget = min(budget, DISABLED_1M_WINDOW)
+    declared = _env_number("CLAUDE_CODE_MAX_CONTEXT_TOKENS")
+    if declared:
+        budget = min(budget, int(declared))
+    window = re.match(r"\s*([+-]?\d+)", os.environ.get("CLAUDE_CODE_AUTO_COMPACT_WINDOW", ""))
+    if window:
+        budget = min(budget, max(int(window.group(1)), AUTO_COMPACT_MIN))
+    percent = _env_number("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE")
+    if percent:
+        budget = int(budget * min(percent, 100) / 100)
+    return budget
 
 
 def latest_context_tokens(path):
@@ -170,8 +230,9 @@ def main():
     if used is None:
         return
 
-    # Budget: env var always wins; else map the transcript's model id;
-    # unknown/missing id -> conservative 200k default.
+    # Budget: env var always wins; else size the transcript's model id (a
+    # "[1m]" tag or the map; unknown/missing id -> conservative 200k default),
+    # then let the platform's own window caps lower it — never raise it.
     env_budget = os.environ.get("CLAUDE_CONTEXT_BUDGET")
     if env_budget:
         try:
@@ -180,10 +241,14 @@ def main():
             return
     else:
         budget = DEFAULT_BUDGET
-        for prefix, window in MODEL_BUDGETS:
-            if model and model.startswith(prefix):
-                budget = window
-                break
+        if model and TAG_1M in model.lower():
+            budget = TAGGED_WINDOW
+        else:
+            for prefix, window in MODEL_BUDGETS:
+                if model and model.startswith(prefix):
+                    budget = window
+                    break
+        budget = apply_platform_caps(budget)
     if budget <= 0:
         return
 
