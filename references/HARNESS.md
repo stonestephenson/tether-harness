@@ -125,6 +125,13 @@ context window*, not "specialization."
   lets an immediately repeated stop through rather than trapping the agent). On
   opencode it *reports* the failure on `session.idle` rather than hard-blocking —
   the plugin can't veto the stop.
+- **The honest exit:** the failure report also names what to do when the failures
+  *can't* be fixed legitimately — the check itself is wrong, or the task can't be done
+  as specified: leave the verifier alone, don't hardcode around it, stop and tell the
+  user that verification is still failing and why. With only "fix it" on offer,
+  tampering is the remaining way to green; the report goes to the user, never to the
+  gate, so it is not a way to self-certify. (On opencode the report is surfaced on
+  the console, so this wording reaches the agent only where the console does.)
 - **Why:** closes the "I think I'm done" gap with an objective signal — the model
   claiming success is not the same as tests passing. This is where whole-project checks
   live (type-check, `clippy`, unit tests), because they need the full project to resolve.

@@ -16,6 +16,9 @@ DG="$(cd "$(dirname "$0")/../hooks" && pwd)/done-gate.py"
 PCG="$(cd "$(dirname "$0")/../hooks" && pwd)/pre-compact-guard.py"
 FIX="$(mktemp -d)"
 pass=0; fail=0
+# Hermetic: a verify command exported in the caller's shell would be picked up by
+# every done-gate case that doesn't set its own.
+unset CLAUDE_VERIFY_CMD VERIFY_CMD
 trap 'rm -rf "$FIX"' EXIT
 
 check() { # desc  actual  mode(contains|absent|empty)  expected
@@ -79,6 +82,10 @@ check "garbage stdin exits 0"                      "$rc"  contains "0"
 out=$(printf '{"hook_event_name":"Stop","session_id":"dgt_red","cwd":"%s"}' "$FIX" | TMPDIR="$FIX" VERIFY_CMD="false" python3 "$DG" 2>&1); rc=$?
 check "failing verify reports"                     "$out" contains "Project verification is failing"
 check "failing verify exits 2"                     "$rc"  contains "2"
+# The red report must name the sanctioned exit (ROADMAP #14): with only "fix it"
+# on offer, an impossible task or a wrong check leaves tampering as the way out.
+check "red report names the honest exit"           "$out" contains "tell the user that verification is still failing"
+check "red report warns off the verifier"          "$out" contains "do not edit, weaken, or skip the verifier"
 
 out=$(printf '{"hook_event_name":"Stop","session_id":"dgt_green","cwd":"%s"}' "$FIX" | TMPDIR="$FIX" VERIFY_CMD="true" python3 "$DG" 2>&1); rc=$?
 check "passing verify is silent"                   "$out" empty ""

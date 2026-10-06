@@ -117,7 +117,9 @@ verify hooks; the harness ships no LSP config of its own.
 ## Config
 
 Set in your shell (env vars the hooks read):
-- `CLAUDE_CONTEXT_BUDGET` — window tokens (default `200000`; raise for a 1M-token model).
+- `CLAUDE_CONTEXT_BUDGET` — window tokens for context-health; always wins when set. Leave
+  it unset to have the hook size the window from the model id (that hook is unwired on
+  opencode — no transcript token data — and kept for source parity).
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — bands (`.70` / `.85` / `.95`).
 - `VERIFY_CMD` / `CLAUDE_VERIFY_CMD` — command the done-gate runs (either is honored;
   overrides the file below).
@@ -141,7 +143,7 @@ pip install gersemi                # cmake format   (optional)
 brew install shellcheck            # shell lint     (optional)
 ```
 
-Regression tests: `bash opencode/tests/verify-hooks.test.sh` from the repo root (42
+Regression tests: `bash opencode/tests/verify-hooks.test.sh` from the repo root (44
 checks; full count assumes the optional toolchain — a missing tool SKIPs its block) —
 or `bash .claude/verify.sh`, the repo's own done-gate. You can also test a hook by
 piping JSON to it (see the branch `README.md` → "Testing & extending the port").
