@@ -10,9 +10,12 @@ pass=0
 fail=0
 
 # Hermetic: fixtures are sized for a 200k window — don't inherit the session's
-# CLAUDE_CONTEXT_BUDGET (or band overrides) from settings.json/env.
+# CLAUDE_CONTEXT_BUDGET (or band overrides) from settings.json/env, nor the
+# platform's window-capping vars the hook also reads.
 export CLAUDE_CONTEXT_BUDGET=200000
 unset CTX_WARN CTX_ACT CTX_CRIT
+unset CLAUDE_CODE_DISABLE_1M_CONTEXT CLAUDE_CODE_AUTO_COMPACT_WINDOW
+unset CLAUDE_AUTOCOMPACT_PCT_OVERRIDE CLAUDE_CODE_MAX_CONTEXT_TOKENS
 
 cleanup() { rm -rf "$FIX"; rm -f "$STATE_DIR"/cht_*; }
 trap cleanup EXIT
@@ -107,13 +110,67 @@ check "env var beats the model map"               "$(run UserPromptSubmit "$FIX/
 check "unknown model id falls back to 200k"       "$(run UserPromptSubmit "$FIX/model_unknown" cht_m3 -u CLAUDE_CONTEXT_BUDGET)" contains "getting heavy"
 
 # T15/T16 opus-5 is natively 1M. The id also ships a "[1m]" deployment suffix
-# (claude-opus-5[1m]) — prefix matching must map both to 1M, or the gauge
-# over-warns ~5x on the current flagship. Regression for the 2026-08-01 sweep.
+# (claude-opus-5[1m]) — both forms must size at 1M, or the gauge over-warns ~5x
+# on the current flagship. Regression for the 2026-08-01 sweep.
 printf '%s\n' '{"type":"assistant","message":{"model":"claude-opus-5","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_opus5"
 printf '%s\n' '{"type":"assistant","message":{"model":"claude-opus-5[1m]","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_opus5_suffixed"
 
 check "claude-opus-5 maps to 1M (150k silent)"    "$(run UserPromptSubmit "$FIX/model_opus5" cht_m4 -u CLAUDE_CONTEXT_BUDGET)" empty ""
 check "claude-opus-5[1m] suffix maps to 1M too"   "$(run UserPromptSubmit "$FIX/model_opus5_suffixed" cht_m5 -u CLAUDE_CONTEXT_BUDGET)" empty ""
+
+# --- platform window caps (ROADMAP #13, 2026-10-01 sweep) ---
+# The window is a property of the SESSION, not the model: a 1M-mapped id can run
+# at 200k, where a 1M budget would keep the gauge silent through a real
+# exhaustion. When CLAUDE_CONTEXT_BUDGET is unset the hook honors the same env
+# vars Claude Code itself reads to cap the window. Caps only ever LOWER the
+# budget (the over-warn direction). Each case asserts the budget the message
+# reports ("of 200k tokens"), not just a band — a band alone can't tell a right
+# cap from a nearby wrong one, and "silent" can't tell "ignored" from "crashed".
+cap() { # desc  fixture  session  expected-substring  env assignments...
+  local desc="$1" fx="$2" sess="$3" want="$4"; shift 4
+  check "$desc" "$(run UserPromptSubmit "$FIX/$fx" "$sess" -u CLAUDE_CONTEXT_BUDGET "$@")" contains "$want"
+}
+
+# T17/T18 CLAUDE_CODE_DISABLE_1M_CONTEXT holds a 1M model to 200k; an explicit off doesn't
+cap "DISABLE_1M caps a 1M model at 200k"          model_opus5   cht_w1 "of 200k tokens" CLAUDE_CODE_DISABLE_1M_CONTEXT=1
+check "DISABLE_1M=0 does not cap"                 "$(run UserPromptSubmit "$FIX/model_opus5" cht_w2 -u CLAUDE_CONTEXT_BUDGET CLAUDE_CODE_DISABLE_1M_CONTEXT=0)" empty ""
+
+# T19-T23 the auto-compact window is the session's real ceiling. Mirror the
+# platform's parse: leading digits ("500k" reads as 500), clamped UP to 100k.
+cap "AUTO_COMPACT_WINDOW caps the budget"         model_opus5   cht_w3 "of 150k tokens" CLAUDE_CODE_AUTO_COMPACT_WINDOW=150000
+cap "AUTO_COMPACT_WINDOW '500k' reads as 500"     model_opus5   cht_w4 "of 100k tokens" CLAUDE_CODE_AUTO_COMPACT_WINDOW=500k
+cap "AUTO_COMPACT_WINDOW clamps up to 100k"       model_opus5   cht_w5 "of 100k tokens" CLAUDE_CODE_AUTO_COMPACT_WINDOW=50000
+cap "AUTO_COMPACT_WINDOW accepts a leading sign"  model_opus5   cht_w6 "of 150k tokens" CLAUDE_CODE_AUTO_COMPACT_WINDOW=+150000
+cap "AUTO_COMPACT_WINDOW never raises a budget"   model_unknown cht_w7 "of 200k tokens" CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000
+# garbage is ignored, not a crash: the unknown-id fixture still warns at 200k
+cap "garbage AUTO_COMPACT_WINDOW is ignored"      model_unknown cht_w8 "of 200k tokens" CLAUDE_CODE_AUTO_COMPACT_WINDOW=abc
+
+# T24/T25 CLAUDE_AUTOCOMPACT_PCT_OVERRIDE moves the compaction point below the
+# window, so the bands must scale with it (80% of 200k = 160k) — never above it
+cap "PCT_OVERRIDE scales the budget down"         model_unknown cht_w9 "of 160k tokens" CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80
+cap "PCT_OVERRIDE above 100 never raises"         model_unknown cht_wa "of 200k tokens" CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=200
+
+# T26/T27 CLAUDE_CODE_MAX_CONTEXT_TOKENS declares a gateway model's real window
+cap "MAX_CONTEXT_TOKENS lowers the budget"        model_unknown cht_wb "of 128k tokens" CLAUDE_CODE_MAX_CONTEXT_TOKENS=128000
+cap "MAX_CONTEXT_TOKENS never raises a budget"    model_unknown cht_wc "of 200k tokens" CLAUDE_CODE_MAX_CONTEXT_TOKENS=1000000
+# a non-finite value must be ignored, not crash the hook into silence
+cap "MAX_CONTEXT_TOKENS=inf is ignored"           model_unknown cht_we "of 200k tokens" CLAUDE_CODE_MAX_CONTEXT_TOKENS=inf
+
+# T28 CLAUDE_CONTEXT_BUDGET still always wins (150k of an explicit 1M silent)
+check "env budget beats the platform caps"        "$(run UserPromptSubmit "$FIX/model_opus5" cht_wd CLAUDE_CONTEXT_BUDGET=1000000 CLAUDE_CODE_DISABLE_1M_CONTEXT=1 CLAUDE_CODE_AUTO_COMPACT_WINDOW=150000)" empty ""
+
+# --- "[1m]" is the 1M signal for the 4.6 generation (ROADMAP #13) ---
+# Opus 4.6 / Sonnet 4.6 reach 1M ONLY through their "[1m]" variant; a bare id is
+# a 200k session. Any id carrying the tag (any casing) is one the platform
+# itself sizes at 1M.
+printf '%s\n' '{"type":"assistant","message":{"model":"claude-sonnet-4-6","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_s46"
+printf '%s\n' '{"type":"assistant","message":{"model":"claude-sonnet-4-6[1m]","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_s46_tagged"
+printf '%s\n' '{"type":"assistant","message":{"model":"gateway/opus-4-6[1M]","usage":{"input_tokens":30000,"cache_read_input_tokens":110000,"cache_creation_input_tokens":10000}}}' > "$FIX/model_custom_tagged"
+
+cap "bare claude-sonnet-4-6 is a 200k session"    model_s46     cht_t1 "of 200k tokens"
+check "claude-sonnet-4-6[1m] maps to 1M (silent)" "$(run UserPromptSubmit "$FIX/model_s46_tagged" cht_t2 -u CLAUDE_CONTEXT_BUDGET)" empty ""
+check "any id tagged [1M] maps to 1M (silent)"    "$(run UserPromptSubmit "$FIX/model_custom_tagged" cht_t3 -u CLAUDE_CONTEXT_BUDGET)" empty ""
+cap "DISABLE_1M caps a tagged id too"             model_s46_tagged cht_t4 "of 200k tokens" CLAUDE_CODE_DISABLE_1M_CONTEXT=1
 
 printf '\n%d passed, %d failed\n' "$pass" "$fail"
 [[ $fail -eq 0 ]]

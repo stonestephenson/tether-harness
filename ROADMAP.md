@@ -58,6 +58,8 @@ goal.** The list is approved as a backlog; items are green-lit individually.
 | 10 | Interpreter/shell portability (Windows-native support) | low | **proposed 2026-07-13, not green-lit** — see §10; hooks hardcode `python3` + `bash`, so Windows fails *open* (silently no-ops) |
 | 11 | Context-budget map: add `claude-opus-5` (+ standing per-launch chore) | medium | ✅ done on main 2026-08-10 — see §11; from the 2026-08-01 radar sweep. Ports landed with the batched #9 flush |
 | 12 | `plain-english` triage hook (maintainer tooling, **not shipped**) | — | ✅ done on main 2026-08-10. Lives in `.claude/`, so the new-scaffolding burden of proof doesn't govern it and it never ports. Rationale, the measured model bake-off, and known limits: [`.claude/README.md`](.claude/README.md). Recorded here only so the backlog reflects what landed |
+| 13 | Context gauge: the 200k-capped-1M-model blind spot | medium | ✅ done on main 2026-10-05 — see §13; from the 2026-10-01 radar sweep. Ported to all three branches the same day: `context-health.py` stays byte-identical (it is unwired on codex/opencode), plus the WIRING note on `generic` |
+| 14 | done-gate: name the honest exit in the red-path block message | low | ✅ done on main 2026-10-05 — see §14; from the 2026-10-01 radar sweep. Ported to all three branches the same day, each with two suite cases (codex 42, opencode 44, generic 44); on opencode the report is console-surfaced, so the wording reaches the agent only where the console does |
 
 ### Completed (2026-07-11, documented in the shipped docs — details in git history)
 
@@ -243,7 +245,7 @@ maintainer runs daily.
 
 - `("claude-opus-5", 1_000_000)` added to `MODEL_BUDGETS`. Prefix matching covers both
   the bare id and the `claude-opus-5[1m]` deployment suffix that appears in real
-  transcripts — two regression cases pin exactly that (suites now 20 + 46).
+  transcripts — two regression cases pin exactly that.
 - The dated code comment was refreshed (it claimed a 2026-07 verification and carried a
   stale caveat asserting the `[1m]` suffix "never appears in the transcript model id" —
   it does).
@@ -265,6 +267,77 @@ platform-supplied context-window/occupancy field, which would supersede 5b's who
 transcript-model→budget mechanism with true auto-calibration; it is tracked in
 PLATFORM-ASSUMPTIONS "opportunities watch" and was re-confirmed absent on 2026-08-01.
 Until it ships, every sweep checks the map against the current model roster.
+
+---
+
+## 13. Context gauge — the 200k-capped-1M-model blind spot
+
+**Provenance.** The 2026-10-01 cloud sweep (`references/RADAR.md`), re-verified locally
+2026-10-05 against the changelog, the model-config docs, and local transcripts.
+Platform-drift hygiene, the same lane as #11.
+
+**The defect.** `MODEL_BUDGETS` maps model → window, but the window is a property of the
+*session*. A model the map sizes at 1M can be running at 200k — behind a gateway that
+stops there, on a plan without 1M usage credits, after a 1M→200k fallback, or because the
+user capped it. With a 1M budget and a real 200k window, the first band needs 700k tokens
+the session can never reach: the gauge is silent through a real exhaustion. That is the
+under-warning direction #11's design note says the allowlist exists to prevent — #11
+reasoned only about *unknown* ids.
+
+**✅ Landed on main 2026-10-05** (test-first, red→green verified; a cold review of the
+first cut found the map itself had the defect and that two more caps were readable):
+
+- **Model sizing.** Opus 4.6 and Sonnet 4.6 reach 1M only through their `[1m]` variant,
+  but the map sized the bare ids at 1M — the blind spot, in the map since 5b. They are
+  out of `MODEL_BUDGETS`; an id carrying a `[1m]` tag (any casing) is sized at 1M, and a
+  bare 4.6 id falls to the 200k default.
+- **Platform caps.** `apply_platform_caps()`: when `CLAUDE_CONTEXT_BUDGET` is unset, the
+  budget is lowered to match the caps Claude Code itself reads from the environment —
+  `CLAUDE_CODE_DISABLE_1M_CONTEXT`, `CLAUDE_CODE_MAX_CONTEXT_TOKENS`,
+  `CLAUDE_CODE_AUTO_COMPACT_WINDOW`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` — each read the way
+  the platform documents reading it, erring toward "capped". Caps only ever lower the
+  budget; `CLAUDE_CONTEXT_BUDGET` still always wins. The regression cases assert the
+  budget the message reports, not just a band, so a nearly-right cap or a swallowed
+  crash can't pass.
+- **Docs.** What leaves no environment signal is documentation: the code caveat, HARNESS
+  §4 (the one home for the list), the plugin README, and WORKFLOW. They also say two
+  things users would otherwise miss — a leftover `CLAUDE_CONTEXT_BUDGET=1000000` turns
+  the caps off, and a gateway that stops at 200k is best fixed with
+  `CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`. PLATFORM-ASSUMPTIONS gains fact 16 (the
+  sizing rules and four vars, now a dependency) and a fact 12 corollary.
+
+**Considered and dropped.** Reading the `autoCompactWindow` setting: it lives in several
+settings scopes a hook can't resolve reliably. Inferring a cap from
+`CLAUDE_CODE_USE_BEDROCK`-style provider flags: 1M is the default on those providers for
+current models, so the flag alone would over-warn everyone there. Fallback detection: no
+hook field.
+
+**Still open.** The real fix is unchanged from #11 — a platform-supplied window size. The
+numerator (`context_tokens`) partially arrived in 2026-10 on events the gauge doesn't use;
+see PLATFORM-ASSUMPTIONS "opportunities watch".
+
+---
+
+## 14. done-gate — name the honest exit
+
+**Provenance.** The 2026-10-01 cloud sweep proposed it from an escalation-channels
+preprint (arXiv 2608.29460); the paper was read locally 2026-10-05 before promotion.
+**Design-reasoning tier** — an internal-consistency fix, like #7. The paper is supporting
+evidence, not the warrant: it is a single-author preprint on nine problems, and its
+headline 23.6% → 5.3% is the escalation tool *plus* a written anti-hacking policy (tool
+alone 15.0%, policy alone 9.7%).
+
+**The gap.** On a red verifier the gate said "Fix these, then stop" and nothing else. When
+the check itself is wrong or the task can't be done as specified, that leaves tampering as
+the only route to green — the pressure the anti-tamper guard (#1) then has to catch. The
+*tamper* block already told the agent to inform the user; the red block didn't.
+
+**✅ Landed on main 2026-10-05** (test-first, red→green verified): the red-path block
+reason now ends by naming the exit — don't edit, weaken, or skip the verifier, don't
+hardcode around it; stop and tell the user that verification is still failing, and why.
+Two regression cases pin the wording. Gate behavior is unchanged: it still blocks once
+per stop cycle and still detects verifier changes. The report goes to the user, never to
+the gate, so this is not a way to self-certify. No new hook, no new skill.
 
 ---
 

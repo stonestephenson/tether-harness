@@ -10,7 +10,8 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
 **Hooks (automatic — you never invoke these):**
 - **context-health** (`Stop` + `UserPromptSubmit`) — measures how full the context window
   is from real transcript token counts and nudges at 70 / 85 / 95%. Never acts. Window
-  size auto-detected from the model id; `CLAUDE_CONTEXT_BUDGET` overrides.
+  size auto-detected from the model id and lowered to match Claude Code's own window
+  caps; `CLAUDE_CONTEXT_BUDGET` overrides.
 - **verify-on-edit** (`PostToolUse`) — after each edit, runs **real-bug lint**
   (`ruff --select E9,F`, `shellcheck`) everywhere; **formatting/style is opt-in**
   (clang-format, `ruff format`) and runs only when the project ships a style config
@@ -22,6 +23,8 @@ the evidence base; `references/WORKFLOW.md` has the per-session loop.
 - **done-gate** (`Stop`) — runs a project's `.claude/verify.sh` when the agent finishes and
   blocks on failure — once per stop cycle (the loop guard lets an immediately repeated
   stop through rather than trapping the agent). Opt-in per project; fails open.
+  The block message names the honest exit for failures that can't be fixed
+  legitimately: leave the verifier alone and tell the user why.
   Anti-tamper: baselines the verifier's SHA-256 per session and flags + blocks once if
   it changes mid-session (limits: the baseline starts at the first finish, and scripts
   the verifier *calls* aren't hashed — see `HARNESS.md` §4).
@@ -79,10 +82,17 @@ ctest --output-on-failure        # c/c++ example (a fast subset)
 ## Config (env vars, all optional)
 
 - `CLAUDE_CONTEXT_BUDGET` — window size in tokens; always wins when set. When unset, the
-  budget is auto-mapped from the transcript's model id (current-gen models → 1M; unknown
-  ids → `200000`). Set it only for a 200k-default model whose transcript id carries no
-  distinguishing suffix, or to override the map. (A `[1m]` suffix *can* reach the
-  transcript — `claude-opus-5[1m]` does — and prefix matching handles it.)
+  budget is auto-sized from the transcript's model id (Fable, Sonnet 5+, Opus 4.7+, or
+  any id tagged `[1m]` → 1M; everything else → `200000`) and then lowered to match Claude
+  Code's own window caps: `CLAUDE_CODE_DISABLE_1M_CONTEXT`,
+  `CLAUDE_CODE_MAX_CONTEXT_TOKENS`, `CLAUDE_CODE_AUTO_COMPACT_WINDOW`,
+  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`. **Because it always wins, a leftover
+  `CLAUDE_CONTEXT_BUDGET=1000000` disables those caps — remove it.** Set it only when
+  the session's real window differs from what the gauge would infer and nothing in the
+  environment says so (a plan without 1M usage credits, a window capped with
+  `/autocompact`); behind a gateway that stops at 200k, prefer
+  `CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`, which fixes the session too. Details and
+  the remaining blind spots: `HARNESS.md` §4.
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — band fractions (default `.70` / `.85` / `.95`).
 - `CLAUDE_VERIFY_CMD` — command the done-gate runs on finish (overrides `.claude/verify.sh`).
 

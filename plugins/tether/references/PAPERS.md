@@ -114,6 +114,32 @@ alternatives.
   *Backs:* generator–evaluator separation (models self-evaluate leniently) → ROADMAP #4
   (`/ship` cold reviewer); plus the "iteratively prune scaffolding" posture.
 
+### 2026-10 radar additions
+
+Both read in full on 2026-10-05, after the cloud sweep that surfaced them could only see
+abstracts.
+
+- **Can escalation channels redirect reward hacking toward defect disclosure?** — Gomez,
+  2026. arXiv:[2608.29460](https://arxiv.org/abs/2608.29460). 📄 `escalation-channels.pdf`
+  *Backs (support, not warrant):* on tasks with a defective checker, giving the agent a
+  sanctioned reporting tool **plus** a written no-tampering policy cut reward hacking
+  23.6% → 5.3% across 8 frontier models → ROADMAP #14 (the done-gate's red-path message
+  names the honest exit). *Read the arms before citing it:* the tool alone reached 15.0%,
+  the policy alone 9.7%, a one-line prompt instruction 16.9%. *Limits:* single author;
+  nine problems from one benchmark; the tool's prompt also told agents escalation was
+  preferable, so availability and instruction are confounded. Watchlist-tier on the
+  radar's ladder.
+- **An Empirical Study of Harness Design for Coding Agents** — Fan et al., 2026.
+  arXiv:[2609.20804](https://arxiv.org/abs/2609.20804). 📄 `harness-design-empirical.pdf`
+  *Backs (partial corroboration of #6):* in component ablations, planning shifts from an
+  accuracy scaffold for weak models to a cost saver for strong ones — the same shape as
+  the tether-vs-vanilla null. *Does not bear on the context gauge:* its context-management
+  result (the benefit is overflow prevention, shrinking from 35.7 to 2.7 points as the
+  window grows from 32k to 128k) is about automatic in-loop elision and summarization on
+  single tasks, with Nemotron-3 and Mistral-Medium-3.5, one run per setting. It never
+  tests long sessions in a large window, so it neither supports nor narrows the HARNESS
+  §11 claim that context hygiene keeps the model sharp.
+
 ## The evaluation's evidence base — ROADMAP #6 (concluded 2026-07-17)
 
 These are the works the tether-vs-vanilla evaluation reasoned against, and the ones its

@@ -21,7 +21,7 @@ Where everything lives:
   `sota-radar` sweep skill and the `plain-english` triage hook. Nothing here reaches
   tether users, and the ROADMAP's new-scaffolding burden of proof doesn't govern it.
 
-Definition of done: `bash .claude/verify.sh` green (three regression suites — 20 + 46 +
+Definition of done: `bash .claude/verify.sh` green (three regression suites — 38 + 48 +
 27 checks with the full optional toolchain; missing tools skip their blocks — plus a
 doc-link check), and docs kept in sync when behavior changes (HARNESS / WORKFLOW /
 plugin README / PAPERS). **This is the one place the check counts are stated** — other

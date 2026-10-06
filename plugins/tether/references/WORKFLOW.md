@@ -115,10 +115,12 @@ hooks; the harness ships no LSP config of its own.
 
 `settings.json` (`env`) or your shell:
 - `CLAUDE_CONTEXT_BUDGET` — window tokens; optional override that always wins. When
-  unset, context-health maps the transcript's model id to its window (current
-  Fable/Opus/Sonnet generation → 1M; unknown → 200k). Keep it set for a 200k-default
-  model whose transcript id carries no distinguishing suffix; a `[1m]` suffix that does
-  reach the transcript (e.g. `claude-opus-5[1m]`) is handled by the prefix match.
+  unset, context-health sizes the window from the transcript's model id (current
+  Fable/Opus/Sonnet generation or a `[1m]` tag → 1M; anything else → 200k) and then
+  lowers it to match Claude Code's own window caps, if set. A leftover
+  `CLAUDE_CONTEXT_BUDGET=1000000` disables that — remove it. Set the variable only when
+  the real window is smaller than inferred and nothing in the environment says so; the
+  cases are listed in HARNESS.md §4.
 - `CTX_WARN` / `CTX_ACT` / `CTX_CRIT` — bands (`.70` / `.85` / `.95`).
 - `CLAUDE_VERIFY_CMD` — command the done-gate runs on Stop (overrides the file below).
 

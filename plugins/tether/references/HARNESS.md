@@ -85,12 +85,27 @@ context window*, not "specialization."
 - **Why:** context rot is real and invisible from the inside — the model won't notice
   it's degrading. A deterministic gauge catches it every time; the model wouldn't.
 - **When:** fully automatic. It only *nudges*; it never compacts or clears on its own.
-- **Calibration:** the window budget is auto-detected from the transcript's model id
-  (the current Fable/Opus/Sonnet generation → 1M; unknown ids → conservative 200k).
-  `CLAUDE_CONTEXT_BUDGET` always wins when set — keep it if you run a 200k-default
-  model whose transcript id carries no distinguishing suffix. A `[1m]` suffix that
-  *does* reach the transcript (`claude-opus-5[1m]`) is matched by prefix, so the map
-  handles it; the allowlist lags each frontier launch and is a standing radar chore.
+- **Calibration:** the window budget is auto-detected from the transcript's model id:
+  Fable, Sonnet 5+, and Opus 4.7+ → 1M; any id carrying a `[1m]` tag → 1M; everything
+  else, including unknown ids, → a conservative 200k. Opus 4.6 and Sonnet 4.6 reach 1M
+  only through their `[1m]` variant, so a bare 4.6 id is sized at 200k.
+  `CLAUDE_CONTEXT_BUDGET` always wins when set — keep it if you run a 1M session whose
+  transcript id arrives untagged. The allowlist lags each frontier launch and is a
+  standing radar chore.
+- **Blind spot (the dangerous direction):** the window belongs to the *session*, not
+  the model. A model sized at 1M can be running at 200k, and a 1M budget then never
+  reaches the first band — the gauge stays silent through a real exhaustion. So when
+  `CLAUDE_CONTEXT_BUDGET` is **unset**, the hook lowers its budget to match the caps
+  Claude Code itself reads from the environment: `CLAUDE_CODE_DISABLE_1M_CONTEXT`,
+  `CLAUDE_CODE_MAX_CONTEXT_TOKENS`, `CLAUDE_CODE_AUTO_COMPACT_WINDOW`, and
+  `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`. Caps only ever lower the budget. Two consequences:
+  a leftover `CLAUDE_CONTEXT_BUDGET=1000000` switches all of this off, so remove it;
+  and behind a gateway that stops at 200k, set `CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`
+  — the platform's own remedy, which fixes the session and the gauge together.
+  What still leaves no environment signal: a plan without 1M usage credits, a window
+  set with `/autocompact` or the `autoCompactWindow` setting, a model pinned without
+  `[1m]` on a third-party provider, and a 1M→200k fallback. **In those sessions set
+  one of the two variables yourself**; nothing else will warn you.
 
 ### `verify-on-edit.py` — per-edit checker
 - **What:** after I edit a file, it runs fast, file-local checks for that language and
@@ -121,6 +136,12 @@ context window*, not "specialization."
   back. Loop-guarded: it blocks **once per stop cycle** (`stop_hook_active`), so an
   immediately repeated stop passes even if still red — the gate prods with the failure
   list; it is built never to trap the agent in a block loop.
+- **The honest exit:** the block message also names what to do when the failures
+  *can't* be fixed legitimately — the check itself is wrong, or the task can't be done
+  as specified: leave the verifier alone, don't hardcode around it, stop and tell the
+  user that verification is still failing and why. With only "fix it" on offer,
+  tampering is the remaining way to green; the report goes to the user, never to the
+  gate, so it is not a way to self-certify.
 - **Why:** closes the "I think I'm done" gap with an objective signal — the model
   claiming success is not the same as tests passing. This is where whole-project checks
   live (type-check, `clippy`, unit tests), because they need the full project to resolve.
@@ -133,7 +154,7 @@ context window*, not "specialization."
   stop; on a change it tells the user and blocks with the diff so the change is
   surfaced or reverted. **Once** applies to the green path: it re-baselines after that
   block, so an accepted change stops nagging. On a *red* verifier it deliberately does
-  **not** re-baseline (`done-gate.py:189`) — reverting to the accepted verifier goes
+  **not** re-baseline (`done-gate.py:196`) — reverting to the accepted verifier goes
   green silently, while a further-weakened one keeps earning its block every stop.
   Never auto-reverts; fails open on any internal error.
   **Known limits (by design):** the baseline is taken at the session's *first* stop —
@@ -352,6 +373,7 @@ Full citations, links, and locally-downloadable PDFs: [`PAPERS.md`](PAPERS.md).
 | Multi-agent debate improves divergent reasoning | Du et al., 2023 |
 | Persona/role labels alone don't improve accuracy | Zheng et al., 2024 |
 | Prose preferences violated ~57%; compiled into runtime checks → 2–38% | Zhou et al., 2026 (TRACE) |
+| A reporting exit plus a written no-tampering rule cut reward hacking 23.6%→5.3% (one preprint, 9 tasks) | Gomez, 2026 |
 | OS-style memory tiers extend effective context | Packer et al., 2023 (MemGPT) |
 
 ---
