@@ -43,8 +43,10 @@ and LANDSCAPE files live in repo-root `references/`, NOT under this skill's dire
 
 ## Step 1 — platform drift check (deterministic half)
 
-- Fetch the hooks reference (`https://code.claude.com/docs/en/hooks`) and diff reality
-  against each fact in `PLATFORM-ASSUMPTIONS.md`. Classify: **breaks** (a contract the
+- Fetch the hooks reference **as raw source** (`curl
+  https://code.claude.com/docs/en/hooks.md`) and grep it against each fact in
+  `PLATFORM-ASSUMPTIONS.md` — a summarizing fetch has misreported these facts in three
+  consecutive sweeps, so use one for orientation only. Classify: **breaks** (a contract the
   hooks rely on changed) vs **opportunities** (new events/fields the harness could use —
   the file's "opportunities watch" section says what to look for).
 - Scan the Claude Code changelog/release notes since the watermark for hook-, skill-,
